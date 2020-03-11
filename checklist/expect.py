@@ -81,3 +81,17 @@ class Expect:
                 # This is being generous I think
                 return conf + orig_conf <= tolerance
         return expect
+
+    @staticmethod
+    def monotonic_label(label, increasing=True, tolerance=0.):
+        def expect(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
+            softmax = type(orig_conf) in [np.array, np.ndarray]
+            if not softmax:
+                raise(Exception('Need prediction function to be softmax for monotonic_label'))
+            orig_conf = orig_conf[label]
+            conf = conf[label]
+            if increasing:
+                return conf + tolerance >= orig_conf
+            else:
+                return conf - tolerance <= orig_conf
+        return expect
