@@ -40,7 +40,7 @@ class Expect:
         return expect
 
     @staticmethod
-    def all(fn):
+    def all(fn, ignore_first=False):
         # fn must take (xs, preds, confs, labels=None, meta=None),
         # xs:list of examples
         # preds: predictions
@@ -48,11 +48,14 @@ class Expect:
         # labels: labels
         # Must return np.array of True or False
         def expect(xs, preds, confs, labels=None, meta=None):
-            return np.all(fn(xs, preds, confs, labels, meta))
+            r = fn(xs, preds, confs, labels, meta)
+            if ignore_first:
+                r = r[1:]
+            return np.all(r)
         return expect
 
     @staticmethod
-    def eq(x, pred, conf, labels=None, meta=None):
+    def eq(x, pred, conf, label=None, meta=None):
         return pred == label
 
     @staticmethod

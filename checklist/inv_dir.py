@@ -8,7 +8,7 @@ class Inv(AbstractTest):
         self.labels = None
         self.meta = meta
         if expect is None:
-            self.expect = Expect.wrap(Expect.all(Expect.pairwise_to_group(Expect.inv(0))))
+            self.expect = Expect.wrap(Expect.all(Expect.pairwise_to_group(Expect.inv(threshold))))
 
 
 class Dir(AbstractTest):

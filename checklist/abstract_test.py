@@ -35,6 +35,7 @@ class AbstractTest(ABC):
             result_indexes, examples = map(list, list(zip(*all)))
         else:
             examples = self.data
+        print('Predicting %d examples' % len(examples))
         preds, confs = predict_and_confidence_fn(examples)
         if type(self.data[0]) == list:
             self.results.preds = [[] for _ in self.data]
