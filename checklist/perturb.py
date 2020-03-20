@@ -16,6 +16,7 @@ class Perturb:
                 t.append(org)
                 add.append({})
             p = perturb_fn(d)
+            a = []
             x = []
             if not p:
                 continue

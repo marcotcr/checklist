@@ -10,8 +10,6 @@ class Mft(AbstractTest):
         if labels is None and expect is None:
             raise(Exception('Must specify either \'expect\' or \'labels\''))
         if labels is not None and expect is None:
-            self.expect = Expect.wrap(Expect.eq)
-
-
+            self.expect = Expect.single(Expect.eq())
 
 # expect(data, labels=None, meta=None)
