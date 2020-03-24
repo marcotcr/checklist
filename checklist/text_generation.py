@@ -89,7 +89,7 @@ class TextGenerator(object):
         # self.gpt.to(self.device)
         # self.gpt.eval()
 
-    def unmask_multiple(self, texts, beam_size=10, candidates=None, metric='avg'):
+    def unmask_multiple(self, texts, beam_size=500, candidates=None, metric='avg'):
         rets = []
         for text in texts:
             rets.append(self.unmask(text, beam_size, candidates))
@@ -106,6 +106,7 @@ class TextGenerator(object):
                     scores[tuple(x[0])] = min(scores[tuple(x[0])], x[-1])
         if metric == 'min':
             for x in count:
+                # print(x, count[x])
                 if count[x] != len(texts):
                     scores[x] = -999999
         else:

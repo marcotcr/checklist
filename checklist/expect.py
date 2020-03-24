@@ -5,8 +5,11 @@ def iter_with_optional(data, preds, confs, labels, meta):
     # If this is a single example
     if type(data) not in [list, np.array]:
         return [(data, preds, confs, labels, meta)]
-    if type(meta) != list or len(meta) != len(data):
+    if type(meta) not in [list, np.array]:
         meta = itertools.repeat(meta)
+    else:
+        if len(meta) != len(data):
+            raise(Exception('If meta is list, length must match data'))
     if type(labels) not in [list, np.array]:
         labels = itertools.repeat(labels)
     else:
@@ -17,6 +20,14 @@ def iter_with_optional(data, preds, confs, labels, meta):
 
 
 class Expect:
+    @staticmethod
+    def test(fn):
+        # fn must take (data, preds, confs, labels=None, meta=None)
+        # returns np.array of True, False or None
+        def expect(self):
+            return fn(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
+        return expect
+
     @staticmethod
     def testcase(fn):
         # fn must take (x, pred, conf, labels=None, meta=None),
@@ -170,13 +181,24 @@ class Expect:
         return expect
 
     @staticmethod
-    def monotonic_label(label, increasing=True, tolerance=0.):
+    def monotonic(label=None, increasing=True, tolerance=0., agg_fn='all'):
+        keep_label = label
         def expect(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
+            label = keep_label
             softmax = type(orig_conf) in [np.array, np.ndarray]
-            if not softmax:
-                raise(Exception('Need prediction function to be softmax for monotonic_label'))
-            orig_conf = orig_conf[label]
-            conf = conf[label]
+            if not softmax and label is not None:
+                raise(Exception('Need prediction function to be softmax for monotonic if you specify label'))
+            if label is None:
+                label = orig_pred
+            if softmax:
+                orig_conf = orig_conf[label]
+                conf = conf[label]
+                conf_diff = conf - orig_conf
+            else:
+                if pred == orig_pred:
+                    conf_diff = conf - orig_conf
+                else:
+                    conf_diff = orig_conf + conf
             # can't fail
             if increasing and orig_conf <= tolerance:
                 return None
@@ -184,7 +206,9 @@ class Expect:
                 return None
 
             if increasing:
-                return conf + tolerance >= orig_conf
+                return conf_diff + tolerance >= 0
+                # return conf + tolerance >= orig_conf
             else:
-                return conf - tolerance <= orig_conf
-        return expect
+                return conf_diff - tolerance <= 0
+                # return conf - tolerance <= orig_conf
+        return Expect.pairwise(expect, agg_fn=agg_fn)

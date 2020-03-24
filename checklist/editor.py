@@ -31,7 +31,7 @@ def find_all_keys(obj):
 class Editor(object):
     def __init__(self):
         self.lexicons = {}
-    def template(self, templates, return_maps=False, nsamples=None, product=True, remove_duplicates=False, **kwargs):
+    def template(self, templates, return_meta=False, nsamples=None, product=True, remove_duplicates=False, **kwargs):
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
     # 3. generate keys and vals
@@ -65,6 +65,6 @@ class Editor(object):
             mapping = dict(zip(keys, v))
             ret.append(recursive_format(templates, mapping))
             ret_maps.append(mapping)
-        if return_maps:
+        if return_meta:
             return ret, ret_maps
         return ret

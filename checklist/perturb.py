@@ -1,7 +1,7 @@
 import numpy as np
 class Perturb:
     @staticmethod
-    def perturb(data, perturb_fn, keep_original=True, meta=None, returns_additional=False):
+    def perturb(data, perturb_fn, keep_original=True, meta=None, returns_meta=False):
         ret = []
         ret_add = []
         for d in data:
@@ -20,7 +20,7 @@ class Perturb:
             x = []
             if not p:
                 continue
-            if returns_additional:
+            if returns_meta:
                 p, a = p
             if type(p) in [np.array, list]:
                 t.extend(p)
@@ -30,6 +30,6 @@ class Perturb:
                 add.append(a)
             ret.append(t)
             ret_add.append(add)
-        if returns_additional:
+        if returns_meta:
             return ret, ret_add
         return ret
