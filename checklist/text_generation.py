@@ -89,21 +89,29 @@ class TextGenerator(object):
         # self.gpt.to(self.device)
         # self.gpt.eval()
 
-    def unmask_multiple(self, texts, beam_size=500, candidates=None, metric='avg'):
+    def unmask_multiple(self, texts, beam_size=500, candidates=None, metric='avg', **kwargs):
         rets = []
         for text in texts:
             rets.append(self.unmask(text, beam_size, candidates))
         scores = collections.defaultdict(lambda: 0.) if metric == 'avg' else collections.defaultdict(lambda: 999999999)
         count = collections.defaultdict(lambda: 0.)
         examples = {}
+        longest = max([len(x[0][0]) for x in rets])
+        rets = sorted(rets, key=lambda x:len(x[0][0]), reverse=True)
         for r in rets:
             for x in r:
-                count[tuple(x[0])] += 1
-                examples[tuple(x[0])] = x[1]
-                if metric == 'avg':
-                    scores[tuple(x[0])] += x[-1]
-                elif metric == 'min':
-                    scores[tuple(x[0])] = min(scores[tuple(x[0])], x[-1])
+                tup = tuple(x[0])
+                if len(tup) != longest:
+                    tups = [k for k in scores if tuple(k[:len(tup)]) == tup]
+                else:
+                    tups = [tup]
+                for tup in tups:
+                    count[tup] += 1
+                    examples[tup] = x[1]
+                    if metric == 'avg':
+                        scores[tup] += x[-1]
+                    elif metric == 'min':
+                        scores[tup] = min(scores[tup], x[-1])
         if metric == 'min':
             for x in count:
                 # print(x, count[x])
