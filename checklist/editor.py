@@ -4,18 +4,9 @@ import string
 import numpy as np
 import re
 import copy
-
-# def recursive_format(obj, mapping):
-#     if type(obj) in [str, bytes]:
-#         return obj.format(**(mapping))
-#     elif type(obj) == tuple:
-#         return tuple(recursive_format(list(obj), mapping))
-#     elif type(obj) == list:
-#         return [recursive_format(o, mapping) for o in obj]
-#     elif type(obj) == dict:
-#         return {k: recursive_format(v, mapping) for k, v in obj.items()}
-#     else:
-#         return obj
+import os
+import json
+import munch
 
 def recursive_format(obj, mapping):
     def formatfn(x, mapping):
@@ -55,9 +46,6 @@ def replace_bert(obj):
         i += 1
     return obj
 
-def remove_options(obj):
-    return re.sub(r'\{([^\}]+):([^\}]*)\}', r'{\1_\2}', obj)
-
 def add_article(noun):
     return 'an %s' % noun if noun[0].lower() in ['a', 'e', 'i', 'o', 'u'] else 'a %s' % noun
 
@@ -70,7 +58,6 @@ def find_all_keys(obj):
             r = x[1] if not x[2] else '%s:%s' % (x[1], x[2])
             ret.add(r)
     return set([x for x in ret if x])
-
 
 def get_bert_index(obj):
     strings = get_all_strings(obj)
@@ -110,7 +97,21 @@ def wrapped_random_choice(x, *args, **kwargs):
 
 class Editor(object):
     def __init__(self):
+        cur_folder = os.path.dirname(__file__)
+        folder = os.path.abspath(os.path.join(cur_folder, os.pardir, "data", 'lexicons'))
         self.lexicons = {}
+        self.data = {}
+        for f in os.listdir(folder):
+            self.lexicons.update(json.load(open(os.path.join(folder, f))))
+        make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
+        for x in self.lexicons:
+            self.lexicons[x] = [make_munch(x) for x in self.lexicons[x]]
+        self.data['names'] = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'names.json')))
+        self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
+
+
+
+
     def __getattr__(self, attr):
         if attr == 'tg':
             print
@@ -162,7 +163,6 @@ class Editor(object):
             else:
                 raise(Exception('Error: key "%s" not in items or lexicons' % newk))
         bert_index = get_bert_index(templates)
-        # templates = recursive_apply(templates, remove_options)
         for bert, strings in bert_index.items():
             ks = {a: '{%s}' % a for a in all_keys}
             tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
