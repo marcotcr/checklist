@@ -35,7 +35,8 @@ def recursive_apply(obj, fn, *args, **kwargs):
     elif type(obj) == dict:
         return {k: recursive_apply(v, fn, *args, **kwargs) for k, v in obj.items()}
     else:
-        return obj
+        return fn(obj, *args, **kwargs)
+        # return obj
 
 def replace_bert(obj):
     bert_finder = re.compile(r'\{((?:[^\}]*:)?bert\d*)\}')
@@ -110,8 +111,6 @@ class Editor(object):
         self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
 
 
-
-
     def __getattr__(self, attr):
         if attr == 'tg':
             print
@@ -125,7 +124,21 @@ class Editor(object):
     # def init_tg(self):
     #     if self.tg is not None:
     #         return
+    def suggest_replace(self, text, word, full_sentences=False, words_and_sentences=False, **kwargs):
+        ret = self.tg.replace_word(text, word, **kwargs)
+        if kwargs.get('verbose', False):
+            print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
+        if words_and_sentences:
+            return [(tuple(x[0]), x[1]) if len(x[0]) > 1 else (x[0][0], x[1]) for x in ret]
+        if full_sentences:
+            return [x[1] for x in ret]
+        else:
+            return [tuple(x[0]) if len(x[0]) > 1 else x[0][0] for x in ret]
+
     def suggest(self, templates, **kwargs):
+        # if replace:
+        #     replace_with_bert = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{bert}', x)
+        #     templates = recursive_apply(templates, replace_with_bert)
         bert_index = get_bert_index(templates)
         if not bert_index:
             return []
@@ -138,7 +151,14 @@ class Editor(object):
         return xs
 
 
-    def template(self, templates, return_meta=False, nsamples=None, product=True, remove_duplicates=False, bert_only=False, **kwargs):
+    def add_lexicon(self, name, values, overwrite=False):
+        # words can be strings, dictionarys, and other objects
+        if name in self.lexicons and not overwrite:
+            raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
+        self.lexicons[name] = values
+
+
+    def template(self, templates, return_meta=False, nsamples=None, product=True, remove_duplicates=False, bert_only=False, unroll=False, **kwargs):
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
     # 3. generate keys and vals
@@ -164,7 +184,7 @@ class Editor(object):
                 raise(Exception('Error: key "%s" not in items or lexicons' % newk))
         bert_index = get_bert_index(templates)
         for bert, strings in bert_index.items():
-            ks = {a: '{%s}' % a for a in all_keys}
+            ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
             tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
             ks[bert] = tok
 
@@ -178,7 +198,7 @@ class Editor(object):
                                  thisisaratherlongtokenthatwillnotexist=['a', 'an'], **kwargs)
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
             beam_size = kwargs.get('beam_size', 100)
-            options = self.tg.unmask_multiple(samp, beam_size=20, **kwargs)
+            options = self.tg.unmask_multiple(samp, beam_size=beam_size, **kwargs)
             v = [x[0] for x in options][:10]
             items[bert] = v
             if bert_only:
@@ -203,7 +223,7 @@ class Editor(object):
         ret = []
         ret_maps = []
         for v in vals:
-            print(v)
+            # print(v)
             if remove_duplicates and len(v) != len(set([str(x) for x in v])):
                 continue
             mapping = dict(zip(keys, v))
@@ -211,6 +231,9 @@ class Editor(object):
             # print(mapping)
             ret.append(recursive_format(templates, mapping))
             ret_maps.append(mapping)
+        if unroll and ret and type(ret[0]) in [list, np.array, tuple]:
+            ret = [x for y in ret for x in y]
+            ret_maps = [x for y in ret_maps for x in y]
         if return_meta:
             return ret, ret_maps
         return ret

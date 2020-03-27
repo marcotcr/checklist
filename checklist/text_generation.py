@@ -140,7 +140,7 @@ class TextGenerator(object):
         input_ids = torch.tensor(encoded)
         # toks = tokenizer.tokenize('[CLS] %s [SEP]' % string)
         current_beam= [([], 0)]
-        masked = (input_ids == tokenizer.mask_token_id).numpy().nonzero()[0]
+        masked = (input_ids == self.bert_tokenizer.mask_token_id).numpy().nonzero()[0]
         while len(current_beam[0][0]) != masked.shape[0]:
             current_beam = current_beam[:beam_size]
             size = len(current_beam[0][0])
@@ -178,7 +178,7 @@ class TextGenerator(object):
         text = ''
         for p in pieces[:-1]:
             text += p
-            text += ' [MASK]'
+            text += ' ' + self.bert_tokenizer.mask_token
             if p != '':
                 text += ' '
         text += pieces[-1]
@@ -187,7 +187,7 @@ class TextGenerator(object):
         return self.unmask(text, beam_size=beam_size, candidates=candidates)
 
     def replace_word(self, text, word,  threshold=5, beam_size=100, candidates=None):
-        masked = re.sub(r'\b%s\b' % re.escape(word), '[MASK]', text)
+        masked = re.sub(r'\b%s\b' % re.escape(word), self.bert_tokenizer.mask_token, text)
         if masked == text:
             return []
         if candidates is not None:
@@ -239,7 +239,7 @@ class TextGenerator(object):
         options = options + [word]
         in_all = set(options)
         for text in texts:
-            masked = re.sub(r'\b%s\b' % re.escape(word), '[MASK]', text)
+            masked = re.sub(r'\b%s\b' % re.escape(word), self.bert_tokenizer.mask_token, text)
             if masked == text:
                 continue
             ret =  self.unmask(masked, beam_size=100000000, candidates=options)

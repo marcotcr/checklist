@@ -74,10 +74,10 @@ class AbstractTest(ABC):
         fails = self.fail_idxs().shape[0]
         filtered = self.filtered_idxs().shape[0]
         nonfiltered = n - filtered
-        print('Test cases:     %d' % n)
+        print('Test cases:      %d' % n)
         if filtered:
-            print('Filtered cases: %d (%.1f%%)' % (filtered, 100 * filtered / n))
-        print('Failure rate:   %.1f%%' % (100 * fails / nonfiltered))
+            print('After filtering: %d (%.1f%%)' % (nonfiltered, 100 * nonfiltered / n))
+        print('Fails (rate):    %d (%.1f%%)' % (fails, 100 * fails / nonfiltered))
 
     def label_meta(self, i):
         if self.labels is None:

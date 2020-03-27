@@ -19,8 +19,6 @@ def pairwise_print_fn(fail_criterion, sort_criterion):
             if orig_conf.shape[0] == 2:
                 confs = confs[:, 1]
                 binary = True
-            else:
-                confs = confs[:, orig]
         if 0 in fails:
             fails.remove(0)
         for f in [0] + fails[:2]:
