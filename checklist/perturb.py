@@ -92,6 +92,17 @@ class Perturb:
             ret.append(s + '.')
         return ret
 
+
+    @staticmethod
+    def add_typos(string, typos=1):
+        string = list(string)
+        swaps = np.random.choice(len(string) - 1, typos)
+        for swap in swaps:
+            tmp = string[swap]
+            string[swap] = string[swap + 1]
+            string[swap + 1] = tmp
+        return ''.join(string)
+
     @staticmethod
     def contractions(sentence):
         expanded = [Perturb.expand_contractions(sentence), Perturb.contract(sentence)]
