@@ -95,6 +95,26 @@ class Dir(AbstractTest):
             return conf if increasing else -conf
         self.print = pairwise_print_fn(fail_cr, sort_cr)
 
+    def set_expected_label_print(self, label):
+        def get_conf(conf, orig, pred):
+            softmax = type(conf) in [np.array, np.ndarray]
+            if softmax:
+                return conf[label]
+            else:
+                return conf if orig == pred else -conf
+        def fail_cr(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
+            return pred != label
+        def sort_cr(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
+            softmax = type(conf) in [np.array, np.ndarray]
+            if softmax:
+                conf = conf[label]
+            else:
+                conf = conf if orig == pred else -conf
+            return conf
+        self.print = pairwise_print_fn(fail_cr, sort_cr)
+
+
+
 
         # def print_fn(xs, preds, confs, labels=None, meta=None, format_example_fn=None):
         #     orig = preds[0]

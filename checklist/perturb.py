@@ -187,7 +187,9 @@ class Perturb:
         return reverse_contraction_pattern.sub(cont, sentence)
 
     @staticmethod
-    def change_names(doc, meta=False, n=10, first_only=False, last_only=False):
+    def change_names(doc, meta=False, n=10, first_only=False, last_only=False, seed=None):
+        if seed is not None:
+            np.random.seed(seed)
         ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'PERSON' for a in x])]
         ret = []
         ret_m = []
@@ -224,7 +226,9 @@ class Perturb:
         return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
 
     @staticmethod
-    def change_location(doc, meta=False, n=10):
+    def change_location(doc, meta=False, seed=None, n=10):
+        if seed is not None:
+            np.random.seed(seed)
         ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'GPE' for a in x])]
         ret = []
         ret_m = []
@@ -242,7 +246,9 @@ class Perturb:
         return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
 
     @staticmethod
-    def change_number(doc, meta=False, n=10):
+    def change_number(doc, meta=False, seed=None, n=10):
+        if seed is not None:
+            np.random.seed(seed)
         nums = [x.text for x in doc if x.text.isdigit()]
         ret = []
         ret_m = []

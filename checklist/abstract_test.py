@@ -17,7 +17,7 @@ class AbstractTest(ABC):
 
     def print(self, xs, preds, confs, labels=None, meta=None, format_example_fn=None):
 
-        for x, pred, conf, label, meta  in iter_with_optional(xs, preds, confs, labels, meta):
+        for x, pred, conf, label, meta  in list(iter_with_optional(xs, preds, confs, labels, meta))[:3]:
             print(format_example_fn(x, pred, conf, label, meta))
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
             print()
