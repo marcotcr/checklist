@@ -8,21 +8,54 @@ import os
 import json
 import munch
 
-def recursive_format(obj, mapping):
+class SafeFormatter(string.Formatter):
+    def vformat(self, format_string, args, kwargs):
+        args_len = len(args)  # for checking IndexError
+        tokens = []
+        for (lit, name, spec, conv) in self.parse(format_string):
+            # re-escape braces that parse() unescaped
+            lit = lit.replace('{', '{{').replace('}', '}}')
+            # only lit is non-None at the end of the string
+            if name is None:
+                tokens.append(lit)
+            else:
+                # but conv and spec are None if unused
+                conv = '!' + conv if conv else ''
+                spec = ':' + spec if spec else ''
+                # name includes indexing ([blah]) and attributes (.blah)
+                # so get just the first part
+                fp = name.split('[')[0].split('.')[0]
+                # treat as normal if fp is empty (an implicit
+                # positional arg), a digit (an explicit positional
+                # arg) or if it is in kwargs
+                if not fp or fp.isdigit() or fp in kwargs:
+                    tokens.extend([lit, '{', name, conv, spec, '}'])
+                # otherwise escape the braces
+                else:
+                    tokens.extend([lit, '{{', name, conv, spec, '}}'])
+        format_string = ''.join(tokens)  # put the string back together
+        # finally call the default formatter
+        return string.Formatter.vformat(self, format_string, args, kwargs)
+
+def recursive_format(obj, mapping, ignore_missing=False):
     def formatfn(x, mapping):
+        fmt = SafeFormatter()
+        formatz = lambda x, m: x.format(**m) if not ignore_missing else fmt.format(x, **m)
         options = re.compile(r'{([^}]+):([^}]+)}')
         def mysub(match):
             options, thing = match.group(1, 2)
             ret = ''
             if 'a' in options:
-                word = ('{%s}' % thing).format(**mapping)
-                ret += '%s ' % add_article(word).split()[0]
+                if ignore_missing and thing not in mapping:
+                    return match.group()
+                else:
+                    word = formatz('{%s}' % thing, mapping)
+                    ret += '%s ' % add_article(word).split()[0]
             ret += '{%s}' % thing
             return ret
         # print(x)
         x = options.sub(mysub, x)
-        # print(x)
-        return x.format(**mapping)
+        return formatz(x, mapping)
     return recursive_apply(obj, formatfn, mapping)
 
 def recursive_apply(obj, fn, *args, **kwargs):
@@ -184,16 +217,15 @@ class Editor(object):
                 raise(Exception('Error: key "%s" not in items or lexicons' % newk))
         bert_index = get_bert_index(templates)
         for bert, strings in bert_index.items():
-            ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
+            # ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
+            ks = {}
             tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
             ks[bert] = tok
-
             a_tok = 'thisisaratherlongtokenthatwillnotexist'
             sub_a = lambda x: re.sub(r'{a:(%s)}' % bert, r'{%s} {\1}' % a_tok, x)
             strings = recursive_apply(strings, sub_a)
             ks[a_tok] = '{%s}' % a_tok
-            ts = recursive_format(strings, ks)
-            # print(ts)
+            ts = recursive_format(strings, ks, ignore_missing=True)
             samp = self.template(ts, nsamples=20, remove_duplicates=remove_duplicates, # **kwargs)
                                  thisisaratherlongtokenthatwillnotexist=['a', 'an'], **kwargs)
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]

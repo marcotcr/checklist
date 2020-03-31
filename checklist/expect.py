@@ -23,7 +23,13 @@ class Expect:
     @staticmethod
     def test(fn):
         # fn must take (data, preds, confs, labels=None, meta=None)
-        # returns np.array of True, False or None
+        # returns list of lists or list of np.arrays, representing results for
+        # examples inside a testcase
+        # each list must be of np.array of integers, bools or None, where:
+        #    > 0 means passed,
+        #    <= 0 or False means fail, and (optionally) the magnitude of the
+        #    failure is indicated by distance from 0, e.g. -10 is worse than -1
+        #    None means the test does not apply, and this should not be counted
         def expect(self):
             return fn(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
         return expect
@@ -34,10 +40,15 @@ class Expect:
         # x: single example or group of examples
         # pred: single prediction or group of predictions
         # label: single label
-        # Must return True or False
+        # Returns:
+        # list of np.array of integers, bools or None, where:
+        #    > 0 means passed,
+        #    <= 0 or False means fail, and (optionally) the magnitude of the
+        #    failure is indicated by distance from 0, e.g. -10 is worse than -1
+        #    None means the test does not apply, and this should not be counted
         def expect(self):
             zipped = iter_with_optional(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
-            return np.array([fn(x, pred, confs, labels, meta) for x, pred, confs, labels, meta in zipped], dtype='object')
+            return [fn(x, pred, confs, labels, meta) for x, pred, confs, labels, meta in zipped]
         # return np.array([fn(x, pred, conf, label, meta) for x, pred, conf, label, meta in iter_with_optional(data, preds, confs, labels, meta)])
         return expect
 

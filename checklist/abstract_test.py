@@ -16,11 +16,18 @@ class AbstractTest(ABC):
         pass
 
     def print(self, xs, preds, confs, labels=None, meta=None, format_example_fn=None):
-
-        for x, pred, conf, label, meta  in list(iter_with_optional(xs, preds, confs, labels, meta))[:3]:
+        iters = list(iter_with_optional(xs, preds, confs, labels, meta))
+        idxs = list(range(min(len(iters), 3)))
+        if type(xs) in [list, np.array]:
+            if labels:
+                idxs = np.where(np.array(preds) != np.array(labels))[0][:3]
+        iters = [iters[i] for i in idxs]
+        for x, pred, conf, label, meta in iters:
             print(format_example_fn(x, pred, conf, label, meta))
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
             print()
+        print('----')
+
 
     def check_results(self):
         if not hasattr(self, 'results') or not self.results:
