@@ -28,7 +28,7 @@ class Expect:
         # each list must be of np.array of integers, bools or None, where:
         #    > 0 means passed,
         #    <= 0 or False means fail, and (optionally) the magnitude of the
-        #    failure is indicated by distance from 0, e.g. -10 is worse than -1
+        #      failure, indicated by distance from 0, e.g. -10 is worse than -1
         #    None means the test does not apply, and this should not be counted
         def expect(self):
             return fn(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
@@ -44,13 +44,33 @@ class Expect:
         # list of np.array of integers, bools or None, where:
         #    > 0 means passed,
         #    <= 0 or False means fail, and (optionally) the magnitude of the
-        #    failure is indicated by distance from 0, e.g. -10 is worse than -1
+        #      failure, indicated by distance from 0, e.g. -10 is worse than -1
         #    None means the test does not apply, and this should not be counted
         def expect(self):
             zipped = iter_with_optional(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
             return [fn(x, pred, confs, labels, meta) for x, pred, confs, labels, meta in zipped]
         # return np.array([fn(x, pred, conf, label, meta) for x, pred, conf, label, meta in iter_with_optional(data, preds, confs, labels, meta)])
         return expect
+
+
+    @staticmethod
+    def aggregate(data, agg_fn='all'):
+        # data is a list of lists or list of np.arrays
+        return np.array([Expect.aggregate_testcase(x, agg_fn) for x in data])
+
+    @staticmethod
+    def aggregate_testcase(expect_results, agg_fn='all'):
+        if agg_fn == 'all':
+            agg_fn = Expect.all()
+        if agg_fn == 'all_except_first':
+            agg_fn = Expect.all(ignore_first=True)
+        if expect_results is None:
+            return None
+        r = [x for x in expect_results if x is not None]
+        if not r:
+            return None
+        else:
+            return agg_fn(np.array(r))
 
     @staticmethod
     def aggregate_and_wrap(individual_expect_fn, agg_fn='all'):
@@ -77,46 +97,54 @@ class Expect:
         return Expect.testcase(expectz)
 
     @staticmethod
-    def single(fn, agg_fn='all'):
+    def single(fn):
         # fn must take (x, pred, conf, label=None, meta=None),
         # x: single example
         # pred: single prediction
         # conf: single conf
         # label: single label
-        # Must return True, False, or None (does not apply)
-        # agg: how to aggregate the results, e.g. if you get [True, False, True]
-        # options: 'all', or a function that takes in (xs, preds, confs, labels=None, meta=None) and returns True, False or None
+        # Must return float or bool, where:
+        #    > 0 means passed,
+        #    <= 0 or False means fail, and (optionally) the magnitude of the
+        #      failure, indicated by distance from 0, e.g. -10 is worse than -1
+        #    None means the test does not apply, and this should not be counted
         def expect_fn(xs, preds, confs, label=None, meta=None):
             return np.array([fn(x, p, c, l, m) for x, p, c,  l, m in iter_with_optional(xs, preds, confs, label, meta)])
-        return Expect.aggregate_and_wrap(expect_fn, agg_fn)
+        return Expect.testcase(expect_fn)#, agg_fn)
 
     @staticmethod
-    def pairwise(fn, agg_fn='all'):
+    def pairwise(fn):
         # fn takes (orig_pred, pred, orig_conf, conf, labels=None, meta=None)
         # assuming first example is orig
-        # must return True, False or None
-        # agg: how to aggregate the results, e.g. if you get [True, False, True]
-        # options: 'all', or a function that takes in (xs, preds, confs, labels=None, meta=None) and returns True, False or None
+        # Must return float or bool, where:
+        #    > 0 means passed,
+        #    <= 0 or False means fail, and (optionally) the magnitude of the
+        #      failure, indicated by distance from 0, e.g. -10 is worse than -1
+        #    None means the test does not apply, and this should not be counted
         def expect_fn(xs, preds, confs, labels=None, meta=None):
             orig_pred = preds[0]
             orig_conf = confs[0]
             return np.array([fn(orig_pred, p, orig_conf, c, l, m) for _, p, c, l, m in iter_with_optional(xs, preds, confs, labels, meta)] )
-        if agg_fn == 'all':
-            agg_fn = Expect.all(ignore_first=True)
-        return Expect.aggregate_and_wrap(expect_fn, agg_fn)
+        # if agg_fn == 'all':
+        #     agg_fn = Expect.all(ignore_first=True)
+        return Expect.testcase(expect_fn)#, agg_fn)
 
     @staticmethod
-    def wrap_slice(expect_fn, slice_fn):
+    def wrap_slice(expect_fn, slice_fn, agg_fn='all'):
         def wrapped(*args, **kwargs):
             ret = expect_fn(*args, **kwargs)
-            sliced = slice_fn(*args, **kwargs)
-            ret[sliced != True] = None
+            sliced = Expect.aggregate(slice_fn(*args, **kwargs), agg_fn)
+            for i in np.where(sliced != True)[0]:
+                if type(ret[i]) in [list, np.array]:
+                    ret[i] = [None for _ in ret[i]]
+                else:
+                    ret[i] = None
             return ret
         return wrapped
 
 
     @staticmethod
-    def slice_testcase(expect_fn, slice_fn):
+    def slice_testcase(expect_fn, slice_fn, agg_fn='all'):
         # expect_fn takes a Test object (this is a wrapper on top)
         # slice_fn must take (x, pred, conf, labels=None, meta=None),
         # x: single example or group of examples
@@ -124,7 +152,7 @@ class Expect:
         # label: single label
         # Must return True or False, will slice out (None) whatever is not True
         wrapped_slice = Expect.testcase(slice_fn)
-        return Expect.wrap_slice(expect_fn, wrapped_slice)
+        return Expect.wrap_slice(expect_fn, wrapped_slice, agg_fn)
 
     @staticmethod
     def slice_single(expect_fn, slice_fn, agg_fn='all'):
@@ -136,26 +164,37 @@ class Expect:
         # Must return True, False, or None (does not apply)
         # agg: how to aggregate the results, e.g. if you get [True, False, True]
         # options: 'all', or a function that takes in (xs, preds, confs, labels=None, meta=None) and returns True, False or None
-        wrapped_slice = Expect.single(slice_fn, agg_fn)
-        return Expect.wrap_slice(expect_fn, wrapped_slice)
+        wrapped_slice = Expect.single(slice_fn)
+        return Expect.wrap_slice(expect_fn, wrapped_slice, agg_fn)
 
     @staticmethod
-    def slice_pairwise(expect_fn, slice_fn, agg_fn='all'):
-        # fn takes (orig_pred, pred, orig_conf, conf, labels=None, meta=None)
+    def slice_orig(expect_fn, slice_fn, agg_fn='all'):
+        # slice_fn takes (orig_pred, orig_conf)
+        new_fn = lambda orig, pred, *args, **kwargs: slice_fn(orig, pred)
+        return Expect.slice_pairwise(expect_fn, new_fn, agg_fn)
+
+
+    @staticmethod
+    def slice_pairwise(expect_fn, slice_fn, agg_fn='all_except_first'):
+        # slice_fn takes (orig_pred, pred, orig_conf, conf, labels=None, meta=None)
         # assuming first example is orig
         # must return True, False or None
         # agg: how to aggregate the results, e.g. if you get [True, False, True]
         # options: 'all', or a function that takes in (xs, preds, confs, labels=None, meta=None) and returns True, False or None
-        wrapped_slice = Expect.pairwise(slice_fn, agg_fn)
-        return Expect.wrap_slice(expect_fn, wrapped_slice)
+        wrapped_slice = Expect.pairwise(slice_fn)
+        return Expect.wrap_slice(expect_fn, wrapped_slice, agg_fn)
 
     @staticmethod
     def all(ignore_first=False):
         def tmp_fn(results):
-            # results: np.array of True or False
+            # results: np.array of float or bool, where
+            #    > 0 means passed,
+            #    <= 0 or False means fail, and (optionally) the magnitude of the
+            #      failure, indicated by distance from 0, e.g. -10 is worse than -1
+            #    None means the test does not apply, and this should not be counted
             if ignore_first:
                 results = results[1:]
-            return np.all(results)
+            return np.all(results > 0)
         return tmp_fn
         # def expect(xs, preds, confs, labels=None, meta=None):
         #     r = fn(xs, preds, confs, labels, meta)
@@ -168,11 +207,15 @@ class Expect:
     def eq(val=None):
         # If val is None, check label
         def ret_fn(x, pred, conf, label=None, meta=None):
-            if val is None:
-                return pred == label
+            gt = val if val is not None else label
+            softmax = type(conf) in [np.array, np.ndarray]
+            conf = conf[gt] if softmax else -conf
+            conf_viol = -(1 - conf)
+            if pred == gt:
+                return True
             else:
-                return pred == val
-        return ret_fn
+                return conf_viol
+        return Expect.single(ret_fn)
 
     @staticmethod
     def inv(tolerance=0):
@@ -180,19 +223,23 @@ class Expect:
             softmax = type(orig_conf) in [np.array, np.ndarray]
             if pred == orig_pred:
                 return True
-            if tolerance == 0:
-                return False
             if softmax:
                 orig_conf = orig_conf[orig_pred]
                 conf = conf[orig_pred]
-                return np.abs(conf - orig_conf) <= tolerance
+                if np.abs(conf - orig_conf) <= tolerance:
+                    return True
+                else:
+                    return -np.abs(conf - orig_conf)
             else:
                 # This is being generous I think
-                return conf + orig_conf <= tolerance
-        return expect
+                if conf + orig_conf <= tolerance:
+                    return True
+                else:
+                    return -(conf + orig_conf)
+        return Expect.pairwise(expect)
 
     @staticmethod
-    def monotonic(label=None, increasing=True, tolerance=0., agg_fn='all'):
+    def monotonic(label=None, increasing=True, tolerance=0.):
         keep_label = label
         def expect(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
             label = keep_label
@@ -217,9 +264,15 @@ class Expect:
                 return None
 
             if increasing:
-                return conf_diff + tolerance >= 0
+                if conf_diff + tolerance >= 0:
+                    return True
+                else:
+                    return conf_diff + tolerance
                 # return conf + tolerance >= orig_conf
             else:
-                return conf_diff - tolerance <= 0
+                if conf_diff - tolerance <= 0:
+                    return True
+                else:
+                    return -(conf_diff - tolerance)
                 # return conf - tolerance <= orig_conf
-        return Expect.pairwise(expect, agg_fn=agg_fn)
+        return Expect.pairwise(expect)

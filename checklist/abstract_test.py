@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from munch import Munch
 import pickle
 import numpy as np
-from .expect import iter_with_optional
+from .expect import iter_with_optional, Expect
 
 class AbstractTest(ABC):
     def __init__(self):
@@ -15,12 +15,15 @@ class AbstractTest(ABC):
     def load(self):
         pass
 
-    def print(self, xs, preds, confs, labels=None, meta=None, format_example_fn=None):
+    def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
-        idxs = list(range(min(len(iters), 3)))
-        if type(xs) in [list, np.array]:
-            if labels:
-                idxs = np.where(np.array(preds) != np.array(labels))[0][:3]
+        idxs = [0] if self.print_first else []
+        idxs = [i for i in np.argsort(expect_results) if expect_results[i] <= 0]
+        if self.print_first:
+            if 0 in idxs:
+                idxs.remove(0)
+            idxs.insert(0, 0)
+        idxs = idxs[:nsamples]
         iters = [iters[i] for i in idxs]
         for x, pred, conf, label, meta in iters:
             print(format_example_fn(x, pred, conf, label, meta))
@@ -39,7 +42,16 @@ class AbstractTest(ABC):
 
     def update_expect(self):
         self.check_results()
-        self.results.passed = self.expect(self)
+        self.results.expect_results = self.expect(self)
+        self.results.passed = Expect.aggregate(self.results.expect_results, self.agg_fn)
+        #np.array([Expect.aggregate(x, self.agg_fn) for x in self.results.expect_results])
+        # for r in self.results.expect_results:
+        #     r = [x for x in r if x is not None]
+        #     res = None if not r else self.agg_fn(np.array(r))
+        #     self.results.passed.append(res)
+        # self.results.passed = np.array(self.results.passed)
+        # self.results.passed = np.array([self.agg_fn(np.array([y for y in x if y is not None])) for x in self.results.expect_results])
+        # self.results.passed = self.expect(self)
 
     def run(self, predict_and_confidence_fn, overwrite=False):
         if hasattr(self, 'results') and self.results and not overwrite:
@@ -97,8 +109,8 @@ class AbstractTest(ABC):
             meta = self.meta if type(self.meta) not in [list, np.array] else self.meta[i]
         return label, meta
 
-    def summary(self, n=None, print_fn=None, format_example_fn=None):
-        # print_fn_fn takes (xs, preds, confs, labels=None, meta=None)
+    def summary(self, n=None, print_fn=None, format_example_fn=None, n_per_testcase=3):
+        # print_fn_fn takes (xs, preds, confs, expect_results, labels=None, meta=None)
         # format_example_fn takes (x, pred, conf, label=None, meta=None)
         # i.e. it prints a single test case
         self.print_stats()
@@ -132,4 +144,6 @@ class AbstractTest(ABC):
             # should be format_fn
             label, meta = self.label_meta(f)
             # print(label, meta)
-            print_fn(self.data[f], self.results.preds[f], self.results.confs[f], label, meta, format_example_fn)
+            print_fn(self.data[f], self.results.preds[f],
+                     self.results.confs[f], self.results.expect_results[f],
+                     label, meta, format_example_fn, nsamples=n_per_testcase)
