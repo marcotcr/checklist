@@ -146,11 +146,8 @@ class Editor(object):
 
     def __getattr__(self, attr):
         if attr == 'tg':
-            print
             from .text_generation import TextGenerator
-            import spacy
-            nlp = spacy.load('en_core_web_sm')
-            self.tg = TextGenerator(nlp)
+            self.tg = TextGenerator()
             return self.tg
         else:
             raise AttributeError

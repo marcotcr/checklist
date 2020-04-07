@@ -73,11 +73,10 @@ def all_possible_related(words, pos=None, depth=1):
     return clean_senses(ret)
 
 class TextGenerator(object):
-    def __init__(self, nlp=None, url=None):
+    def __init__(self, url=None):
         self.url = url
         if url is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            self.nlp = nlp
             # self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
             # self.bert = BertForMaskedLM.from_pretrained('bert-base-cased')
             self.bert_tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
