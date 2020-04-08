@@ -151,9 +151,7 @@ class Editor(object):
             return self.tg
         else:
             raise AttributeError
-    # def init_tg(self):
-    #     if self.tg is not None:
-    #         return
+
     def suggest_replace(self, text, word, full_sentences=False, words_and_sentences=False, **kwargs):
         ret = self.tg.replace_word(text, word, **kwargs)
         if kwargs.get('verbose', False):
@@ -188,15 +186,22 @@ class Editor(object):
         self.lexicons[name] = values
 
 
-    def template(self, templates, return_meta=False, nsamples=None, product=True, remove_duplicates=False, bert_only=False, unroll=False, **kwargs):
+    def template(self, templates, return_meta=False, nsamples=None,
+                 product=True, remove_duplicates=False, bert_only=False,
+                 unroll=False, save=False, **kwargs):
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
     # 3. generate keys and vals
     # 4. go through object, generate
         templates = copy.deepcopy(templates)
+        saved = templates
         all_keys = find_all_keys(templates)
         items = {}
         bert_match = re.compile(r'bert\d*')
+        for k in kwargs:
+            if re.search(r'\d+$', k):
+                raise(Exception('Error: keys cannot end in integers, we use that to index multiple copies of the same key (offending key: "%s")' % k))
+
         for k in all_keys:
             # TODO: process if ends in number
             # TODO: process if is a:key to add article
@@ -223,6 +228,7 @@ class Editor(object):
             strings = recursive_apply(strings, sub_a)
             ks[a_tok] = '{%s}' % a_tok
             ts = recursive_format(strings, ks, ignore_missing=True)
+            np.random.seed(1)
             samp = self.template(ts, nsamples=20, remove_duplicates=remove_duplicates, # **kwargs)
                                  thisisaratherlongtokenthatwillnotexist=['a', 'an'], **kwargs)
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
@@ -232,6 +238,8 @@ class Editor(object):
             items[bert] = v
             if bert_only:
                 return options
+        if save:
+            return (saved, items)
         templates = recursive_apply(templates, replace_bert)
         # print(templates)
         keys = [x[0] for x in items.items()]

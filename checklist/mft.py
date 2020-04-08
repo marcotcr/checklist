@@ -1,7 +1,7 @@
 from .abstract_test import AbstractTest
 from .expect import Expect
 
-class Mft(AbstractTest):
+class MFT(AbstractTest):
     def __init__(self, data, expect=None, labels=None, meta=None, agg_fn='all'):
         self.data = data
         self.expect = expect
@@ -13,5 +13,7 @@ class Mft(AbstractTest):
             self.expect = Expect.eq()
         self.agg_fn = agg_fn
         self.print_first = False
+    def dummy(self):
+        print('dum')
 
 # expect(data, labels=None, meta=None)

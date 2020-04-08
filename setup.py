@@ -12,6 +12,7 @@ setup(name='checklist',
         'numpy',
         'spacy',
         'munch',
+        'dill',
       ],
       include_package_data=True,
       zip_safe=False)

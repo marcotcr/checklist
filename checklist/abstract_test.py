@@ -1,19 +1,43 @@
 from abc import ABC, abstractmethod
+import dill
 from munch import Munch
-import pickle
 import numpy as np
+import inspect
 from .expect import iter_with_optional, Expect
+
+def load_test(file):
+    dill._dill._reverse_typemap['ClassType'] = type
+    return dill.load(open(file, 'rb'))
 
 class AbstractTest(ABC):
     def __init__(self):
         self.data = None
         self.labels = None
         self.meta = None
-    def save(self):
-        pass
+        self.print_first = None
+    def save(self, file):
+        try:
+            if not hasattr(self, 'inspect_source'):
+                self.inspect_source = inspect.getsource(self.expect)
+        except Exception as e:
+            print('Warning: could not save inspect sourcecode')
+            print(str(e))
+        try:
+            if type(self.agg_fn) != str and not hasattr(self, 'agg_source'):
+                self.agg_source = inspect.getsource(self.agg_fn)
+        except Exception as e:
+            print('Warning: could not save agg_fn sourcecode')
+            print(str(e))
+        # expect = dill.dumps(self.expect, recurse=True)
+        # self.expect = None
+        dill.dump(self, open(file, 'wb'), recurse=True)
 
-    def load(self):
-        pass
+    @staticmethod
+    def from_file(file):
+        return load_test(file)
+        # test, expect = load_test(file)
+        # test.expect = dill.loads(expect)
+        # return test
 
     def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
@@ -44,27 +68,26 @@ class AbstractTest(ABC):
         self.check_results()
         self.results.expect_results = self.expect(self)
         self.results.passed = Expect.aggregate(self.results.expect_results, self.agg_fn)
-        #np.array([Expect.aggregate(x, self.agg_fn) for x in self.results.expect_results])
-        # for r in self.results.expect_results:
-        #     r = [x for x in r if x is not None]
-        #     res = None if not r else self.agg_fn(np.array(r))
-        #     self.results.passed.append(res)
-        # self.results.passed = np.array(self.results.passed)
-        # self.results.passed = np.array([self.agg_fn(np.array([y for y in x if y is not None])) for x in self.results.expect_results])
-        # self.results.passed = self.expect(self)
 
-    def run(self, predict_and_confidence_fn, overwrite=False):
-        if hasattr(self, 'results') and self.results and not overwrite:
-            raise(Exception('Results exist. To overwrite, set overwrite=True'))
-
-        self.results = Munch()
-        if type(self.data[0]) == list:
+    def example_list_and_indices(self):
+        if type(self.data[0]) in [list, np.array]:
             all = [(i, y) for i, x in enumerate(self.data) for y in x]
             result_indexes, examples = map(list, list(zip(*all)))
         else:
             examples = self.data
-        print('Predicting %d examples' % len(examples))
-        preds, confs = predict_and_confidence_fn(examples)
+            result_indexes = list(range(len(self.data)))
+        return examples, result_indexes
+
+    def example_indices(self):
+        if type(self.data[0]) in [list, np.array]:
+            all = [(i, '') for i, x in enumerate(self.data) for y in x]
+            result_indexes, examples = map(list, list(zip(*all)))
+            return result_indexes
+        else:
+            return list(range(len(self.data)))
+
+    def update_results_from_preds(self, preds, confs):
+        result_indexes = self.example_indices()
         if type(self.data[0]) == list:
             self.results.preds = [[] for _ in self.data]
             self.results.confs  = [[] for _ in self.data]
@@ -77,6 +100,67 @@ class AbstractTest(ABC):
         else:
             self.results.preds = preds
             self.results.confs = confs
+
+    def to_raw_file(self, path, file_format=None, format_fn=str, header=None):
+        # file_format can be jsonl, TODO
+        # format_fn takes an example and outputs a line in the file
+        if file_format == 'jsonl':
+            import json
+            format_fn = lambda x: json.dumps(x)
+        ret = ''
+        if header is not None:
+            ret += header.strip('\n') + '\n'
+        examples, indices = self.example_list_and_indices()
+        examples = [format_fn(x).strip('\n') for x in examples]
+        ret += '\n'.join(examples)
+        f = open(path, 'w')
+        f.write(ret)
+        f.close()
+
+    def _check_create_results(self, overwrite):
+        if hasattr(self, 'results') and self.results and not overwrite:
+            raise(Exception('Results exist. To overwrite, set overwrite=True'))
+        self.results = Munch()
+
+    def run_from_file(self, path, file_format=None, format_fn=None, ignore_header=False, overwrite=False):
+        # file_format can be 'pred_only' (only preds, conf=1), TODO
+        # Format_fn takes a line in the file and outputs (pred, conf)
+        self._check_create_results(overwrite)
+        f = open(path, 'r')
+        if ignore_header:
+            f.readline()
+        preds = []
+        confs = []
+        if file_format == 'pred_only':
+            format_fn = lambda x: (int(x), 1) if x.isdigit() else (x, 1)
+        if file_format == 'pred_and_conf':
+            def formatz(x):
+                pred, conf = x.split()
+                if pred.isdigit():
+                    pred = int(pred)
+                return pred, float(conf)
+            format_fn = formatz
+        elif file_format is None:
+            pass
+        else:
+            raise(Exception('file_format %s not suported. Accepted values are pred_only, pred_and_conf' % file_format))
+        for l in f:
+            l = l.strip('\n')
+            p, c = format_fn(l)
+            preds.append(p)
+            confs.append(c)
+        self.update_results_from_preds(preds, confs)
+        self.update_expect()
+
+
+
+    def run(self, predict_and_confidence_fn, overwrite=False, verbose=True):
+        self._check_create_results(overwrite)
+        examples, result_indexes = self.example_list_and_indices()
+        if verbose:
+            print('Predicting %d examples' % len(examples))
+        preds, confs = predict_and_confidence_fn(examples)
+        self.update_results_from_preds(preds, confs)
         self.update_expect()
 
     def fail_idxs(self):
