@@ -122,12 +122,13 @@ setup(name='checklist',
       license='MIT',
       packages= find_packages(exclude=['tests']),
       install_requires=[
-        'numpy',
-        'spacy',
-        'munch',
-        'dill',
-        'jupyter',
-        'ipywidgets'
+        'numpy~=1.18',
+        'spacy~=2.2',
+        'munch~=2.5',
+        'dill~=0.3.1',
+        'jupyter~=1.0',
+        'ipywidgets~=7.5',
+        'transformers~=2.8'
       ],
       data_files=[
         ('share/jupyter/nbextensions/viewer', [

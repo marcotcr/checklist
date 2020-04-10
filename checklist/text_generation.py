@@ -167,7 +167,7 @@ class TextGenerator(object):
         cop = encoded.copy()
         for idxs, score in current_beam:
             # words = tokenizer.convert_ids_to_tokens(idxs)
-            words = [tokenizer.decode([i]).strip() for i in idxs]
+            words = [str(tokenizer.decode([i])).strip() for i in idxs]
             cop[masked] = idxs
             text = tokenizer.decode(cop[1:-1])
             ret.append((words, text, score / masked.shape[0]))

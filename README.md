@@ -9,5 +9,11 @@ This repository contains code for testing NLP Models (TODO TODO TODO) as describ
 ## Installation
 TODO
 
+```sh
+# Tongshuang: 
+#   Need to instruct how to install transformers and pytorch
+#   Check the versioning in setup.py
+```
+
 ### Code of Conduct
 [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct)
