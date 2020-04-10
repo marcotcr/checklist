@@ -5,8 +5,6 @@ from setuptools.command.build_py import build_py
 from setuptools.command.egg_info import egg_info
 from distutils import log
 import os
-here = os.path.dirname(os.path.abspath(__file__))
-
 import sys
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, "viewer", 'js')
@@ -127,6 +125,7 @@ setup(name='checklist',
         'numpy',
         'spacy',
         'munch',
+        'dill',
         'jupyter',
         'ipywidgets'
       ],
@@ -151,7 +150,7 @@ setup(name='checklist',
 import notebook
 
 notebook.nbextensions.install_nbextension_python(
-  "checklist.viewer", user=True, overwrite=True, symlink=False)
+  "checklist.viewer", user=True, overwrite=True, symlink=True)
 
 notebook.nbextensions.enable_nbextension_python(
   "checklist.viewer")
