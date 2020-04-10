@@ -256,7 +256,7 @@ class Expect:
                 if pred == orig_pred:
                     conf_diff = conf - orig_conf
                 else:
-                    conf_diff = orig_conf + conf
+                    conf_diff = -(orig_conf + conf)
             # can't fail
             if increasing and orig_conf <= tolerance:
                 return None
