@@ -12,6 +12,7 @@ export interface Token {
     idx: number; // the idx of the span in doc
     text: string; // text of one word
     etype?: "add"|"remove"|"keep";
+    isReplace?: boolean;
     /*
     ner: string; // named speech recognition
     pos: string; // part-of-speech tag in detail

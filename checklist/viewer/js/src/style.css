@@ -64,14 +64,22 @@ body {
     -webkit-box-sizing: border-box;
 }
 
+.token-rewrite-arrow {
+    /* this should overwrite whatever default color it has. */
+    font-size: 10px!important;
+    font-weight: bold!important;
+}
+
 .token-rewrite-add {
     /* this should overwrite whatever default color it has. */
-    color: #2ca02c!important;
+    background: #e5faf5!important;
+    color: #007857!important;
 }
   
 .token-rewrite-remove {
-    color: #d62728!important;
-    text-decoration: line-through!important;
+    background: #ffefea!important;
+    color: #d35229!important;
+    /* text-decoration: line-through!important; */
 }
   
 .token-rewrite-replace {
@@ -108,8 +116,8 @@ body {
 .token-mask.token-example {
     color: #1890ff!important;
     background-color: none;
-
 }
+
 
 .token-abstract.token-example {
     color: #52c41a!important;

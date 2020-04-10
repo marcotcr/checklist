@@ -60,18 +60,19 @@ class UtilsClass {
         // construct the tokenDatum
         let newIdx = 0;
         let oldIdx = 0;
-        const tokens = [];
+        const tokens: Token[] = [];
+        let lastTokenEtype: string = null;
         rawDiff.forEach((diff: {added: boolean, count: number, removed: boolean, value: string[]}) => {
             diff.value.forEach((t: string) => {
                 const idx = diff.removed ? oldIdx : newIdx;
                 const curT = diff.removed ? oldArr[idx] : newArr[idx];
-                const etype = diff.removed ? 'remove' : diff.added ? 'add' : 'keep';
-                const curToken = {
-                    text: curT, etype: etype, idx: idx
-                };
+                const etype: "add"|"keep"|"remove" = diff.removed ? 'remove' : diff.added ? 'add' : 'keep';
+                const isReplace = etype === "add" && lastTokenEtype === "remove";
+                const curToken = { text: curT, etype: etype, idx: idx, isReplace: isReplace};
                 tokens.push(curToken);
                 newIdx = diff.removed ? newIdx : newIdx + 1;
                 oldIdx = diff.added ? oldIdx : oldIdx + 1;
+                lastTokenEtype = etype;
             });
         });
         return tokens;

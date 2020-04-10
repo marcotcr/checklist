@@ -2,7 +2,8 @@ module.exports = {
     entry: "./src/index.tsx",
     output: {
         filename: "bundle.js",
-        path: __dirname + "/../../../mltests/server/static",
+        path: __dirname + "/../static",
+        //path: __dirname + "/../../../mltests/server/static",
         //publicPath: "/static",
         //path: __dirname + "/dist",
         publicPath: "/dist"

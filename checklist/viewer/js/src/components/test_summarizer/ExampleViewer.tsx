@@ -37,8 +37,10 @@ export class ExampleView extends React.Component<ExampleViewProps, {}> {
             const editClass = `token-rewrite-${t.etype}`;
             const curClass = `${utils.genStrId(t.text)}:${t.etype}${t.idx}`;
             // get the current span
-            const curSpan: JSX.Element = <span key={ curClass }
-                className={`token-example ${editClass}`}>{t.text} </span>;
+            const curSpan: JSX.Element = <span key={ curClass }>
+                {t.isReplace ? <span className="token-rewrite-arrow">→</span> : null}
+                <span className={`token-example ${editClass}`}>{t.text} </span>
+            </span>;
             return curSpan;
         })}</div>
     }
