@@ -98,16 +98,20 @@ def get_bert_index(obj):
     # ?: after parenthesis makes group non-capturing
     bert_finder = re.compile(r'\{(?:[^\}]*:)?bert\d*\}')
     bert_rep = re.compile(r'[\{\}]')
-    remove_option = re.compile(r'.*:')
+    find_options = re.compile(r'.*:')
     ret = collections.defaultdict(lambda: [])
+    options = collections.defaultdict(lambda: '')
     for s in strings:
         berts = bert_finder.findall(s)
-        nooptions = [bert_rep.sub('', remove_option.sub('', x)) for x in berts]
+        nooptions = [bert_rep.sub('', find_options.sub('', x)) for x in berts]
+        ops = [find_options.search(bert_rep.sub('', x)) for x in berts]
+        ops = [x.group().strip(':') for x in ops if x]
         if len(set(nooptions)) > 1:
             raise Exception('Can only have one bert index per template string')
         if nooptions:
             ret[nooptions[0]].append(s)
-    return ret
+            options[nooptions[0]] += ''.join(ops)
+    return ret, options
 
 def get_all_strings(obj):
     ret = set()
@@ -167,7 +171,7 @@ class Editor(object):
         # if replace:
         #     replace_with_bert = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{bert}', x)
         #     templates = recursive_apply(templates, replace_with_bert)
-        bert_index = get_bert_index(templates)
+        bert_index, ops = get_bert_index(templates)
         if not bert_index:
             return []
         if len(bert_index) != 1:
@@ -217,24 +221,39 @@ class Editor(object):
                 items[k] = self.lexicons[newk]
             else:
                 raise(Exception('Error: key "%s" not in items or lexicons' % newk))
-        bert_index = get_bert_index(templates)
+        bert_index, bert_options = get_bert_index(templates)
         for bert, strings in bert_index.items():
             # ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
             ks = {}
             tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
             ks[bert] = tok
             a_tok = 'thisisaratherlongtokenthatwillnotexist'
-            sub_a = lambda x: re.sub(r'{a:(%s)}' % bert, r'{%s} {\1}' % a_tok, x)
+            # print(bert)
+            # print('options:', bert_options[bert])
+            top = 100
+            find_top = re.search(r't(\d+)', bert_options[bert])
+            if find_top:
+                top = int(find_top.group(1))
+            sub_a = lambda x: re.sub(r'{[^:}]*a[^:}]*:(%s)}' % bert, r'{%s} {\1}' % a_tok, x)
+            # print(strings)
             strings = recursive_apply(strings, sub_a)
             ks[a_tok] = '{%s}' % a_tok
+            # print(strings)
             ts = recursive_format(strings, ks, ignore_missing=True)
             np.random.seed(1)
-            samp = self.template(ts, nsamples=20, remove_duplicates=remove_duplicates, # **kwargs)
+            samp = self.template(ts, nsamples=10, remove_duplicates=remove_duplicates, # **kwargs)
                                  thisisaratherlongtokenthatwillnotexist=['a', 'an'], **kwargs)
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
-            beam_size = kwargs.get('beam_size', 100)
-            options = self.tg.unmask_multiple(samp, beam_size=beam_size, **kwargs)
-            v = [x[0] for x in options][:10]
+            samp = list(set(samp))
+            # print(samp)
+            if 'beam_size' not in kwargs:
+                kwargs['beam_size'] = 100
+            # beam_size = kwargs.get('beam_size', 100)
+            # kwargs.
+            options = self.tg.unmask_multiple(samp, **kwargs)
+            # print(options)
+            # print(top)
+            v = [x[0] for x in options][:top]
             items[bert] = v
             if bert_only:
                 return options
