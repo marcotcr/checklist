@@ -13,19 +13,24 @@ export type TestExample = {
     succeed: boolean;
 };
 
+
 export type RawTestCase = { 
     examples: TestExample[];
     tags: string[];
     succeed: boolean;
 };
+export type RawTestStats = { 
+    npassed: number; 
+    nfailed: number;
+    nfiltered: number;
+}
 export type RawTestResult = { 
     name: string;
     type: TestType;
     expect_meta: {[key: string]: string};
     tags: string[]; // ["person1", "person2", "comparative"];
-    stats: {"nTested" : number, "nFailed": number}
+    stats: RawTestStats
 }
-
 
 
 export type RawToken = [string, string] | string;
@@ -50,15 +55,6 @@ export interface Token {
     lemma: string; // lemma in lower case
     */
 }
-
-export type TestOutput = string;
-export type TestStats = { 
-    nTested: number; 
-    nFailed: number;
-    rate: number;
-    strResult: string;
-}
-
 
 
 export type TestAuthorType = "perturb"|"template";

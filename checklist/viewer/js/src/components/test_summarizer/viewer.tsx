@@ -7,7 +7,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import '../../style.css';
-import { RawTestCase, RawTestResult, TestStats } from '../../stores/Interface';
+import { RawTestCase, RawTestResult, RawTestStats } from '../../stores/Interface';
 import { testStore } from '../../stores/tests/TestStore';
 import { TestSummarizer } from "./TestSummarizer"; 
 
@@ -50,22 +50,19 @@ export const View = widgets.DOMWidgetView.extend({
     */
     // to get data from the backend
     onSummarizerChanged: function(redraw: boolean=false): void {
-        console.log(this.model.get("summarizer"))
         testStore.setTest(this.model.get("summarizer") as RawTestResult);
         //if (redraw) { this.renderApp(); }
     },
     onExampleChanged: function(redraw: boolean=false): void {     
-        console.log(this.model.get("testcases"))
         testStore.addMoreTestcases(this.model.get("testcases") as RawTestCase[]);
         //if (redraw) { this.renderApp(); }
     },
     onStatsChanged: function(redraw: boolean=false): void {
-        testStore.setTestStats(this.model.get("stats") as TestStats);
+        testStore.setTestStats(this.model.get("stats") as RawTestStats);
     },
 
     onApplyFilter: function(): void {
         testStore.testcases = [];
-        console.log(testStore.searchTags);
         this.send({
             event: 'apply_filter', 
             filter_tags: testStore.searchTags, 

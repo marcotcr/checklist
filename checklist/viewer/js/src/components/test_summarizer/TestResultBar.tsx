@@ -1,58 +1,22 @@
 import * as React from 'react';
-import { TestStats } from '../../stores/Interface';
 
 import { VegaLite } from 'react-vega';
 import { utils } from '../../stores/Utils';
+import { TestStats } from '../../stores/tests/TestStats';
 
 interface TestResultBarProps {
-    data: TestStats;
+    type: "fail"|"filter";
+    data: TestStats[];
 }
 
-
-export class VegaLiteViz extends React.Component<{data: any}, {}> {
+export class TestStatsViz extends React.Component<TestResultBarProps, {}> {
     public specs: {[key: string]: any};
     public data: {
         count: number, 
         result: string;
         order: number;
-        output: "success"|"fail"
+        output: "success"|"fail"|"kept"|"filter"
     }[];
-    constructor(state: TestResultBarProps, context: any) {
-        super(state, context);
-        this.specs = {
-            "mark": "bar",
-            "encoding": {
-                "x": { "field": "count", "type": "quantitative"},
-                "y": {"field": "slice", "type": "nominal"},
-                "color": {"field": "output", "type": "nominal"}
-            }
-        }
-        this.data = [];
-    }
-
-    public render(): JSX.Element {
-        this.data = [];
-        this.props.data.forEach((t: TestStats) => {
-
-            
-            this.data.push({
-                count: t.nFailed, 
-                output: "fail",
-                order: 1,
-                result: t.strResult
-            });
-            this.data.push({
-                count: t.nTested - t.nFailed, 
-                output: "success",
-                order: 2,
-                result: t.strResult
-            });
-        });
-        return <VegaLite spec={this.specs} data={{myData: this.data}} />
-    }
-}
-
-export class TestStatsViz extends VegaLiteViz {
     constructor(state: TestResultBarProps, context: any) {
         super(state, context);
         this.specs = {
@@ -66,7 +30,9 @@ export class TestStatsViz extends VegaLiteViz {
                 "y": {field: "result", type: "nominal", axis: null},
                 "order": {field: "order", "type": "quantitative"},
                 "color": {field: "output", type: "nominal", legend: null, scale: {
-                    domain: ["success", "fail", ], range: [ utils.color.success, utils.color.fail ]}}            
+                    domain: ["success", "fail", "kept", "filter"], 
+                    range: [ utils.color.success, utils.color.fail, utils.color.kept, utils.color.filter ]
+                }}            
             },
             background: null,
             "config": {
@@ -77,6 +43,21 @@ export class TestStatsViz extends VegaLiteViz {
                 }
             },
         }
-        this.data = [];
+        this.data = []
+
+        this.props.data.forEach((t: TestStats) => {
+            if (this.props.type === "fail") {
+                this.data.push({count: t.nfailed, output: "fail", order: 1, result: t.strRate("fail")});
+                this.data.push({count: t.npassed, output: "success",order: 2,result: t.strRate("fail")});
+            } else {
+                this.data.push({count: t.nfailed, output: "kept", order: 1, result: t.strRate("fail")});
+                this.data.push({count: t.npassed, output: "filter",order: 2,result: t.strRate("fail")});
+            }
+            
+        });
+    }
+
+    public render(): JSX.Element {        
+        return <VegaLite spec={this.specs} data={{myData: this.data}} />
     }
 }

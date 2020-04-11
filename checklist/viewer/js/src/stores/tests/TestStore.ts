@@ -1,8 +1,9 @@
 import { observable } from "mobx";
-import { RawTestResult, RawTestCase, TestStats } from "../Interface";
+import { RawTestResult, RawTestCase, RawTestStats } from "../Interface";
 import { TestResult } from "./TestResult";
 import { TestCase } from "./TestCase";
 import { utils } from "../Utils";
+import { TestStats } from "./TestStats";
 
 export class TestStore {
     @observable public testResult: TestResult;
@@ -27,7 +28,7 @@ export class TestStore {
 
     public setTest(rawTest: RawTestResult): void {
         this.testcases = [];
-        this.setTestStats({nTested: 0, nFailed: 0});
+        this.setTestStats({npassed: 0, nfailed: 0, nfiltered: 0});
         this.setSearchTags([]);
         this.failCaseOnly = true;
 
@@ -44,15 +45,8 @@ export class TestStore {
         this.failCaseOnly = !this.failCaseOnly;
     }
 
-    public setTestStats(stats: { nTested: number, nFailed: number }): TestStats {
-        const rate = stats.nTested ? stats.nFailed / stats.nTested : 0;
-        const rateStr = (rate * 100).toFixed(1) + "%";
-        this.testStats = {
-            nTested: stats.nTested,
-            nFailed: stats.nFailed,
-            rate: rate,
-            strResult: `${stats.nFailed} / ${stats.nTested} = ${rateStr}`
-        }
+    public setTestStats(stats: RawTestStats): TestStats {
+        this.testStats = new TestStats(stats.npassed, stats.nfailed,  stats.nfiltered);
         return this.testStats;
     }
 
@@ -76,8 +70,9 @@ export class TestStore {
 
     public randomTestStats(): void {
         this.setTestStats({
-            nFailed: utils.getRandomArbitrary(0, 30),
-            nTested: utils.getRandomArbitrary(30, 50)
+            nfailed: utils.getRandomArbitrary(0, 30),
+            npassed: utils.getRandomArbitrary(30, 50),
+            nfiltered: utils.getRandomArbitrary(0, 100),
         });
     }
 

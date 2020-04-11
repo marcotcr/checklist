@@ -1,7 +1,7 @@
 import { observable } from "mobx";
 import { TemplateToken } from "./TemplateToken";
 import { Template } from "./Template";
-import { CandidateDict, RawSentence, MASK, TemplateExampleToken, TestOutput } from "../Interface";
+import { CandidateDict, RawSentence, MASK, TemplateExampleToken } from "../Interface";
 import { candidateDict } from "../FakeData";
 import { utils } from "../Utils";
 
@@ -15,7 +15,7 @@ export class TemplateStoreClass {
     @observable public fillInDict: CandidateDict;
     @observable public isLink: boolean;
     @observable public previewExample: {[key: string]: TemplateExampleToken[]}[];
-    @observable public expectedValue: TestOutput;
+    @observable public expectedValue: string;
     constructor () {
         this.oriSentences = [];
         this.sources = [];

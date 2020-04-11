@@ -2,10 +2,12 @@ import * as jsdiff from 'diff';
 import { Token } from "./Interface";
 
 class UtilsClass {
-    public color: {success: string, fail: string};
+    public color: {success: string, fail: string, kept: string, filter: string};
 
     constructor() {
-        this.color = {success: "#1f77b4", fail: "#ff7f0e"};
+        this.color = {
+            success: "#1f77b4", fail: "#ff7f0e", kept: "#969696", filter: "#d9d9d9"
+        };
     }
 
     public getRandomArbitrary(min: number, max: number): number {
@@ -38,7 +40,6 @@ class UtilsClass {
         let oldIdx = 0;
         const tokens: Token[] = [];
         let lastTokenEtype: string = null;
-        console.log(rawDiff);
         rawDiff.forEach((diff: {added: boolean, count: number, removed: boolean, value: string[]}) => {
             diff.value.forEach((t: string) => {
                 const idx = diff.removed ? oldIdx : newIdx;

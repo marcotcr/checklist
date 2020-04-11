@@ -1,5 +1,6 @@
 import { TestExample, TestSentence } from "../Interface";
 import { TestTag } from "./TestTag";
+import { utils } from "../Utils";
 
 
 export class TestCase {
@@ -15,7 +16,7 @@ export class TestCase {
 
     public key(): string {
         const keyOfSentence = (t: TestSentence) => 
-            t ? `${t.tokens.join("-")}-${t.pred}-${t.conf}` : "";
+            t ? utils.normalizeKey(`${t.tokens.join("-")}-${t.pred}-${t.conf}`) : "";
         return this.examples.map(
             i => `old:${keyOfSentence(i.old)}-new:${keyOfSentence(i.new)}-${i.label}-${i.succeed}`).join("-");
     }

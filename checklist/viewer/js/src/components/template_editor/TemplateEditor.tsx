@@ -7,7 +7,7 @@ import { Template } from "../../stores/templates/Template";
 import { PerTemplateEditor } from './PerTemplateEditor';
 import { templateStore } from '../../stores/templates/TemplateStore';
 import { utils } from '../../stores/Utils';
-import { TemplateExampleToken, TestOutput } from '../../stores/Interface';
+import { TemplateExampleToken } from '../../stores/Interface';
 import { ExampleView } from './ExampleViewer';
 
 interface TemplateEditorProps {
@@ -22,7 +22,7 @@ interface TemplateEditorProps {
 @observer
 export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
     @observable public modalVisible: boolean;
-    public expectValue: TestOutput;
+    public expectValue: string;
     constructor(state: TemplateEditorProps, context: any) {
         super(state, context);
         this.modalVisible = false;

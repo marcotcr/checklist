@@ -141,5 +141,5 @@ export const rawTestResult: RawTestResult =  {
         "comparative=cooler",
         "comparative=taller"
     ],
-    stats: {nFailed: 10, nTested: 20}
+    stats: {nfailed: 10, npassed: 20, nfiltered: 20}
  }

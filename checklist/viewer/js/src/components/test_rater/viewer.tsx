@@ -8,7 +8,7 @@ import * as ReactDOM from 'react-dom';
 
 import { TestRatePanel } from './TestRatePanel';
 import '../../style.css';
-import { RawTestResult, TestStats, RawTestCase, Condition } from '../../stores/Interface';
+import { RawTestResult, RawTestStats, RawTestCase, Condition } from '../../stores/Interface';
 import { rateStore } from '../../stores/tests/RateStore';
 import { testStore } from '../../stores/tests/TestStore';
  
@@ -69,7 +69,7 @@ export const View = widgets.DOMWidgetView.extend({
         //if (redraw) { this.renderApp(); }
     },
     onStatsChanged: function(): void {
-        testStore.setTestStats(this.model.get("stats") as TestStats);
+        testStore.setTestStats(this.model.get("stats") as RawTestStats);
     },
     onApplyFilter: function(): void {
         testStore.testcases = [];

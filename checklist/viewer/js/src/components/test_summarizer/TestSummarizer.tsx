@@ -10,9 +10,10 @@ import { testStore } from '../../stores/tests/TestStore';
 import { TestcaseView as TestExampleView } from './ExampleViewer';
 import { TestTag } from '../../stores/tests/TestTag';
 import InfiniteScroll from 'react-infinite-scroller';
-import { TestStats, TestExample } from '../../stores/Interface';
+import { TestExample } from '../../stores/Interface';
 import { TestCase } from '../../stores/tests/TestCase';
 import { utils } from '../../stores/Utils';
+import { TestStats } from '../../stores/tests/TestStats';
 
 
 interface TestSummarizerProps {
@@ -30,12 +31,21 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     }
 
     public renderVizPart(part: "all cases"|"filtered slice", stats: TestStats): JSX.Element {
-        return <Row key={stats.strResult}>
+        return <Row key={stats.key()}>
+            {part === "all cases" && stats.nfiltered > 0?
+                <div>
+                     <div className="info-header">Testcases that passed filtering:</div>
+                    <span style={{"verticalAlign": "super"}}>
+                    <code>{stats.strRate("fail")}</code></span>
+                    <span style={{display: "inline"}}>
+                        <TestStatsViz data={[stats]} type={"filter"}/></span>
+                </div>: null
+            }
             <div className="info-header">Failure rate on {part}</div>
             <span style={{"verticalAlign": "super"}}>
-            <code>{stats.strResult}</code></span>
+            <code>{stats.strRate("fail")}</code></span>
             <span style={{display: "inline"}}>
-                <TestStatsViz data={[stats]}/></span>
+                <TestStatsViz data={[stats]} type={"fail"}/></span>
         </Row>
     }
 
@@ -56,7 +66,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                 {this.renderVizPart("all cases", testStore.testResult.testStats)}
                 <br />
                 <Row>{this.renderSearch()}</Row>
-                { testStore.testStats.strResult === testStore.testResult.testStats.strResult 
+                { testStore.testStats.strRate("fail") === testStore.testResult.testStats.strRate("fail") 
                     //|| testStore.searchTags.length === 0 
                 ? null :
                     this.renderVizPart("filtered slice", testStore.testStats)}
@@ -165,7 +175,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>
                 <div 
                 //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
-                style={{maxHeight: 200, overflow: "auto"}}>
+                style={{maxHeight: 270, overflow: "auto"}}>
                 <InfiniteScroll
                     initialLoad={false}
                     pageStart={0}

@@ -1,8 +1,9 @@
-import { TestStats } from "../Interface";
+import { RawTestStats } from "../Interface";
 import { utils } from "../Utils";
 import { TestTag } from "./TestTag";
 import { testStore } from "./TestStore";
 import { observable } from "mobx";
+import { TestStats } from "./TestStats";
 
 export class TestResult {
     public name: string;
@@ -14,7 +15,7 @@ export class TestResult {
     constructor (
         name: string,
         type: string,
-        stats: {nTested: number, nFailed: number}={nTested: 0, nFailed: 0},
+        stats: RawTestStats={npassed: 0, nfailed: 0, nfiltered: 0},
         tags: string[]=[],
         expectationMeta: {[key: string]: string}={}) {
         this.name = name;
@@ -24,8 +25,8 @@ export class TestResult {
         this.tags = tags.map(t => new TestTag(t));
         this.setGlobalTestStat(stats);
     }
-    public setGlobalTestStat(rawState: {nTested: number, nFailed: number}): void {
-        this.testStats = testStore.setTestStats(rawState);
+    public setGlobalTestStat(rawStats: RawTestStats): void {
+        this.testStats = testStore.setTestStats(rawStats);
     }
 
     public key(): string {
