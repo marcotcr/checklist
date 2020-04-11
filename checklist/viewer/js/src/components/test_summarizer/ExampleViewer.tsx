@@ -3,7 +3,6 @@ import { observer } from 'mobx-react';
 
 import { Tag, List, Icon } from 'antd';
 import { Token, TestExample } from '../../stores/Interface';
-import { TestCase } from '../../stores/tests/TestCase';
 import { TemplateToken } from '../../stores/templates/TemplateToken';
 import { utils } from '../../stores/Utils';
 
@@ -42,7 +41,6 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
     }
 
     public renderTokens(oldTokens: string[], newTokens: string[]): JSX.Element {
-        console.log(oldTokens, newTokens)
         const tokens = utils.computeRewrite(oldTokens, newTokens);
         return <div>{tokens.map((t: Token, idx: number) => {
             // generate the current class for the token
@@ -92,6 +90,6 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
             key={1} className="full-width"
             actions={this.renderTags()}>
             <List.Item.Meta description={<div>{this.renderTemplate(this.props.example)}</div>}/>
-        </List.Item>   
+        </List.Item>
     }
 }

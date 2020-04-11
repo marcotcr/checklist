@@ -34,9 +34,9 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         return <Row key={stats.key()}>
             {part === "all cases" && stats.nfiltered > 0?
                 <div>
-                     <div className="info-header">Testcases that passed filtering:</div>
+                     <div className="info-header">Testcases that pass filtering</div>
                     <span style={{"verticalAlign": "super"}}>
-                    <code>{stats.strRate("fail")}</code></span>
+                    <code>{stats.strRate("filter")}</code></span>
                     <span style={{display: "inline"}}>
                         <TestStatsViz data={[stats]} type={"filter"}/></span>
                 </div>: null
@@ -175,7 +175,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>
                 <div 
                 //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
-                style={{maxHeight: 270, overflow: "auto"}}>
+                style={{maxHeight: testStore.testResult.testStats.nfiltered > 0 ? 250 : 200, overflow: "auto"}}>
                 <InfiniteScroll
                     initialLoad={false}
                     pageStart={0}

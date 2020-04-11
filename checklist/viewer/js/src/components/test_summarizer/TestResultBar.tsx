@@ -50,8 +50,8 @@ export class TestStatsViz extends React.Component<TestResultBarProps, {}> {
                 this.data.push({count: t.nfailed, output: "fail", order: 1, result: t.strRate("fail")});
                 this.data.push({count: t.npassed, output: "success",order: 2,result: t.strRate("fail")});
             } else {
-                this.data.push({count: t.nfailed, output: "kept", order: 1, result: t.strRate("fail")});
-                this.data.push({count: t.npassed, output: "filter",order: 2,result: t.strRate("fail")});
+                this.data.push({count: t.nfailed + t.npassed, output: "kept", order: 1, result: t.strRate("filter")});
+                this.data.push({count: t.nfiltered, output: "filter",order: 2,result: t.strRate("filter")});
             }
             
         });

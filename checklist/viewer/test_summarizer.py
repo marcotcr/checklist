@@ -56,7 +56,6 @@ class TestSummarizer(widgets.DOMWidget):
         for testcase in self.filtered_testcases:
             for e in testcase["examples"]:
                 for tag in ["old", "new"]:
-                    print(e[tag])
                     if not e[tag]:
                         continue
                     tokens = []
@@ -75,9 +74,10 @@ class TestSummarizer(widgets.DOMWidget):
         display(Javascript(open(os.path.join(DIRECTORY, 'static', 'index.js')).read()))
 
     def compute_stats_result(self, candidate_testcases):
+        nfailed = len([ e for e in candidate_testcases if e["succeed"] == 0 ])
         self.stats = {
-            "ntested": len(candidate_testcases),
-            "nfailed": len([ e for e in candidate_testcases if e["succeed"] == 0 ]),
+            "npassed": len(candidate_testcases) - nfailed,
+            "nfailed": nfailed,
             "nfiltered": 0
         }
 
@@ -106,10 +106,9 @@ class TestSummarizer(widgets.DOMWidget):
             self.is_satisfy_filter(e, filter_tags, False) 
         ]
         self.candidate_testcases = [
-            e for e in self.filtered_testcases if \
-            self.is_satisfy_filter(e, filter_tags, is_fail_case) 
+            e for e in candidate_testcases_not_fail if \
+                not (is_fail_case and e["succeed"] == 1) 
         ]
-
         self.compute_stats_result(candidate_testcases_not_fail)
         self.to_slice_idx = 0
         self.fetch_example()

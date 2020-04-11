@@ -328,7 +328,11 @@ class AbstractTest(ABC):
             "type": self.__class__.__name__.lower(),
             "expect_meta": {},
             "tags": [],
-            "stats": {"nfailed": fails, "ntested": n - filtered, "nfiltered": filtered}
+            "stats": {
+                "nfailed": fails, 
+                "npassed": n - filtered - fails, 
+                "nfiltered": filtered
+            }
         }
 
     def visual_summary(self, n_per_testcase=3):
@@ -355,4 +359,5 @@ class AbstractTest(ABC):
                     "succeed": int(succeed),
                     "tags": []
                 })
+        print(test_info)
         return TestSummarizer(test_info, testcases)

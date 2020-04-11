@@ -61,7 +61,6 @@ export class TestStore {
     public addMoreTestcases(testcases: RawTestCase[]): void {
         this.testcases = this.testcases.concat(testcases.map(e => 
             new TestCase(e.examples, e.succeed, e.tags)));
-        console.log(testcases, this.testcases );
     }
 
     public setSearchTags(tag: string[]): void {
