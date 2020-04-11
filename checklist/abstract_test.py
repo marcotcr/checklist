@@ -328,7 +328,7 @@ class AbstractTest(ABC):
             "type": self.__class__.__name__.lower(),
             "expect_meta": {},
             "tags": [],
-            "stats": {"nFailed": fails, "nTested": n - filtered, "nFiltered": filtered}
+            "stats": {"nfailed": fails, "ntested": n - filtered, "nfiltered": filtered}
         }
 
     def visual_summary(self, n_per_testcase=3):

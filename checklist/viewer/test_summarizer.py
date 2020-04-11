@@ -76,9 +76,9 @@ class TestSummarizer(widgets.DOMWidget):
 
     def compute_stats_result(self, candidate_testcases):
         self.stats = {
-            "nTested": len(candidate_testcases),
-            "nFailed": len([ e for e in candidate_testcases if e["succeed"] == 0 ]),
-            "nFiltered": 0
+            "ntested": len(candidate_testcases),
+            "nfailed": len([ e for e in candidate_testcases if e["succeed"] == 0 ]),
+            "nfiltered": 0
         }
 
     def is_satisfy_filter(self, testcase, 
