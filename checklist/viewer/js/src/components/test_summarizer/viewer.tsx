@@ -7,7 +7,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import '../../style.css';
-import { RawTestExample, RawTestResult, TestStats } from '../../stores/Interface';
+import { RawTestCase, RawTestResult, TestStats } from '../../stores/Interface';
 import { testStore } from '../../stores/tests/TestStore';
 import { TestSummarizer } from "./TestSummarizer"; 
 
@@ -50,12 +50,13 @@ export const View = widgets.DOMWidgetView.extend({
     */
     // to get data from the backend
     onSummarizerChanged: function(redraw: boolean=false): void {
+        console.log(this.model.get("summarizer"))
         testStore.setTest(this.model.get("summarizer") as RawTestResult);
         //if (redraw) { this.renderApp(); }
     },
     onExampleChanged: function(redraw: boolean=false): void {     
-        console.log(this.model.get("examples"))
-        testStore.addMoreExample(this.model.get("examples") as RawTestExample[]);
+        console.log(this.model.get("testcases"))
+        testStore.addMoreTestcases(this.model.get("testcases") as RawTestCase[]);
         //if (redraw) { this.renderApp(); }
     },
     onStatsChanged: function(redraw: boolean=false): void {
@@ -63,8 +64,8 @@ export const View = widgets.DOMWidgetView.extend({
     },
 
     onApplyFilter: function(): void {
-        testStore.examples = [];
-        console.log(testStore.searchTags)
+        testStore.testcases = [];
+        console.log(testStore.searchTags);
         this.send({
             event: 'apply_filter', 
             filter_tags: testStore.searchTags, 
@@ -107,7 +108,7 @@ export const View = widgets.DOMWidgetView.extend({
 
         // Python -> JavaScript update
         this.listenTo(this.model, 'change:summarizer', this.onSummarizerChanged, this);
-        this.listenTo(this.model, 'change:examples', this.onExampleChanged, this);
+        this.listenTo(this.model, 'change:testcases', this.onExampleChanged, this);
         this.listenTo(this.model, 'change:stats', this.onStatsChanged, this);
     }
 });

@@ -1,0 +1,101 @@
+define(function() { return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = "./lib/extension.js");
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./lib/extension.js":
+/*!**************************!*\
+  !*** ./lib/extension.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n// This file contains the javascript that is run when the notebook is loaded.\r\n// It contains some requirejs configuration and the `load_ipython_extension`\r\n// which is required for any notebook extension.\r\n//\r\n// Some static assets may be required by the custom widget javascript. The base\r\n// url for the notebook is not known at build time and is therefore computed\r\n// dynamically.\r\n__webpack_require__.p = document.querySelector('body').getAttribute('data-base-url') + 'nbextensions/viewer';\r\n\r\n\r\n// Configure requirejs\r\nif (window.require) {\r\n    window.require.config({\r\n        map: {\r\n            \"*\" : {\r\n                \"viewer\": \"nbextensions/viewer/index\",\r\n            },\r\n        },\r\n        paths: {\r\n            \"Jupyter\": \"base/js/namespace\"\r\n        }\r\n    });\r\n}\r\n\r\n// Export the required load_ipython_extension\r\nconst load_ipython_extension = function() {\r\n    //IPython.keyboard_manager.edit_shortcuts.add_shortcuts(add_edit_shortcuts);\r\n    console.log(__webpack_require__.p);\r\n    Jupyter.keyboard_manager.command_shortcuts.add_shortcut('s', {\r\n        help : 'run cell',\r\n        help_index : 'zz',\r\n        handler : function (event) {\r\n            console.log(event)\r\n            return false;\r\n        }}\r\n    );    \r\n}\r\n/* harmony default export */ __webpack_exports__[\"default\"] = (load_ipython_extension);\n\n//# sourceURL=webpack:///./lib/extension.js?");
+
+/***/ })
+
+/******/ })});;

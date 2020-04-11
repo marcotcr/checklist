@@ -1,3 +1,33 @@
+export type TestType = "mft"|"dir"|"inv";
+
+export type TestSentence = {
+    tokens: string[][]; // directly input
+    pred: string;
+    conf: number;
+}
+
+export type TestExample = { 
+    old: TestSentence;
+    new: TestSentence;
+    label: string; 
+    succeed: boolean;
+};
+
+export type RawTestCase = { 
+    examples: TestExample[];
+    tags: string[];
+    succeed: boolean;
+};
+export type RawTestResult = { 
+    name: string;
+    type: TestType;
+    expect_meta: {[key: string]: string};
+    tags: string[]; // ["person1", "person2", "comparative"];
+    stats: {"nTested" : number, "nFailed": number}
+}
+
+
+
 export type RawToken = [string, string] | string;
 export type CandidateDict = { [key: string]: string[] };
 export type RawSentence = { target: string, tokens: RawToken[] }
@@ -21,18 +51,6 @@ export interface Token {
     */
 }
 
-export type TemplateTestInstance = {
-    target: string;
-    text: string;
-}
-export type PerturbTestInstance = {
-    target: string;
-    text: string;
-    oldText: string;
-}
-
-export type TestInstance = TemplateTestInstance|PerturbTestInstance
-
 export type TestOutput = string;
 export type TestStats = { 
     nTested: number; 
@@ -41,21 +59,8 @@ export type TestStats = {
     strResult: string;
 }
 
-export type TestAuthorType = "perturb"|"template";
-export type RawTestExample = { 
-    instance: TestInstance[];
-    pred: TestOutput;
-    conf: number;
-    expect: TestOutput; 
-    tags: string[];
-    status: "success"|"fail";
-};
 
-export type RawTestResult = { 
-    name: string;
-    category: string;
-    authorType: TestAuthorType;
-    expectationMeta: {[key: string]: string};
-    tags: string[]; // ["person1", "person2", "comparative"];
-    result: {"nTested" : number, "nFailed": number}
- }
+
+export type TestAuthorType = "perturb"|"template";
+
+

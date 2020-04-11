@@ -1,24 +1,24 @@
 import { observable } from "mobx";
-import { RawTestResult, RawTestExample, TestStats } from "../Interface";
+import { RawTestResult, RawTestCase, TestStats } from "../Interface";
 import { TestResult } from "./TestResult";
-import { TestExample } from "./TestExample";
+import { TestCase } from "./TestCase";
 import { utils } from "../Utils";
 
 export class TestStore {
     @observable public testResult: TestResult;
     @observable public searchTags: string[];
-    public allExamples: TestExample[];
-    public candidateExample: TestExample[];
-    @observable public examples: TestExample[];
+    public allTestcases: TestCase[];
+    public candidateTestcases: TestCase[];
+    @observable public testcases: TestCase[];
 
     @observable public testStats: TestStats;
     @observable public failCaseOnly: boolean;
     constructor () {
         this.testResult = null;
         this.searchTags = [];
-        this.candidateExample = [];
-        this.examples = [];
-        this.allExamples = [];
+        this.candidateTestcases = [];
+        this.testcases = [];
+        this.allTestcases = [];
         this.failCaseOnly = true;
         this.randomTestStats();
         this.fetchMoreExample = this.fetchMoreExample.bind(this);
@@ -26,15 +26,15 @@ export class TestStore {
     }
 
     public setTest(rawTest: RawTestResult): void {
-        this.examples = [];
+        this.testcases = [];
         this.setTestStats({nTested: 0, nFailed: 0});
         this.setSearchTags([]);
         this.failCaseOnly = true;
 
         if (rawTest) {
             this.testResult = new TestResult(
-                rawTest.name, rawTest.category, rawTest.authorType, 
-                rawTest.expectationMeta, rawTest.tags,rawTest.result);
+                rawTest.name, rawTest.type, rawTest.stats, 
+                rawTest.tags, rawTest.expect_meta);
         } else {
             this.testResult = null;
         }
@@ -56,19 +56,18 @@ export class TestStore {
         return this.testStats;
     }
 
-    public setExamples(examples: RawTestExample[]): void {
-
-        this.candidateExample = examples.map(e => 
-            new TestExample(e.instance, e.expect, e.pred, e.conf, e.tags, e.status === "success"));
-        this.allExamples = examples.map(e => 
-            new TestExample(e.instance, e.expect, e.pred, e.conf, e.tags, e.status === "success"));
-        this.examples = [];
+    public setTestcases(testcases: RawTestCase[]): void {
+        this.candidateTestcases = testcases.map(e => 
+            new TestCase(e.examples, e.succeed, e.tags));
+        this.allTestcases = testcases.map(e => 
+            new TestCase(e.examples, e.succeed, e.tags));
+        this.testcases = [];
     }
 
-    public addMoreExample(examples: RawTestExample[]): void {
-        this.examples = this.examples.concat(examples.map(e => 
-            new TestExample(e.instance, e.expect, e.pred, e.conf, e.tags, e.status === "success")));
-        console.log(examples, this.examples );
+    public addMoreTestcases(testcases: RawTestCase[]): void {
+        this.testcases = this.testcases.concat(testcases.map(e => 
+            new TestCase(e.examples, e.succeed, e.tags)));
+        console.log(testcases, this.testcases );
     }
 
     public setSearchTags(tag: string[]): void {
@@ -84,25 +83,25 @@ export class TestStore {
 
     public search(): void {
         // get the examples
-        this.candidateExample = this.allExamples.filter(e => {
+        this.candidateTestcases = this.allTestcases.filter(e => {
             const includeTags = e.tags.map(t => t.raw);
             const hasTag = (t: string) => {
                 return includeTags.indexOf(t) > -1;
             }
-            return (!this.failCaseOnly || !e.is_succeed) && this.searchTags.every(hasTag)
+            return (!this.failCaseOnly || !e.succeed) && this.searchTags.every(hasTag)
         });
-        this.examples = this.candidateExample.slice();
+        this.testcases = this.candidateTestcases.slice();
         // get some random stats
         this.randomTestStats();
     }
  
     public fetchMoreExample(): void {
-        this.examples = this.examples.concat(this.candidateExample);
+        this.testcases = this.testcases.concat(this.candidateTestcases);
     }
     public resetFilter(): void {
         this.setSearchTags([]);
         this.failCaseOnly = true;
-        this.examples = [];
+        this.testcases = [];
     }
 }
 

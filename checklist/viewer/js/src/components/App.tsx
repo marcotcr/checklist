@@ -16,7 +16,7 @@ export class App extends React.Component<{}, {}> {
         templateStore.setSources(candidateNames);
         templateStore.setOriToken(rawSentences);
         testStore.setTest(rawTestResult);
-        testStore.setExamples(rawExamples);
+        testStore.setTestcases(rawExamples);
         testStore.randomTestStats();
         rateStore.setTestsToRate(testnames);
     }

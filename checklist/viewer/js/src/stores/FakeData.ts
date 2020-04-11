@@ -1,4 +1,4 @@
-import { CandidateDict, RawSentence, RawTestExample, RawTestResult } from "./Interface";
+import { CandidateDict, RawSentence, RawTestCase, RawTestResult } from "./Interface";
 
 export const testnames = ["negation", "fairness", "question", "coreference"];
 
@@ -9,7 +9,7 @@ export const candidateDict: CandidateDict ={
     person      : ["Marco", "Julia", "Sherry", "Jeff", "Carlos"],
     pronun      : ["I", "you"]
 };
-
+ 
 // names of the candidate
 export const candidateNames: string[] = Object.keys(candidateDict);
 
@@ -40,89 +40,100 @@ export const rawSentences: RawSentence[] = [
 ];
 
 // test data
-export const rawExamples: RawTestExample[] = [
+export const rawExamples: RawTestCase[] = [
     {
-        instance: [
-            {target: "Q1", text: "Who is taller, Mary or Heather?"},
-            {target: "Q2", text: "Who is taller, Heather or Mary?"}
-        ], 
-        pred: "1",
-        expect: "0",
-        conf: 0.7,
-        status: "fail",
-        tags: ["person1=Mary", "person2=Heather", "comparative=taller"]
+        examples: [{
+            new: {
+                tokens: [
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "taller", ",", "Heather", "or", "Mary", "?"]
+                ],
+                pred: "1",
+                conf: 0.7
+            },
+            old: null,
+            label: "1",
+            succeed: false,
+        }],
+        tags: ["person1=Mary", "person2=Heather", "comparative=taller"],
+        succeed: false,
     }, {
-        instance: [
-            {target: "Q1", text: "Who is cooler, Mary or Heather?"},
-            {target: "Q2", text: "Who is cooler, Heather or Mary?"}
-        ], 
-        pred: "1",
-        conf: 0.7,
-        expect: "0",
-        status: "success",
-        tags: ["person1=Mary", "person2=Heather", "comparative=cooler"]
+        examples: [{
+            new: {
+                tokens: [
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "taller", ",", "Heather", "or", "Mary", "?"]
+                ],
+                pred: "1",
+                conf: 0.7
+            },
+            old: null,
+            label: "1",
+            succeed: true,
+        }, {
+            new: {
+                tokens: [
+                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "cooler", ",", "Heather", "or", "Mary", "?"]
+                ],
+                pred: "1",
+                conf: 0.7
+            },
+            old: null,
+            label: "1",
+            succeed: true,
+        }],
+        tags: ["person1=Mary", "person2=Heather", "comparative=taller", "comparative=cooler"],
+        succeed: true,
     }, {
-        instance: [
-            {target: "Q1", text: "Who is cooler, Mary or Marco?"},
-            {target: "Q2", text: "Who is cooler, Marco or Mary?"}
-        ], 
-        pred: "0",
-        expect: "0",
-        conf: 0.7,
-        status: "success",
-        tags: ["person1=Mary", "person2=Marco", "comparative=cooler"]
-    }, {
-        instance: [
-            {target: "Q1", text: "Who is taller, Mary or Marco?"},
-            {target: "Q2", text: "Who is taller, Marco or Mary?"}
-        ], 
-        pred: "0",
-        expect: "0",
-        conf: 0.7,
-        status: "fail",
-        tags: ["person1=Mary", "person2=Marco", "comparative=taller"]
-    }, {
-        instance: [
-            {
-                target: "Q1", 
-                text: "Who is taller, Mary or Heather?",
-                oldText: "Who is cooler, Mary or Heather?"
-            },{
-                target: "Q2", 
-                text: "Who is taller, Heather or Mary?",
-                oldText: "Who is cooler, Heather or Mary?"
-            }
-        ], 
-        pred: "1",
-        expect: "0",
-        status: "fail",
-        conf: 0.7,
-        tags: ["person1=Mary", "person2=Heather", "comparative=taller"]
-    }, {
-        instance: [
-            {
-                target: "Q1", 
-                text: "Who is cooler, Heather or Mary?",
-                oldText: "Who is cooler, Mary or Heather?"
-            },{
-                target: "Q2", 
-                text: "Who is cooler, Heather or Mary?",
-                oldText: "Who is cooler, Heather or Mary?"
-            }
-        ], 
-        pred: "1",
-        expect: "0",
-        status: "fail",
-        conf: 0.7,
-        tags: ["person1=Mary", "person2=Heather", "comparative=cooler"]
+        examples: [{
+            new: {
+                tokens: [
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "taller", ",", "Heather", "or", "Mary", "?"]
+                ],
+                pred: "0",
+                conf: 0.9
+            },
+            old: {
+                tokens: [
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"]
+                ],
+                pred: "1",
+                conf: 0.7
+            },
+            succeed: false,
+            label: null,
+        }, {
+            new: {
+                tokens: [
+                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "cooler", ",", "Heather", "or", "Mary", "?"]
+                ],
+                pred: "1",
+                conf: 0.7
+            },
+            old: {
+                tokens: [
+                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"]
+                ],
+                pred: "0",
+                conf: 0.8
+            },
+            label: null,
+            succeed: false,
+        }],
+        succeed: false,
+        tags: ["person1=Mary", "person2=Heather", "comparative=cooler", "comparative=taller"]
     }
 ]
 
 export const rawTestResult: RawTestResult =  { 
     name: "Change the PERSON order",
-    category: "invariance",
-    authorType: "template",
-    expectationMeta: {expected: "equal"},
+    type: "inv",
+    expect_meta: {expected: "equal"},
     tags: [
         "person1=Mary", 
         "person2=Heather", 
@@ -130,5 +141,5 @@ export const rawTestResult: RawTestResult =  {
         "comparative=cooler",
         "comparative=taller"
     ],
-    result: {nFailed: 10, nTested: 20}
+    stats: {nFailed: 10, nTested: 20}
  }

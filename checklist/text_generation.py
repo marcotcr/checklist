@@ -8,7 +8,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from tqdm.auto import tqdm
 import torch
 import torch.nn.functional as F
-# from pattern.en import wordnet, pluralize
+from pattern.en import wordnet, pluralize
 import requests
 import json
 
@@ -83,6 +83,9 @@ class TextGenerator(object):
             self.bert = RobertaForMaskedLM.from_pretrained('roberta-base')
             self.bert.to(self.device)
             self.bert.eval()
+            self.with_space = torch.tensor(np.array(list(set([i for x, i in self.bert_tokenizer.get_vocab().items() if x[0] == 'Ġ']))), device=self.device)
+            self.with_space_set = set(self.with_space.cpu().numpy())
+            self.special_chars = set([i for x, i in self.bert_tokenizer.get_vocab().items() if not x.strip('Ġ').isalnum()])
         # self.gpt_tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
         # self.gpt = GPT2LMHeadModel.from_pretrained('gpt2-large')
         # self.gpt.to(self.device)
@@ -135,11 +138,14 @@ class TextGenerator(object):
         encoded = np.array(tokenizer.encode(text_with_mask, add_special_tokens=True))
         cands = []
         if candidates is not None:
+            candidates = candidates + ['Ġ' + x for x in candidates]
             cands = tokenizer.convert_tokens_to_ids(candidates)
+            cands_with_space = list(set(cands).intersection(self.with_space_set))
         input_ids = torch.tensor(encoded)
         # toks = tokenizer.tokenize('[CLS] %s [SEP]' % string)
         current_beam= [([], 0)]
         masked = (input_ids == self.bert_tokenizer.mask_token_id).numpy().nonzero()[0]
+        # print(masked)
         while len(current_beam[0][0]) != masked.shape[0]:
             current_beam = current_beam[:beam_size]
             size = len(current_beam[0][0])
@@ -150,15 +156,29 @@ class TextGenerator(object):
                 c = encoded.copy()
                 c[masked[:len(idxs)]] = idxs
                 to_pred.append(c)
+            # print('ae')
+            # print('\n'.join([tokenizer.decode(x) for x in to_pred]))
+            # print()
             to_pred = torch.tensor(to_pred, device=self.device)
             with torch.no_grad():
                 outputs = model(to_pred)[0]
             for i, current in enumerate(current_beam):
+                prev = int(to_pred[i][masked[size] - 1])
+                forbid = False
+                # allow tokens that don't start with space if previous is not alphanumeric
+                if prev not in self.special_chars:
+                    forbid = True
+                    # print('Forbid Prev, current', prev,  tokenizer.decode(to_pred[i][masked[size] - 1:masked[size]+1]))
                 if candidates is not None:
-                    scores = [outputs[i, masked[size], j] for j in cands]
-                    new = [(current[0] + [int(x[0])], float(x[1]) + current[1]) for x in zip(cands, scores)]
+                    cands_to_use = cands_with_space if forbid else cands
+                    scores = [outputs[i, masked[size], j] for j in cands_to_use]
+                    new = [(current[0] + [int(x[0])], float(x[1]) + current[1]) for x in zip(cands_to_use, scores)]
                 else:
-                    v, top_preds = torch.topk(outputs[i, masked[size]], beam_size + 10)
+                    if forbid:
+                        v, top_preds = torch.topk(outputs[i, masked[size], self.with_space], beam_size + 10)
+                        top_preds = self.with_space[top_preds]
+                    else:
+                        v, top_preds = torch.topk(outputs[i, masked[size]], beam_size + 10)
                     new = [(current[0] + [int(x[0])], float(x[1]) + current[1]) for x in zip(top_preds, v)]
                 new_beam.extend(new)
             current_beam = sorted(new_beam, key=lambda x:x[1], reverse=True)
@@ -233,6 +253,7 @@ class TextGenerator(object):
         return self.filter_options(texts, word, options, threshold)
 
     def filter_options(self, texts, word, options, threshold=5):
+        print(options)
         if type(texts) != list:
             texts = [texts]
         options = options + [word]
@@ -245,9 +266,11 @@ class TextGenerator(object):
             non_word = [x for x in ret if np.all([y not in ['[UNK]', word] for y in x[0]])]
             score = [x for x in ret if np.all([y in [word, '[UNK]'] for y in x[0]])][0][-1]
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
+            print(text)
+            print(new_ret)
+            print()
             if text == texts[0]:
                 orig_ret = new_ret
-            break
             in_all = in_all.intersection(set([x[0][0] for x in new_ret]))
         return [x for x in orig_ret if x[0][0] in in_all]
 

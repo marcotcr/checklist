@@ -81,7 +81,17 @@ body {
     color: #d35229!important;
     /* text-decoration: line-through!important; */
 }
-  
+
+.testcase-block {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: solid;
+    background: #f8f8f8;
+}
+
+
+
+/*
 .token-rewrite-replace {
     color: #3182bd!important;
 }
@@ -104,7 +114,7 @@ body {
     color: grey;
     font-style: italic;
 }
-
+*/
 
 .token-abstract {
     background-color: #efefef;

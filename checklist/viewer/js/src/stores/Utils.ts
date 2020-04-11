@@ -29,39 +29,16 @@ class UtilsClass {
      * @param {Token[]} newToken the token series after rewritting
      * @return get the rewritten serives.
      */
-    public computeRewrite(oldToken: Token[], newToken: Token[]): Token[] {
-        const oldArr = oldToken.map(t => t.text);
-        const newArr = newToken.map(t => t.text);
-        const rawDiff = jsdiff.diffArrays(oldArr, newArr);
-        // construct the tokenDatum
-        let newIdx = 0;
-        let oldIdx = 0;
-        const tokens: Token[] = [];
-        rawDiff.forEach((diff: {added: boolean, count: number, removed: boolean, value: string[]}) => {
-            diff.value.forEach((t: string) => {
-                const idx = diff.removed ? oldIdx : newIdx;
-                const curT = diff.removed ? oldToken[idx] : newToken[idx];
-                const etype = diff.removed ? 'remove' : diff.added ? 'add' : 'keep';
-                const curToken: Token = {
-                    text: curT.text, idx: idx, etype: etype
-                };
-                tokens.push(curToken);
-                newIdx = diff.removed ? newIdx : newIdx + 1;
-                oldIdx = diff.added ? oldIdx : oldIdx + 1;
-            });
-        });
-        return tokens;
-    }
-
-    public computeRewriteStr(atext: string, btext: string): Token[] {
-        const oldArr = atext.split(' ');
-        const newArr = btext.split(' ');
+    public computeRewrite(oldToken: (string|Token)[], newToken: (string|Token)[]): Token[] {
+        const oldArr = oldToken.map((t: string|Token) => typeof(t) === "string" ? t : t.text);
+        const newArr = newToken.map((t: string|Token) => typeof(t) === "string" ? t : t.text);
         const rawDiff = jsdiff.diffArrays(oldArr, newArr);
         // construct the tokenDatum
         let newIdx = 0;
         let oldIdx = 0;
         const tokens: Token[] = [];
         let lastTokenEtype: string = null;
+        console.log(rawDiff);
         rawDiff.forEach((diff: {added: boolean, count: number, removed: boolean, value: string[]}) => {
             diff.value.forEach((t: string) => {
                 const idx = diff.removed ? oldIdx : newIdx;
@@ -77,7 +54,6 @@ class UtilsClass {
         });
         return tokens;
     }
-
 
     public getAttr(obj: any, name: string, defaultReturn: any=null) {
         if ((name in obj)) { return obj[name]; }

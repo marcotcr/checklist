@@ -8,7 +8,7 @@ import * as ReactDOM from 'react-dom';
 
 import { TestRatePanel } from './TestRatePanel';
 import '../../style.css';
-import { RawTestResult, TestStats, RawTestExample, Condition } from '../../stores/Interface';
+import { RawTestResult, TestStats, RawTestCase, Condition } from '../../stores/Interface';
 import { rateStore } from '../../stores/tests/RateStore';
 import { testStore } from '../../stores/tests/TestStore';
  
@@ -65,14 +65,14 @@ export const View = widgets.DOMWidgetView.extend({
     },
 
     onExampleChanged: function(): void {        
-        testStore.addMoreExample(this.model.get("examples") as RawTestExample[]);
+        testStore.addMoreTestcases(this.model.get("testcases") as RawTestCase[]);
         //if (redraw) { this.renderApp(); }
     },
     onStatsChanged: function(): void {
         testStore.setTestStats(this.model.get("stats") as TestStats);
     },
     onApplyFilter: function(): void {
-        testStore.examples = [];
+        testStore.testcases = [];
         this.send({
             event: 'apply_filter', 
             filter_tags: testStore.searchTags, 
@@ -154,7 +154,7 @@ export const View = widgets.DOMWidgetView.extend({
         this.listenTo(this.model, 'change:condition', this.onConditionChanged, this);
         this.listenTo(this.model, 'change:test_names', this.onExistTestsChanged, this);
         this.listenTo(this.model, 'change:summarizer', this.onSummarizerChanged, this);
-        this.listenTo(this.model, 'change:examples', this.onExampleChanged, this);
+        this.listenTo(this.model, 'change:testcases', this.onExampleChanged, this);
         this.listenTo(this.model, 'change:stats', this.onStatsChanged, this);
     }
 });

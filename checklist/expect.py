@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-def iter_with_optional(data, preds, confs, labels, meta):
+def iter_with_optional(data, preds, confs, labels, meta, idxs=None):
     # If this is a single example
     if type(data) not in [list, np.array]:
         return [(data, preds, confs, labels, meta)]
@@ -15,7 +15,11 @@ def iter_with_optional(data, preds, confs, labels, meta):
     else:
         if len(labels) != len(data):
             raise(Exception('If labels is list, length must match data'))
-    return zip(data, preds, confs, labels, meta)
+    ret = zip(data, preds, confs, labels, meta)
+    if idxs is not None:
+        ret = list(ret)
+        ret = [ret[i] for i in idxs]
+    return ret
 
 
 
@@ -31,7 +35,7 @@ class Expect:
         #      failure, indicated by distance from 0, e.g. -10 is worse than -1
         #    None means the test does not apply, and this should not be counted
         def expect(self):
-            return fn(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
+            return fn(self.data, self.results.preds, self.results.confs, self.labels, self.meta, self.run_idxs)
         return expect
 
     @staticmethod
@@ -47,7 +51,7 @@ class Expect:
         #      failure, indicated by distance from 0, e.g. -10 is worse than -1
         #    None means the test does not apply, and this should not be counted
         def expect(self):
-            zipped = iter_with_optional(self.data, self.results.preds, self.results.confs, self.labels, self.meta)
+            zipped = iter_with_optional(self.data, self.results.preds, self.results.confs, self.labels, self.meta, self.run_idxs)
             return [fn(x, pred, confs, labels, meta) for x, pred, confs, labels, meta in zipped]
         # return np.array([fn(x, pred, conf, label, meta) for x, pred, conf, label, meta in iter_with_optional(data, preds, confs, labels, meta)])
         return expect
@@ -183,6 +187,46 @@ class Expect:
         # options: 'all', or a function that takes in (xs, preds, confs, labels=None, meta=None) and returns True, False or None
         wrapped_slice = Expect.pairwise(slice_fn)
         return Expect.wrap_slice(expect_fn, wrapped_slice, agg_fn)
+
+    @staticmethod
+    def combine(expect_fn1, expect_fn2, combine_fn, ignore_none=True):
+        # each expect_fn takes 'self' as input (i.e. wrapped by Expect.test or Expect.testcase)
+        # combine_fn takes (x1, x2), where each is an output from expect_fn1 or
+        # 2 (a single example within a testcase, which is a float, a bool, or
+        # None) and combines them into a float, a bool, or None if
+        # ignore_none=True, will take one of the inputs if the other is None
+        # without passing them to the combine_fn (and return None if both are
+        # Nones. otherwise, combine_fn must handle Nones)
+        def tmp_fn(self):
+            e1 = expect_fn1(self)
+            e2 = expect_fn2(self)
+            ret = []
+            for list1, list2 in zip(e1, e2):
+                r = []
+                for z1, z2 in zip(list1, list2):
+                    if ignore_none:
+                        if z1 == None:
+                            r.append(z2)
+                            continue
+                        elif z2 == None:
+                            r.append(z1)
+                            continue
+                    r.append(combine_fn(z1, z2))
+                ret.append(np.array(r))
+            return ret
+        return tmp_fn
+
+    @staticmethod
+    def combine_and(expect_fn1, expect_fn2):
+        def combine_fn(x1, x2):
+            return min(x1, x2)
+        return Expect.combine(expect_fn1, expect_fn2, combine_fn)
+
+    @staticmethod
+    def combine_or(expect_fn1, expect_fn2):
+        def combine_fn(x1, x2):
+            return max(x1, x2)
+        return Expect.combine(expect_fn1, expect_fn2, combine_fn)
 
     @staticmethod
     def all(ignore_first=False):

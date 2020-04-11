@@ -3,6 +3,8 @@ from .expect import Expect
 
 class MFT(AbstractTest):
     def __init__(self, data, expect=None, labels=None, meta=None, agg_fn='all'):
+        super().__init__()
+        # print(super())
         self.data = data
         self.expect = expect
         self.labels = labels
@@ -13,7 +15,4 @@ class MFT(AbstractTest):
             self.expect = Expect.eq()
         self.agg_fn = agg_fn
         self.print_first = False
-    def dummy(self):
-        print('dum')
-
 # expect(data, labels=None, meta=None)

@@ -4,6 +4,7 @@ import numpy as np
 
 class INV(AbstractTest):
     def __init__(self, data, expect=None, threshold=0.1, meta=None, agg_fn='all_except_first'):
+        super().__init__()
         self.data = data
         self.expect = expect
         self.labels = None
@@ -16,6 +17,7 @@ class INV(AbstractTest):
 
 class DIR(AbstractTest):
     def __init__(self, data, expect, meta=None, agg_fn='all_except_first'):
+        super().__init__()
         self.data = data
         self.expect = expect
         self.labels = None
