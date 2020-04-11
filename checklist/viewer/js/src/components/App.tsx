@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Layout, Card } from 'antd';
-import { candidateNames, rawSentences, rawTestResult, rawExamples, testnames } from '../stores/FakeData';
+import { candidateNames, rawSentences, rawTestResult, rawExamples as rawTestcases } from '../stores/FakeData';
 import { TemplateEditor } from './template_editor/TemplateEditor';
 import { observer } from 'mobx-react';
 import { templateStore } from '../stores/templates/TemplateStore';
 import { testStore } from '../stores/tests/TestStore';
 import { TestSummarizer } from './test_summarizer/TestSummarizer';
-import { rateStore } from '../stores/tests/RateStore';
+
 @observer
 export class App extends React.Component<{}, {}> {
 
@@ -14,9 +14,8 @@ export class App extends React.Component<{}, {}> {
         templateStore.setSources(candidateNames);
         templateStore.setOriToken(rawSentences);
         testStore.setTest(rawTestResult);
-        testStore.setTestcases(rawExamples);
+        testStore.setTestcases(rawTestcases);
         testStore.randomTestStats();
-        rateStore.setTestsToRate(testnames);
     }
     
     public render(): JSX.Element {

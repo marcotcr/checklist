@@ -32,17 +32,6 @@ export type RawTestResult = {
     stats: RawTestStats
 }
 
-
-export type RawToken = [string, string] | string;
-export type CandidateDict = { [key: string]: string[] };
-export type RawSentence = { target: string, tokens: RawToken[] }
-
-export const MASK = "mask";
-export const SPACE = " ";
-export type Action = "tag"|"edit"|"delete"|"plus"|"unlock"|"lock";
-export type Condition = "C1"|"C2"|"C3";
-export type TemplateExampleToken =  {text: string; hasTag: boolean; isMask: boolean};
-
 export interface Token {
     idx: number; // the idx of the span in doc
     text: string; // text of one word
@@ -57,6 +46,14 @@ export interface Token {
 }
 
 
-export type TestAuthorType = "perturb"|"template";
+export type RawToken = [string, string] | string;
+export type CandidateDict = { [key: string]: string[] };
+export type RawSentence = { target: string, tokens: RawToken[] }
+
+export const MASK = "mask";
+export const SPACE = " ";
+export type Action = "tag"|"edit"|"delete"|"plus"|"unlock"|"lock";
+export type TemplateExampleToken =  {text: string; hasTag: boolean; isMask: boolean};
+
 
 
