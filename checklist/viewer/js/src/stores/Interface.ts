@@ -21,7 +21,7 @@ export type RawTestCase = {
 export type RawTestResult = { 
     name: string;
     type: TestType;
-    expectationMeta: {[key: string]: string};
+    expect_meta: {[key: string]: string};
     tags: string[]; // ["person1", "person2", "comparative"];
     stats: {"nTested" : number, "nFailed": number}
 }

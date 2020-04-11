@@ -133,7 +133,7 @@ export const rawExamples: RawTestCase[] = [
 export const rawTestResult: RawTestResult =  { 
     name: "Change the PERSON order",
     type: "inv",
-    expectationMeta: {expected: "equal"},
+    expect_meta: {expected: "equal"},
     tags: [
         "person1=Mary", 
         "person2=Heather", 

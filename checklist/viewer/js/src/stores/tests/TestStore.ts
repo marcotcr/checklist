@@ -34,7 +34,7 @@ export class TestStore {
         if (rawTest) {
             this.testResult = new TestResult(
                 rawTest.name, rawTest.type, rawTest.stats, 
-                rawTest.tags, rawTest.expectationMeta);
+                rawTest.tags, rawTest.expect_meta);
         } else {
             this.testResult = null;
         }

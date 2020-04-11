@@ -55,8 +55,8 @@ export const View = widgets.DOMWidgetView.extend({
         //if (redraw) { this.renderApp(); }
     },
     onExampleChanged: function(redraw: boolean=false): void {     
-        console.log(this.model.get("examples"))
-        testStore.addMoreTestcases(this.model.get("examples") as RawTestCase[]);
+        console.log(this.model.get("testcases"))
+        testStore.addMoreTestcases(this.model.get("testcases") as RawTestCase[]);
         //if (redraw) { this.renderApp(); }
     },
     onStatsChanged: function(redraw: boolean=false): void {
@@ -108,7 +108,7 @@ export const View = widgets.DOMWidgetView.extend({
 
         // Python -> JavaScript update
         this.listenTo(this.model, 'change:summarizer', this.onSummarizerChanged, this);
-        this.listenTo(this.model, 'change:examples', this.onExampleChanged, this);
+        this.listenTo(this.model, 'change:testcases', this.onExampleChanged, this);
         this.listenTo(this.model, 'change:stats', this.onStatsChanged, this);
     }
 });
