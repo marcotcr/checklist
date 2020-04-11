@@ -7,8 +7,6 @@ import { templateStore } from '../stores/templates/TemplateStore';
 import { testStore } from '../stores/tests/TestStore';
 import { TestSummarizer } from './test_summarizer/TestSummarizer';
 import { rateStore } from '../stores/tests/RateStore';
-import { TestRatePanel } from './test_rater/TestRatePanel';
-
 @observer
 export class App extends React.Component<{}, {}> {
 
@@ -25,13 +23,6 @@ export class App extends React.Component<{}, {}> {
         return (
             <Layout>
                 <Layout.Content style={{ padding: '50px 50px' }}>
-                <Card>
-                <TestRatePanel
-                    onSwitchTest={rateStore.onSwitchTest}
-                    onSubmit={rateStore.submitScores}
-                    onFetch={testStore.fetchMoreExample}
-                    onSearch={testStore.search} />
-                </Card>
                 <Card>
                 <TemplateEditor key={`${templateStore.isReset}`}
                     onExtendWordList={null}
