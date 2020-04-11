@@ -42,6 +42,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
     }
 
     public renderTokens(oldTokens: string[], newTokens: string[]): JSX.Element {
+        console.log(oldTokens, newTokens)
         const tokens = utils.computeRewrite(oldTokens, newTokens);
         return <div>{tokens.map((t: Token, idx: number) => {
             // generate the current class for the token

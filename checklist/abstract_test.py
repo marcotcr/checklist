@@ -5,6 +5,8 @@ import numpy as np
 import inspect
 from .expect import iter_with_optional, Expect
 
+from .viewer import TestSummarizer
+
 def load_test(file):
     dill._dill._reverse_typemap['ClassType'] = type
     return dill.load(open(file, 'rb'))
@@ -301,16 +303,20 @@ class AbstractTest(ABC):
             old_example = {"text": base[0], "pred": str(base[1]), "conf": conf}
         else:
             old_example = None
-        try:
-            conf = example[2][example[1]]
-        except:
-            conf = None
-        examples = [{
-            "new": {"text": example[0], "pred": str(example[1]), "conf": conf},
-            "old": old_example,
-            "label": example[3],
-            "succeed": expect_results_sample[start_idx:][idx] > 0
-        } for idx, example in enumerate(iters[start_idx:]) ]
+
+        examples = []
+        for idx, e in enumerate(iters[start_idx:]):
+            try:
+                conf = e[2][e[1]]
+            except:
+                conf = None
+            example = {
+                "new": {"text": e[0], "pred": str(e[1]), "conf": conf},
+                "old": old_example,
+                "label": e[3],
+                "succeed": int(expect_results_sample[start_idx:][idx] > 0)
+            }
+            examples.append(example)
         return examples
 
     def _form_test_info(self):
@@ -343,9 +349,10 @@ class AbstractTest(ABC):
                     label, meta, nsamples=n_per_testcase)
             else:
                 examples = []
-            testcases.append({
-                "examples": examples,
-                "succeed": succeed,
-                "tags": []
-            })
-        return test_info, testcases
+            if examples:
+                testcases.append({
+                    "examples": examples,
+                    "succeed": int(succeed),
+                    "tags": []
+                })
+        return TestSummarizer(test_info, testcases)

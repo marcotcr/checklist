@@ -3,7 +3,7 @@ from traitlets import Unicode, List, Dict
 import os
 import typing
 from spacy.lang.en import English
-
+from copy import deepcopy
 try:
     from IPython.core.display import display, Javascript
 except:
@@ -29,16 +29,17 @@ class TestSummarizer(widgets.DOMWidget):
         testcases: typing.List,
         **kwargs):
         widgets.DOMWidget.__init__(self, **kwargs)
+
+        nlp = English()
+        # ONLY do tokenization here
+        self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
+
         self.max_return = 10
         self.summarizer = test_summary
         self.filtered_testcases = testcases
         self.tokenize_testcases()
         self.search(filter_tags=[], is_fail_case=True)
         self.on_msg(self.handle_events)
-
-        nlp = English()
-        # ONLY do tokenization here
-        self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
         
     def handle_events(self, _, content, buffers):
         """
@@ -55,9 +56,17 @@ class TestSummarizer(widgets.DOMWidget):
         for testcase in self.filtered_testcases:
             for e in testcase["examples"]:
                 for tag in ["old", "new"]:
+                    print(e[tag])
                     if not e[tag]:
                         continue
-                    e[tag]["text"] = [t.text for t in self.tokenizer(e["new"]["text"])]
+                    tokens = []
+                    if type(e[tag]["text"]) == str:
+                        e[tag]["tokens"] = [e[tag]["text"]]
+                    else:
+                        e[tag]["tokens"] = e[tag]["text"]
+                    for sentence in e[tag]["tokens"]:
+                        tokens.append([t.text for t in self.tokenizer(sentence)])
+                    e[tag]["tokens"] = tokens
 
     def render(self):
         """
@@ -68,7 +77,7 @@ class TestSummarizer(widgets.DOMWidget):
     def compute_stats_result(self, candidate_testcases):
         self.stats = {
             "nTested": len(candidate_testcases),
-            "nFailed": len([ e for e in candidate_testcases if e["succeed"] == False ]),
+            "nFailed": len([ e for e in candidate_testcases if e["succeed"] == 0 ]),
             "nFiltered": 0
         }
 
@@ -78,26 +87,30 @@ class TestSummarizer(widgets.DOMWidget):
         testcase_tags = testcase["tags"]
         texts = []
         for e in testcase["examples"]:
-            texts += e["new"]["text"] if e["new"] else []
-            texts += e["old"]["text"] if e["old"] else []
+            for tag in ["old", "new"]:
+                    if not e[tag]:
+                        continue
+                    for tokens in e[tag]["tokens"]:
+                        texts += tokens
         def raw_text_search(tag, testcase_tags, text):
             text_searched = tag in text.lower()
             return tag in testcase_tags or text_searched
         is_tag_filtered = all([raw_text_search(t, testcase_tags, " ".join(texts)) for t in filter_tags])
-        is_failured_filtered = not (is_fail_case and testcase["succeed"] )
+        is_failured_filtered = not (is_fail_case and testcase["succeed"] == 1)
         return is_tag_filtered and is_failured_filtered
 
     def search(self, filter_tags: typing.List[str], is_fail_case: bool):
         self.testcases = []
-        self.filtered_testcases = [
-            e for e in self.filtered_testcases if \
-            self.is_satisfy_filter(e, filter_tags, is_fail_case) 
-        ]
-        candidate_examples_for_not_fail = [
+        candidate_testcases_not_fail = [
             e for e in self.filtered_testcases if \
             self.is_satisfy_filter(e, filter_tags, False) 
         ]
-        self.compute_stats_result(candidate_examples_for_not_fail)
+        self.candidate_testcases = [
+            e for e in self.filtered_testcases if \
+            self.is_satisfy_filter(e, filter_tags, is_fail_case) 
+        ]
+
+        self.compute_stats_result(candidate_testcases_not_fail)
         self.to_slice_idx = 0
         self.fetch_example()
 
