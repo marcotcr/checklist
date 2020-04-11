@@ -70,9 +70,7 @@ export class RateStore {
     }
 
     public loadTest(testname: string): void {
-        testStore.testResult = new TestResult(
-            testname,  "min_func", "template", 
-            {name: "equals", value: "expected"}, []);
+        testStore.testResult = new TestResult(testname,  "mft");
     }
 
     public onSwitchTest(delta: -1|1, isFrontendLoadTest: boolean=true): void {

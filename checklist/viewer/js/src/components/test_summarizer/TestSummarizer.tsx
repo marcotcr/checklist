@@ -7,11 +7,12 @@ import { TestResult } from "../../stores/tests/TestResult";
 
 import { TestStatsViz } from './TestResultBar';
 import { testStore } from '../../stores/tests/TestStore';
-import { TestExample } from '../../stores/tests/TestExample';
-import { ExampleView } from './ExampleViewer';
+import { TestcaseView as TestExampleView } from './ExampleViewer';
 import { TestTag } from '../../stores/tests/TestTag';
 import InfiniteScroll from 'react-infinite-scroller';
-import { TestStats } from '../../stores/Interface';
+import { TestStats, TestExample } from '../../stores/Interface';
+import { TestCase } from '../../stores/tests/TestCase';
+import { utils } from '../../stores/Utils';
 
 
 interface TestSummarizerProps {
@@ -40,7 +41,10 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
 
     public renderDescription(): JSX.Element {
         const description = [
-            {key: "Name", value: <code>{testStore.testResult.name}</code>},
+            {key: "Name", value: <code>
+                <b>{`[${testStore.testResult.type.toUpperCase()}]`}</b>
+                {testStore.testResult.name}</code>
+            },
             //{key: "Category", value: <code>{testStore.testResult.category}</code>},
             //{key: "AuthorType", value: <code>{testStore.testResult.authorType}</code>},
             //{key: "Expect", value: <Descriptions column={1}>
@@ -170,13 +174,24 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     useWindow={false}>
                 <List itemLayout="horizontal" 
                     size="small"
+                    split={true}
                     //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
                     className="compact full-width overflow-y"
-                    dataSource={testStore.examples}
-                    renderItem={(example: TestExample) =>
-                        <List.Item key={example.key()}>
-                            <ExampleView example={example} />
-                        </List.Item>} />
+                    dataSource={testStore.testcases}
+                    renderItem={(testcase: TestCase, idx: number) =>
+                        <List itemLayout="horizontal" 
+                            size="small" split={false} key={testcase.key()}
+                            className="testcase-block full-width"
+                            style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
+                            dataSource={testcase.examples}
+                            renderItem={(example: TestExample, i: number) =>
+                                <List.Item key={`${testcase.key()}-${i}`}>
+                                    {/*<div 
+                                        style={{borderBottom: i === 0 ? null : "1px dashed #ebedf0"}}
+                                    className="full-width"></div>*/}
+                                    <TestExampleView example={example} />
+                                </List.Item>} />
+                    }/>
                 </InfiniteScroll>
                 </div>
             </Col>
