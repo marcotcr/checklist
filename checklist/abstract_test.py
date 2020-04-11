@@ -38,23 +38,29 @@ class AbstractTest(ABC):
         # test, expect = load_test(file)
         # test.expect = dill.loads(expect)
         # return test
-
-    def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
+    
+    def _extract_examples_per_testcase(
+        self, xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
         idxs = [0] if self.print_first else []
-        idxs = [i for i in np.argsort(expect_results) if expect_results[i] <= 0]
+        idxs = [i for i in np.argsort(expect_results) if not only_include_fail or expect_results[i] <= 0]
         if self.print_first:
             if 0 in idxs:
                 idxs.remove(0)
             idxs.insert(0, 0)
         idxs = idxs[:nsamples]
         iters = [iters[i] for i in idxs]
+        return idxs, iters, [expect_results[i] for i in idxs]
+
+    def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
+        idxs, iters, _ = self._extract_examples_per_testcase(
+            xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True)
+
         for x, pred, conf, label, meta in iters:
             print(format_example_fn(x, pred, conf, label, meta))
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
             print()
         print('----')
-
 
     def check_results(self):
         if not hasattr(self, 'results') or not self.results:
@@ -231,3 +237,68 @@ class AbstractTest(ABC):
             print_fn(self.data[f], self.results.preds[f],
                      self.results.confs[f], self.results.expect_results[f],
                      label, meta, format_example_fn, nsamples=n_per_testcase)
+
+    def _form_examples_per_testcase_for_viz(
+        self, xs, preds, confs, expect_results, labels=None, meta=None, nsamples=3):
+        idxs, iters, expect_results_sample = self._extract_examples_per_testcase(
+            xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=False)
+        if not iters:
+            return []
+        start_idx = 1 if self.print_first else 0
+        if self.print_first:
+            base = iters[0]
+            try:
+                conf = base[2][base[1]]
+            except:
+                conf = None
+            old_example = {"text": base[0], "pred": str(base[1]), "conf": conf}
+        else:
+            old_example = None
+        try:
+            conf = example[2][example[1]]
+        except:
+            conf = None
+        examples = [{
+            "new": {"text": example[0], "pred": str(example[1]), "conf": conf},
+            "old": old_example,
+            "label": example[3],
+            "succeed": expect_results_sample[start_idx:][idx] > 0
+        } for idx, example in enumerate(iters[start_idx:]) ]
+        return examples
+
+    def _form_test_info(self):
+        n = len(self.data)
+        fails = self.fail_idxs().shape[0]
+        filtered = self.filtered_idxs().shape[0]
+        return {
+            "name": "TESTNAME_PLACEHOLDER",
+            "type": self.__class__.__name__.lower(),
+            "expect_meta": {},
+            "tags": [],
+            "stats": {"nFailed": fails, "nTested": n - filtered, "nFiltered": filtered}
+        }
+
+    def visual_summary(self, n_per_testcase=3):
+        self.check_results()
+        # get the test meta
+        test_info = self._form_test_info()
+        testcases = []
+        nonfiltered_idxs = np.where(self.results.passed != None)[0]
+        for f in nonfiltered_idxs:
+            # should be format_fn
+            label, meta = self.label_meta(f)
+            # print(label, meta)
+            succeed = self.results.passed[f]
+            if succeed is not None:
+                examples = self._form_examples_per_testcase_for_viz(
+                    self.data[f], self.results.preds[f],
+                    self.results.confs[f], self.results.expect_results[f],
+                    label, meta, nsamples=n_per_testcase)
+            else:
+                examples = []
+            testcases.append({
+                "examples": examples,
+                "succeed": succeed,
+                "tags": []
+            })
+        return test_info, testcases
