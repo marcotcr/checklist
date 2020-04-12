@@ -77,6 +77,7 @@ body {
     display: inline-block;
     min-width: 110px;
     margin-bottom: 10px;
+    padding: 7px;
     background-color: #efefef;
 }
 
@@ -132,7 +133,7 @@ body {
 }
 
 .badge sup {
-    top: -15px;
+    top: -10px;
     opacity: 0.8;
 }
 
@@ -182,4 +183,14 @@ details {
 .article-token {
     color: #aaa;
     font-style: italic;
+}
+
+.tag-candidate-token {
+    color: #aaa;
+}
+.tag-candidate-token.info-header {
+    color: grey;
+}
+.tag-candidate-token.ellipsis {
+    max-width: 100px;
 }

@@ -46,7 +46,7 @@ export interface Token {
 }
 
 export type BertSuggest = string[];
-export type RawTemplateToken = [string, string] | string;
+export type RawTemplateToken = [string[], string] | string;
 export type TagDict = { [key: string]: string };
 export type RawTemplate = RawTemplateToken[];
 

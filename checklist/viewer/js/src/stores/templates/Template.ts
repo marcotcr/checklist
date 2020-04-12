@@ -13,10 +13,4 @@ export class Template {
     public key(): string {
         return utils.normalizeKey(`${this.tokens.map(t => t.key()).join("-")}`);
     }
-
-    public serialize(): {tokens: {[key: string]: string|number|boolean}[] } {
-        return {
-            tokens: this.tokens.map(t => t.serialize())
-        };
-    }
 }

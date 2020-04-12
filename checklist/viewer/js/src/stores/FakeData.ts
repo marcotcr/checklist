@@ -3,20 +3,78 @@ import { TagDict, RawTemplate, RawTestCase, RawTestResult, BertSuggest } from ".
 export const tagDict: TagDict = {'pos_adj': 'good', 'air_noun': 'flight', 'intens': 'very'};
 // a demo template sentence
 export const rawTemplates: RawTemplate[] = [
-    ['It', 'is', ['good', 'a:pos_adj'], ['flight', 'air_noun'], '.'],
-    ['It', ['', 'a:bert'], ['very', 'a:intens'], ['good', 'pos_adj'], ['', 'bert'],'.']
+    [
+        [
+            [
+                'Michael','Michael','Michael','Michael','Michael',
+                'Jennifer','Jennifer','Jennifer','Jennifer','Jennifer',
+                'Christopher','Christopher','Christopher','Christopher','Christopher',
+                'Jessica','Jessica','Jessica','Jessica','Jessica',
+                'Matthew','Matthew','Matthew','Matthew','Matthew'
+            ], 
+            'first_name'
+        ],
+        'is',
+        [
+            [
+                'bigger','warmer','colder','poorer','richer',
+                'bigger','warmer','colder','poorer','richer',
+                'bigger','warmer','colder','poorer','richer',
+                'bigger','warmer','colder','poorer','richer',
+                'bigger','warmer','colder','poorer','richer',
+            ],
+            'comp[0]'
+        ],
+        'than',
+        [[], 'bert'],
+        '.'
+    ],[
+        'Who',
+        'is',
+        [
+            [
+                'smaller','colder','warmer','richer','poorer',
+                'smaller','colder','warmer','richer','poorer',
+                'smaller','colder','warmer','richer','poorer',
+                'smaller','colder','warmer','richer','poorer',
+                'smaller','colder','warmer','richer','poorer'
+            ],
+            'comp[1]'
+        ],
+        '?'
+    ],[
+        [
+            [
+                'Michael','Michael','Michael','Michael','Michael',
+                'Jennifer','Jennifer','Jennifer','Jennifer','Jennifer',
+                'Christopher','Christopher','Christopher','Christopher','Christopher',
+                'Jessica','Jessica','Jessica','Jessica','Jessica',
+                'Matthew','Matthew','Matthew','Matthew','Matthew'
+            ],
+            'first_name'
+        ]
+    ]
 ]
-export const suggests: BertSuggest[] = [
-    ['was', 'day'],
-    ['been', 'day'],
-    ['been', 'week'],
-    ['was', 'time'],
-    ['been', 'year'],
-    ['was', 'experience'],
-    ['been', 'weekend'],
-    ['was', 'moment'],
-    ['s', 'day'],
-    ['was', 'game']
+export const suggests: (string|string[])[] = ['that',
+    'this',
+    'me',
+    'before',
+    'usual',
+    'ever',
+    'normal',
+    'her',
+    'us',
+    'most',
+    'you',
+    'average',
+    'expected',
+    'anything',
+    'it',
+    'I',
+    'him',
+    'them',
+    'anyone',
+    'life'
 ]
 
 // test data

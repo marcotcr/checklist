@@ -125,6 +125,29 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
       </div>
     }
 
+
+    public TagCandidate(): JSX.Element {
+        if (this.options.length === 0) {
+            return null;
+        }
+        return <div 
+            key={this.props.token.displayTag() + this.props.token.key()}
+            className="full-width">
+            <div><b className='info-header tag-candidate-token'>More Samples</b></div>
+            <div style={{height: 121}} className="full-width overflow-y">
+            <Row>
+                {this.options.map((s, idx: number) => 
+                    <Row key={`${s}${idx}`}>
+                        <span className="ellipsis tag-candidate-token">
+                            {this.token.needArticle ?
+                                <span className="article-token">{`${utils.genArticle(s)} `}</span> : null}
+                            {s}
+                        </span></Row>)}
+            </Row>
+            </div>
+      </div>
+    }
+
     public render(): JSX.Element {
         /*
         return <Popover title={null}
@@ -134,7 +157,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
         */
         return <div className="template-token-box" key={`${this.token.key()}`}>
             {this.colorToken()}
-            <Row>{this.SuggestChecklist()}</Row>
+            <Row>{ this.token.isGeneralMask() ? this.SuggestChecklist() : this.TagCandidate()}</Row>
         </div>
     }
 }

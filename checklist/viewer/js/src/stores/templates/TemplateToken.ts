@@ -5,15 +5,18 @@ import { RawTemplateToken } from "../Interface";
 export class TemplateToken {
     public default: string;
     public tag: string;
+    public candidates: string[];
     public normalizeTag: string;
     public needArticle: boolean;
 
     constructor (token: RawTemplateToken) {
         if (typeof token === "string") {
             this.default = token as string;
+            this.candidates = [];
             this.convertTag("");
         } else {
-            this.default = token[0];
+            this.candidates = token[0]; //.filter(utils.uniques)
+            this.default = token[0].length > 0 ? token[0][0] : "";
             this.convertTag(token[1]);
         }
     }
@@ -50,13 +53,5 @@ export class TemplateToken {
         } else {
             return this.tag;
         }
-    }
-
-    public serialize(): {[key: string]: string|number|boolean} {
-        return {
-            default: this.default,
-            display_tag: this.displayTag(),
-            tag: this.tag,
-        };
     }
 }
