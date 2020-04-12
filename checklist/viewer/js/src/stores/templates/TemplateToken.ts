@@ -1,18 +1,16 @@
-import { RawToken, MASK } from "../Interface";
 import { utils } from "../Utils";
-import { observable } from 'mobx';
-import { version } from "moment";
 import { Template } from "./Template";
 import { templateStore } from "./TemplateStore";
+import { RawTemplateToken } from "../Interface";
 
 
 export class TemplateToken {
-    @observable public isLock: boolean;
-    @observable public default: string;
-    @observable public tag: string;
-    @observable public version: number;
+    public default: string;
+    public tag: string;
+    public normalizeTag: string;
+    public needArticle: boolean;
 
-    constructor (token: RawToken) {
+    constructor (token: RawTemplateToken) {
         if (typeof token === "string") {
             this.default = token as string;
             this.convertTag("");
@@ -20,72 +18,49 @@ export class TemplateToken {
             this.default = token[0];
             this.convertTag(token[1]);
         }
-        // lock all the unnecessary actions
-        this.isLock = this.tag === "";
-    }
-
-    public toggleLock(templates: Template[]): void {
-        if (!this.isLock) {
-            this.isLock = true
-            if (this.displayTag() in templateStore.fillInDict) {
-                delete templateStore.fillInDict[this.displayTag()];
-            }
-        } else if (this.isLock && this.tag !== "") {
-            this.isLock = false;
-        }
-        templates.forEach((template: Template) => {
-            template.tokens.forEach(t => {
-                if (t.displayTag() === this.displayTag()) {
-                    t.isLock = this.isLock;
-                }
-            });
-        })
-        templateStore.previewExample = templateStore.computePreviewExamples(
-            templateStore.templates, templateStore.fillInDict);
     }
 
     public convertTag(rawTag_: string): void {
-        const regex = /[\{|\[]*([\D]+)(\d*)[\}|\]]*/;
-        const [rawTag, tag, version] = regex.exec(rawTag_) || [rawTag_, rawTag_, 1];
-        this.version = Number(version);
-        this.tag = (tag as string).toLowerCase();
-    }
-
-    public isSelectedTag(tag: string): boolean {
-        tag = tag.toLowerCase();
-        return tag === this.tag || (tag && this.tag.includes(tag));
+        this.needArticle = rawTag_.startsWith("a:");
+        this.normalizeTag = rawTag_.split("a:")[rawTag_.split("a:").length-1];
+        this.tag = rawTag_;
     }
 
     public key(): string {
-        return utils.normalizeKey(`${this.tag}-${this.version}:${this.default}`);
+        return utils.normalizeKey(`${this.tag}:${this.default}`);
     }
 
     public isGeneralMask(): boolean {
-        return this.tag === MASK;
+        console.log(this.normalizeTag, this.normalizeTag.replace(/\d+$/, "").toLowerCase());
+        return this.normalizeTag.replace(/\d+$/, "").toLowerCase() === "bert";
     }
 
     public isAbstract(): boolean {
         return this.tag && this.tag !== "" ;//&& !this.isGeneralMask();
     }
 
+    public isEmptyMask(): boolean {
+        console.log(this.normalizeTag, this.normalizeTag.replace(/\d+$/, "").toLowerCase());
+        return this.isGeneralMask() && this.default === "";
+    }
+
+    public displayStr(): string {
+        return this.isEmptyMask() ? this.displayTag() : this.default;
+    }
+
     public displayTag(useBracelet: boolean=false): string {
-        if (!this.isAbstract()) {
-            return "";
-        }
-        let tagVersion = `${this.tag}${this.version}`;
         if (useBracelet) {
-            tagVersion = this.isGeneralMask() ? `[${tagVersion}]` : `{${tagVersion}}`;
+            return this.isGeneralMask() ? `[${this.tag}]` : `{${this.tag}}`;
+        } else {
+            return this.tag;
         }
-        return tagVersion;
     }
 
     public serialize(): {[key: string]: string|number|boolean} {
         return {
             default: this.default,
-            version: this.version,
             display_tag: this.displayTag(),
             tag: this.tag,
-            is_lock: this.isLock
         };
     }
 }

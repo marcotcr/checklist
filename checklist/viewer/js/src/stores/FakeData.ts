@@ -1,46 +1,26 @@
-import { CandidateDict, RawSentence, RawTestCase, RawTestResult } from "./Interface";
+import { TagDict, RawTemplate, RawTestCase, RawTestResult, BertSuggest } from "./Interface";
 
-export const testnames = ["negation", "fairness", "question", "coreference"];
-
-export const candidateDict: CandidateDict ={
-    comparative : ['better', 'worse', 'older', 'younger', 'smarter', 'stronger', 'weaker', 'happier', 'taller', 'cooler'],
-    country     : ["the US", "China", ""],
-    city        : ["Beijing", "Hong Kong", "Seattle", "London"],
-    person      : ["Marco", "Julia", "Sherry", "Jeff", "Carlos"],
-    pronun      : ["I", "you"]
-};
- 
-// names of the candidate
-export const candidateNames: string[] = Object.keys(candidateDict);
-
-// a demo sentence
-export const rawSentences: RawSentence[] = [
-    {
-        tokens: [ 
-            "Who", "is", 
-            ["taller", "{comparative1}"], 
-            ",", 
-            ["Mary", "{person1}"], 
-            "or",
-            ["Heather", "{person2}"], "?" 
-        ],
-        target: "Q1"
-    },  {
-        tokens: [ 
-            "Who", "is", 
-            ["taller", "{comparative1}"], 
-            ",", 
-            ["Heather", "{person2}"], 
-            "or",
-            ["Mary", "{person1}"], 
-            "?" 
-        ],
-        target: "Q2"
-    }, 
-];
+export const tagDict: TagDict = {'pos_adj': 'good', 'air_noun': 'flight', 'intens': 'very'};
+// a demo template sentence
+export const rawTemplates: RawTemplate[] = [
+    ['It', 'is', ['good', 'a:pos_adj'], ['flight', 'air_noun'], '.'],
+    ['It', ['', 'a:bert'], ['very', 'a:intens'], ['good', 'pos_adj'], ['', 'bert'],'.']
+]
+export const suggests: BertSuggest[] = [
+    ['was', 'day'],
+    ['been', 'day'],
+    ['been', 'week'],
+    ['was', 'time'],
+    ['been', 'year'],
+    ['was', 'experience'],
+    ['been', 'weekend'],
+    ['was', 'moment'],
+    ['s', 'day'],
+    ['was', 'game']
+]
 
 // test data
-export const rawExamples: RawTestCase[] = [
+export const rawTestcases: RawTestCase[] = [
     {
         examples: [{
             new: {

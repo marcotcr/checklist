@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Layout, Card } from 'antd';
-import { candidateNames, rawSentences, rawTestResult, rawExamples as rawTestcases } from '../stores/FakeData';
+import { rawTestResult, rawTestcases, tagDict, rawTemplates, suggests } from '../stores/FakeData';
 import { TemplateEditor } from './template_editor/TemplateEditor';
 import { observer } from 'mobx-react';
 import { templateStore } from '../stores/templates/TemplateStore';
@@ -11,8 +11,9 @@ import { TestSummarizer } from './test_summarizer/TestSummarizer';
 export class App extends React.Component<{}, {}> {
 
     public async componentWillMount(): Promise<void> {
-        templateStore.setSources(candidateNames);
-        templateStore.setOriToken(rawSentences);
+        templateStore.setTagDict(tagDict);
+        templateStore.setBertSuggests(suggests);
+        templateStore.setTemplate(rawTemplates);
         testStore.setTest(rawTestResult);
         testStore.setTestcases(rawTestcases);
         testStore.randomTestStats();
@@ -23,13 +24,11 @@ export class App extends React.Component<{}, {}> {
             <Layout>
                 <Layout.Content style={{ padding: '50px 50px' }}>
                 <Card>
-                <TemplateEditor key={`${templateStore.isReset}`}
+                <TemplateEditor
                     onExtendWordList={null}
-                    onReset={() => { templateStore.reset() }}
-                    onGetSuggestion={() => {
-                        templateStore.genFakeSuggestions();
-                    }}
-                    onConfirmFillIn={() => { console.log("onConfirmFillIn", templateStore.fillInDict) }} />
+                    onReset={null}
+                    onGetSuggestion={null}
+                    onConfirmFillIn={null} />
                 </Card>
 
                 <Card>

@@ -10,6 +10,15 @@ class UtilsClass {
         };
     }
 
+    public genArticle(noun: string): string {
+        const cases = ['a', 'e', 'i', 'o', 'u'];
+        if (noun) {
+            return cases.indexOf(noun[0].toLowerCase())> -1 ? "an" : "a";
+        } else {
+            return ''
+        }
+    }
+
     public getRandomArbitrary(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min) + min); 
     }

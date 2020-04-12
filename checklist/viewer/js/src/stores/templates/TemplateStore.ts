@@ -1,131 +1,47 @@
 import { observable } from "mobx";
-import { TemplateToken } from "./TemplateToken";
 import { Template } from "./Template";
-import { CandidateDict, RawSentence, MASK, TemplateExampleToken } from "../Interface";
-import { candidateDict } from "../FakeData";
-import { utils } from "../Utils";
+import { TagDict, RawTemplate, TemplateExampleToken, BertSuggest } from "../Interface";
 
 export class TemplateStoreClass {
-    public oriSentences: RawSentence[];
-    @observable public isReset: boolean;
-    @observable public sources: string[];
-    @observable public abstractTracker: { [key: string]: number };
+    public oriSentences: RawTemplate[];
     @observable public templates: Template[];
-    @observable public suggestDict: CandidateDict;
-    @observable public fillInDict: CandidateDict;
-    @observable public isLink: boolean;
+    @observable public bertSuggests: BertSuggest[];
+    @observable public selectedSuggestIdxes: number[];
+    @observable public tagDict: TagDict;
     @observable public previewExample: {[key: string]: TemplateExampleToken[]}[];
-    @observable public expectedValue: string;
     constructor () {
         this.oriSentences = [];
-        this.sources = [];
         this.templates = [];
-        this.abstractTracker = {};
-        this.fillInDict = {};
-        this.suggestDict = {};
-        this.isLink = false;
-        this.isReset = false;
+        this.tagDict = {};
+        this.bertSuggests = [];
+        this.selectedSuggestIdxes = [];
         this.previewExample = [];
-        this.expectedValue = "0";
     }
 
-    public setOriToken(sentences: RawSentence[]): void {
-        if (sentences) {
-            this.oriSentences = sentences;
+    public setTagDict(tagDict: TagDict): void {
+        this.tagDict = tagDict;
+    }
+
+    public setTemplate(rawTemplates: RawTemplate[]): void {
+        if (rawTemplates) {
             this.previewExample = [];
-            this.resetSourceMeta();
-            this.resetTemplates();
+            this.templates = rawTemplates.map(rtemplate => new Template(rtemplate));
         }
     }
 
-    public setSources(sources: string[]): void {
-        if (sources) {
-            this.sources = sources;
-            this.previewExample = [];
-            this.resetSourceMeta();
-        }
+    public setBertSuggests(suggests: BertSuggest[]): void {
+        this.bertSuggests = suggests;
     }
 
-    public reset(): void {
-        this.resetSourceMeta();
-        this.resetTemplates();
-        this.isReset = !this.isReset;
+    public onChangeSelectedSuggest(idxes: number[]): void {
+        this.selectedSuggestIdxes = idxes;
+        this.previewExample = this.computePreviewExamples(this.templates, this.selectedSuggestIdxes);
     }
 
-    public resetSourceMeta(): void {
-        // reset everything to nothing created
-        const abstractTracker = {};
-        this.sources.forEach((s: string) => {
-            abstractTracker[s] = 0;
-        });
-        // also add the MASK versioning
-        abstractTracker[MASK] = 0;
-        this.abstractTracker = abstractTracker;
-        // also reset the fill in dict
-        this.fillInDict = {};
-        // reset the suggest dict
-        this.suggestDict = {};
-    }
-
-    public resetTemplates(): void {
-        // create the templates
-        this.templates = this.oriSentences.map(t => {
-            const template = new Template(t.tokens, t.target);
-            template.tokens.forEach(token => {
-                // set the fill-in dict
-                this.fillInDict[token.displayTag()] = [];
-                if (token.isAbstract()) {
-                    const currVersion = this.abstractTracker[token.tag] || 0;
-                    this.abstractTracker[token.tag] = Math.max(token.version, currVersion);
-                }
-            })
-            return template;
-        });
-    }
-
-    public addNewVerion(source: string, inputVersion: number): string {
-        if (!(source in this.abstractTracker)) {
-            // add a new version
-            this.abstractTracker[source] = 0;
-        }
-        let version = inputVersion;
-        const existingVersion = this.abstractTracker[source];
-        let tagVersion = `${source}${version}`;
-
-        if (inputVersion > existingVersion) {
-            this.abstractTracker[source] += 1;
-            version = this.abstractTracker[source];
-            tagVersion = `${source}${version}`;
-            this.fillInDict[tagVersion] = [];
-        } 
-        tagVersion = source === MASK ? `[${tagVersion}]` : `{${tagVersion}}`;
-        // return the constructed tag string
-        return tagVersion;
-    }
-
-    public onChangeFillInDict(token: TemplateToken, fillIns: string[]): void {
-        if (token.isAbstract()) {
-            this.fillInDict[token.displayTag()] = fillIns;
-        }
-        this.previewExample = this.computePreviewExamples(this.templates, this.fillInDict);
-    }
-
-    public genFakeSuggestions(): void {
-        const suggest = {};
-        this.templates.forEach(template => {
-            template.tokens.forEach((t: TemplateToken, idx: number) => {
-                if (t.isAbstract() && !t.isLock) {
-                    const tag = t.tag.toLowerCase();
-                    suggest[t.displayTag()] = !t.isGeneralMask() && tag in candidateDict ? 
-                        candidateDict[tag] : [1,2,3].map(s => `suggest-${s}`);
-                }
-            });
-        });
-        this.suggestDict = suggest;
-    }
-
-    public computePreviewExamples(templates: Template[], fillInDict: CandidateDict): 
+    public computePreviewExamples(templates: Template[], bertSuggests: number[]): 
         {[key: string]: TemplateExampleToken[]; }[] {
+        return [];
+        /*
         const output = [];
         const combinations = [];
         const hash = [];
@@ -172,6 +88,7 @@ export class TemplateStoreClass {
             }
         });
         return utils.getRandomSubarray(output, 20);
+        */
     }
 }
 

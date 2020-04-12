@@ -8,8 +8,6 @@ import * as ReactDOM from 'react-dom';
 
 import { TemplateEditor } from './TemplateEditor';
 import '../../style.css';
-import { RawToken, CandidateDict } from '../../stores/Interface';
-import { Template } from '../../stores/templates/Template';
 import { templateStore } from '../../stores/templates/TemplateStore';
  
 
@@ -52,23 +50,25 @@ export const View = widgets.DOMWidgetView.extend({
     */
     // to get data from the backend
     onSuggestChanged: function(redraw: boolean=false): void {
-        templateStore.suggestDict = this.model.get("suggest_dict");
+        templateStore.bertSuggests = this.model.get("suggest_dict");
         //if (redraw) { this.renderApp(); }
     },
     onCandidateChanged: function(redraw: boolean=false): void {
-        templateStore.setSources(this.model.get("sources"));
-        templateStore.setOriToken(this.model.get("masked_tokens"));
+        //templateStore.setSources(this.model.get("sources"));
+        //templateStore.setOriToken(this.model.get("masked_tokens"));
+        
         //if (redraw) { this.renderApp(); }
     },
     onSentenceChanged: function(redraw: boolean=false): void {
-        templateStore.setSources(this.model.get("sources"));
-        templateStore.setOriToken(this.model.get("masked_tokens"));
+        //templateStore.setSources(this.model.get("sources"));
+        //templateStore.setOriToken(this.model.get("masked_tokens"));
+        
         //if (redraw) { this.renderApp(); }
     },
 
     // frontend value.
     onReset: function(): void {
-        templateStore.reset();
+        //templateStore.reset();
         this.renderApp();
     },
 
@@ -80,9 +80,9 @@ export const View = widgets.DOMWidgetView.extend({
     },
 
     onConfirmFillIn: function(): void {
-        console.log(templateStore.fillInDict);
+        console.log(templateStore.tagDict);
         const maskedTokens = templateStore.templates.map(t => t.serialize())
-        this.send({event: 'confirm_fillin', fillin_dict: templateStore.fillInDict, masked_tokens: maskedTokens});
+        this.send({event: 'confirm_fillin', fillin_dict: templateStore.tagDict, masked_tokens: maskedTokens});
         //this.renderApp();
     },
 
@@ -97,13 +97,14 @@ export const View = widgets.DOMWidgetView.extend({
         }
         const $app = document.createElement("div");
         $app.setAttribute("id", "app-wrapper");
-
+        /*
         const wrapper = <TemplateEditor 
             onReset={this.onReset}
             onExtendWordList={this.onAddNewWordList}
             onGetSuggestion={this.onGetSuggestion}
             onConfirmFillIn={this.onConfirmFillIn}/>
-        
+        */
+       const wrapper = null;
         ReactDOM.render(wrapper, $app);
         this.el.appendChild($app);
     },

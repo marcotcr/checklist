@@ -41,6 +41,10 @@ body {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
 }
+.token.token-mask
+
+
+
 .token-target {
     font-weight: bold;
     font-family: "Courier New", Courier;
@@ -119,19 +123,12 @@ body {
 .token-abstract {
     background-color: #efefef;
 }
-.token-mask {
-    background-color: #efefef;
-}
-
-.token-mask.token-example {
-    color: #1890ff!important;
-    background-color: none;
-}
-
-
-.token-abstract.token-example {
-    color: #52c41a!important;
-    background-color: none;
+.token.token-mask {
+    background-color: #ababab!important;
+    color: white;
+    padding-left: 7px;
+    padding-right: 7px;
+    border-radius: 10px;
 }
 
 .token-mask sup {
@@ -143,7 +140,7 @@ body {
 }
 
 .token-abstract sup {
-    background-color: #52c41a!important; /*#faad14*/
+    background-color: #1890ff!important; /*#faad14*/
 }
 
 .token-box {    
@@ -209,3 +206,7 @@ details {
     padding-bottom: 4px;
 }
 
+.token-article {
+    color: #a1a1a1;
+    font-style: italic;
+}

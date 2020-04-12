@@ -35,7 +35,7 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
                 type="primary" href={null} >
                 <Icon type="undo"/>Reset</Button>
             <Button onClick={() => { 
-                templateStore.fillInDict = {};
+                templateStore.tagDict = {};
                 // reset the suggest dict
                 this.props.onGetSuggestion() }}
                 type="primary" href={null} >
@@ -53,6 +53,7 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
         if ((window as any).Jupyter) {
             (window as any).Jupyter.keyboard_manager.disable();
         }
+
     }
     public componentDidUpdate() {
         if ((window as any).Jupyter) {
@@ -84,24 +85,20 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
 
 
     public render(): JSX.Element {
-        return <Row key={templateStore.templates.map(t => t.target).join("-")} gutter={30}>
+        return <Row key={templateStore.templates.map(t => t.key()).join("-")} gutter={30}>
             <Col span={17}>
                 <Row>
                     {this.renderCtrlBtn()}
-                    {!this.props.allowSetExpect ? null: <Switch 
-                        checked={templateStore.expectedValue==="1"}
-                        onChange={(checked) => { templateStore.expectedValue = checked ? "1" : "0"; }}
-                        checkedChildren="Expected value: 1" unCheckedChildren="Expected value: 0" />}
                 </Row>
                 <Divider className="compact-divider"/>
                 <List
                     itemLayout="horizontal"
                     dataSource={templateStore.templates}
                     renderItem={(template: Template, idx: number) => (
-                        <List.Item key={template.target}>
+                        <List.Item key={template.key()}>
                             <List.Item.Meta
                             avatar={<Avatar style={{backgroundColor: "#f56a00", verticalAlign: "middle"}} size="small">
-                                {template.target}</Avatar>}
+                                ></Avatar>}
                             title={<PerTemplateEditor
                                 onConfirmFillIn={this.props.onConfirmFillIn}
                                 onReset={this.props.onReset}
