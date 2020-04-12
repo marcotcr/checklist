@@ -45,13 +45,17 @@ export interface Token {
     */
 }
 
-export type BertSuggest = string[] | string;
+export type BertSuggest = string[];
 export type RawTemplateToken = [string, string] | string;
 export type TagDict = { [key: string]: string };
 export type RawTemplate = RawTemplateToken[];
 
 export const SPACE = " ";
-export type TemplateExampleToken =  {text: string; hasTag: boolean; isMask: boolean};
+export type TemplateExampleToken =  {
+    text: string; hasTag: boolean; isMask: boolean; isArticle: boolean;
+};
+export type TemplateExampleSentence = TemplateExampleToken[];
+export type TemplateExample = TemplateExampleSentence[];
 
 
 

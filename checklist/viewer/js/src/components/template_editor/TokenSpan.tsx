@@ -10,7 +10,7 @@ import  $ from 'jquery';
 interface TokenProps {
     token: TemplateToken;
     options: string[];
-    onExtendWordList: (name: string, wordList: string[]) => void;
+    onChangeSelected: (idxes: number[]) => void;
 }
 
 @observer
@@ -54,8 +54,10 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
     }
     
     public onSelectSuggests (checkIdxes: number[]): void {
-        console.log(checkIdxes);
         templateStore.onChangeSelectedSuggest(checkIdxes);
+        if (this.props.onChangeSelected) {
+            this.props.onChangeSelected(templateStore.selectedSuggestIdxes);
+        }
     };
 
     public onCheckAllChange (e): void {
@@ -65,15 +67,13 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
 
 
     public colorToken(): JSX.Element {
-        let colorClass = "";
-        if (this.token.isGeneralMask()) {
-            colorClass = "token-mask";
-        } else if (this.token.isAbstract()) {
-            colorClass = "token-abstract";
-        }
-        const token = <span className={`token ${colorClass}`}>
+        const colorClass = this.token.isGeneralMask() ? 
+            "mask-token" : 
+            this.token.isAbstract() ? "abstract-token": "";
+        const token = <span className={`template-token ${colorClass}`}>
             {this.token.needArticle && !this.token.isEmptyMask() ?
-                <span className="token-article">{`${utils.genArticle(this.token.default)} `}</span> : null}
+                <span className="article-token">
+                {`${utils.genArticle(this.token.default)} `}</span> : null}
             {this.token.displayStr()}
         </span>;
 
@@ -98,7 +98,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             <div style={{ borderBottom: '1px solid #E9E9E9' }}>
             <Checkbox
                 indeterminate={
-                    this.options.length && 
+                    templateStore.selectedSuggestIdxes.length && 
                     templateStore.selectedSuggestIdxes.length < this.options.length}
                 onChange={this.onCheckAllChange}
                 checked={this.options.length && 
@@ -107,13 +107,15 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             </Checkbox>
             </div>
             <div style={{height: 100}} className="checklist full-width overflow-y">
-            <Checkbox.Group value={this.options} onChange={this.onSelectSuggests}>
+            <Checkbox.Group 
+                value={templateStore.selectedSuggestIdxes} 
+                onChange={this.onSelectSuggests}>
             <Row>
                 {this.options.map((s, idx: number) => 
-                    <Row key={s}><Checkbox value={idx}>
+                    <Row key={`${s}${idx}`}><Checkbox value={idx}>
                         <span className="ellipsis">
                             {this.token.needArticle ?
-                                <span className="token-article">{`${utils.genArticle(s)} `}</span> : null}
+                                <span className="article-token">{`${utils.genArticle(s)} `}</span> : null}
                             {s}
                         </span>
                     </Checkbox></Row>)}
@@ -130,8 +132,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             { this.colorToken() }
         </Popover>
         */
-        return <div className="token-box" 
-            key={`${this.token.key()}`}>
+        return <div className="template-token-box" key={`${this.token.key()}`}>
             {this.colorToken()}
             <Row>{this.SuggestChecklist()}</Row>
         </div>

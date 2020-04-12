@@ -1,6 +1,8 @@
 import { observable } from "mobx";
 import { Template } from "./Template";
-import { TagDict, RawTemplate, TemplateExampleToken, BertSuggest } from "../Interface";
+import { TagDict, RawTemplate, BertSuggest, 
+    TemplateExampleSentence, TemplateExample } from "../Interface";
+import { utils } from "../Utils";
 
 export class TemplateStoreClass {
     public oriSentences: RawTemplate[];
@@ -8,7 +10,7 @@ export class TemplateStoreClass {
     @observable public bertSuggests: BertSuggest[];
     @observable public selectedSuggestIdxes: number[];
     @observable public tagDict: TagDict;
-    @observable public previewExample: {[key: string]: TemplateExampleToken[]}[];
+    @observable public previewExample: TemplateExampleSentence[][];
     constructor () {
         this.oriSentences = [];
         this.templates = [];
@@ -29,8 +31,11 @@ export class TemplateStoreClass {
         }
     }
 
-    public setBertSuggests(suggests: BertSuggest[]): void {
-        this.bertSuggests = suggests;
+    public setBertSuggests(suggests: (string[]|string)[]): void {
+        if (!suggests) {
+            this.bertSuggests = [];
+        }
+        this.bertSuggests = suggests.map((s: string[]|string) => typeof(s) === "string" ? [s] : s);
     }
 
     public onChangeSelectedSuggest(idxes: number[]): void {
@@ -38,57 +43,36 @@ export class TemplateStoreClass {
         this.previewExample = this.computePreviewExamples(this.templates, this.selectedSuggestIdxes);
     }
 
-    public computePreviewExamples(templates: Template[], bertSuggests: number[]): 
-        {[key: string]: TemplateExampleToken[]; }[] {
-        return [];
-        /*
-        const output = [];
-        const combinations = [];
-        const hash = [];
-        function product<T>(array: T[][]): T[][] {
-            let results = [[]];
-            for (var i = 0; i < array.length; i++) {
-                const currentSubArray = array[i];
-                const temp = [];
-                for (let j = 0; j < results.length; j++) {
-                    for (let k = 0; k < currentSubArray.length; k++) {
-                        temp.push(results[j].concat(currentSubArray[k]));
+    public computePreviewExamples(templates: Template[], bertSuggestIdxes: number[]): TemplateExample[] {
+        const idxes = bertSuggestIdxes.slice(0, 20);
+        const examples: TemplateExample[] = [];
+
+        idxes.forEach((tupleIdx: number) => {
+            const suggetTuple = this.bertSuggests[tupleIdx];
+            const templatesExample: TemplateExampleSentence[] = []
+            templates.forEach((template: Template) => {
+                let bertIdx: number = -1;
+                const exampleSentence: TemplateExampleSentence = [];
+                template.tokens.map(t => {
+                    bertIdx += t.isGeneralMask() ? 1 : 0;
+                    const text = t.isGeneralMask() ? suggetTuple[bertIdx] : t.default;
+                    if (t.needArticle) {
+                        exampleSentence.push({
+                            text: utils.genArticle(text), hasTag: t.isAbstract(), 
+                            isArticle: true, isMask: t.isGeneralMask()
+                        })
                     }
-                }
-                results = temp;
-            }
-            return results;
-        }
-
-        Object.keys(fillInDict).map((displayTag: string) => {
-            if (fillInDict && fillInDict[displayTag].length > 0) {
-                const fillIns = fillInDict[displayTag];
-                combinations.push(fillIns.map(f => {
-                    return {displayTag: displayTag, fillIn: f} 
-                }));
-            }
+                    exampleSentence.push({
+                        text: text, isArticle: false, hasTag: 
+                        t.isAbstract(), isMask: t.isGeneralMask()
+                    })
+                })
+                templatesExample.push(exampleSentence);
+            })
+            examples.push(templatesExample);
         });
-        product<{displayTag: string, fillIn: string}>(combinations).forEach(combine => {
-            const combinedDict = {}
-            combine.forEach(c => { combinedDict[c.displayTag] = c.fillIn });  
-            const filledIn = {}        
-            templates.forEach(template => {
-                const tokens = template.tokens.map(t => {
-                    const text = t.displayTag() in combinedDict ? 
-                        combinedDict[t.displayTag()] : t.default;
-                    return {text: text, hasTag: t.isAbstract(), isMask: t.isGeneralMask()}
-                });
-                filledIn[template.target] = tokens;
-
-            });
-            const key = Object.keys(filledIn).map(target => `target:${target}-text:${filledIn[target].map(t =>t.text).join("+")}`).join(":");
-            if (hash.indexOf(key) === -1) {
-                hash.push(key);
-                output.push(filledIn);
-            }
-        });
-        return utils.getRandomSubarray(output, 20);
-        */
+        
+        return examples;
     }
 }
 

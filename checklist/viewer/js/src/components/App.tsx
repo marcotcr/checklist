@@ -24,11 +24,7 @@ export class App extends React.Component<{}, {}> {
             <Layout>
                 <Layout.Content style={{ padding: '50px 50px' }}>
                 <Card>
-                <TemplateEditor
-                    onExtendWordList={null}
-                    onReset={null}
-                    onGetSuggestion={null}
-                    onConfirmFillIn={null} />
+                <TemplateEditor onChangeSelected={(idx: number[]) => {console.log(idx)}} />
                 </Card>
 
                 <Card>

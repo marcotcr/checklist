@@ -17,7 +17,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
     }
 
     public replaceArrow(showDisplay: boolean): JSX.Element {
-        return showDisplay ? <span className="token-rewrite-arrow">→</span> : null;
+        return showDisplay ? <span className="token rewrite-arrow">→</span> : null;
     }
 
     public renderToken(token: TemplateToken): JSX.Element {
@@ -30,7 +30,8 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         return <div >
             {newTokens.map((newToken: string[], idx: number) => (
                 <div>
-                <div className="display-table-cell"><span className="token-target">></span></div>
+                <div className="display-table-cell">
+                    <span className="sentence-mark-token">></span></div>
                 <div className="display-table-cell">
                     {this.renderTokens(oldTokens[idx], newTokens[idx])}
                 </div>
@@ -44,12 +45,12 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         const tokens = utils.computeRewrite(oldTokens, newTokens);
         return <div>{tokens.map((t: Token, idx: number) => {
             // generate the current class for the token
-            const editClass = `token-rewrite-${t.etype}`;
+            const editClass = `example-token rewrite-${t.etype}`;
             const curClass = `${utils.genStrId(t.text)}:${t.etype}${t.idx}`;
             // get the current span
             const curSpan: JSX.Element = <span key={ curClass }>
                 {this.replaceArrow(t.isReplace)}
-                <span className={`token-example ${editClass}`}>{t.text} </span>
+                <span className={`example-token ${editClass}`}>{t.text} </span>
             </span>;
             return curSpan;
         })}</div>
@@ -68,9 +69,9 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
             const replaceArrow = this.replaceArrow(oldobj !== null);
             const confStrOld = oldobj.conf ? ` (${oldobj.conf.toFixed(2)})` : "";
             predTag = <Tag>
-                Pred: <span className="token-rewrite-remove">{newobj.pred}{confStr}</span>
+                Pred: <span className="example-token rewrite-remove">{newobj.pred}{confStr}</span>
                 {replaceArrow}
-                <span className="token-rewrite-add">{oldobj.pred}{confStrOld}</span>
+                <span className="example-token rewrite-add">{oldobj.pred}{confStrOld}</span>
             </Tag>
         }
 

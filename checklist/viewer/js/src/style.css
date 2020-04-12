@@ -29,7 +29,58 @@ body {
     max-height: 100px;
 }
 
-.token {
+
+.display-table-cell {
+    display: table-cell;
+}
+
+/* FOR EXAMPLES */
+
+.testcase-block {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: solid;
+    background: #f8f8f8;
+}
+
+.sentence-mark-token {
+    font-weight: bold;
+    font-family: "Courier New", Courier;
+    background-color: #969696;
+    color: white;
+    padding: 2px;
+    margin-right: 10px;
+}
+
+
+.example-token.rewrite-arrow {
+    /* this should overwrite whatever default color it has. */
+    font-size: 10px!important;
+    font-weight: bold!important;
+}
+
+.example-token.rewrite-add {
+    /* this should overwrite whatever default color it has. */
+    background: #e5faf5!important;
+    color: #007857!important;
+}
+  
+.example-token.rewrite-remove {
+    background: #ffefea!important;
+    color: #d35229!important;
+    /* text-decoration: line-through!important; */
+}
+
+/* FOR TEMPLATES */
+
+.template-token-box {    
+    display: inline-block;
+    min-width: 110px;
+    margin-bottom: 10px;
+    background-color: #efefef;
+}
+
+.template-token {
     white-space: pre;
     /*margin-top: 1px!important; */
     /*margin-bottom: 1px!important; */
@@ -41,114 +92,36 @@ body {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
 }
-.token.token-mask
 
-
-
-.token-target {
-    font-weight: bold;
-    font-family: "Courier New", Courier;
-    background-color: #969696;
-    color: white;
-    padding: 2px;
-    margin-right: 10px;
-}
-
-.display-table-cell {
-    display: table-cell;
-}
-
-.token {
-    white-space: pre;
-    /*margin-top: 1px!important; */
-    /*margin-bottom: 1px!important; */
-    display: inline-block;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-}
-
-.token-rewrite-arrow {
-    /* this should overwrite whatever default color it has. */
-    font-size: 10px!important;
-    font-weight: bold!important;
-}
-
-.token-rewrite-add {
-    /* this should overwrite whatever default color it has. */
-    background: #e5faf5!important;
-    color: #007857!important;
-}
-  
-.token-rewrite-remove {
-    background: #ffefea!important;
-    color: #d35229!important;
-    /* text-decoration: line-through!important; */
-}
-
-.testcase-block {
-    margin-bottom: 10px;
-    padding-left: 10px;
-    border-left: solid;
-    background: #f8f8f8;
-}
-
-
-
-/*
-.token-rewrite-replace {
-    color: #3182bd!important;
-}
-
-.token-example.selected {
-    box-shadow:0px 0px 0px 2px red inset;
-    box-sizing: border-box!important;
-}
-    
-.token-example.hovered {
-    box-shadow:0px 0px 0px 2px red inset!important;
-    box-sizing: border-box!important;
-}
-
-.token-info-block {
-    font-size: 10px;
-    margin-top: 0px!important;
-    padding-bottom: 0px!important;
-    margin-bottom: 0px!important;
-    color: grey;
-    font-style: italic;
-}
-*/
-
-.token-abstract {
-    background-color: #efefef;
-}
-.token.token-mask {
-    background-color: #ababab!important;
+.template-token.mask-token {
+    background-color: #1890ff!important;
     color: white;
     padding-left: 7px;
     padding-right: 7px;
     border-radius: 10px;
 }
 
-.token-mask sup {
+.mask-token sup {
     background-color: #1890ff!important;
 }
 
-.token-lock sup {
-    background-color: #d9d9d9!important;
+.abstract-token sup {
+    background-color: #ababab!important; /*#faad14*/
 }
 
-.token-abstract sup {
-    background-color: #1890ff!important; /*#faad14*/
+.example-token {
+    color: #696969;
 }
 
-.token-box {    
-    display: inline-block;
-    min-width: 110px;
-    margin-bottom: 10px;
-    background-color: #efefef;
+.example-token.mask-token:not(.article-token) {
+    color: #1890ff!important;
+    background: none;
 }
+
+.example-token.abstract-token:not(.article-token) {
+    background: #eee;
+}
+
 
 .ellipsis {
     white-space: nowrap;
@@ -206,7 +179,7 @@ details {
     padding-bottom: 4px;
 }
 
-.token-article {
-    color: #a1a1a1;
+.article-token {
+    color: #aaa;
     font-style: italic;
 }

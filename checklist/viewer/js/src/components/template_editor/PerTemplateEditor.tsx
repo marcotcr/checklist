@@ -10,9 +10,7 @@ import { templateStore } from '../../stores/templates/TemplateStore';
 
 interface PerTemplateEditorProps {
     template: Template;
-    onReset: () => void;
-    onConfirmFillIn: () => void;
-    onExtendWordList: (name: string, wordList: string[]) => void;
+    onChangeSelected: (idxes: number[]) => void;
 }
 
 @observer
@@ -37,7 +35,7 @@ export class PerTemplateEditor extends React.Component<PerTemplateEditorProps, {
                     key={`${t.key()}-${idx}-${t.displayTag()}`}
                     options={options}
                     token={t}
-                    onExtendWordList={this.props.onExtendWordList} />
+                    onChangeSelected={this.props.onChangeSelected} />
             } )}
         </Row>
         

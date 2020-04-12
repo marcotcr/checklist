@@ -1,6 +1,4 @@
 import { utils } from "../Utils";
-import { Template } from "./Template";
-import { templateStore } from "./TemplateStore";
 import { RawTemplateToken } from "../Interface";
 
 
@@ -31,7 +29,6 @@ export class TemplateToken {
     }
 
     public isGeneralMask(): boolean {
-        console.log(this.normalizeTag, this.normalizeTag.replace(/\d+$/, "").toLowerCase());
         return this.normalizeTag.replace(/\d+$/, "").toLowerCase() === "bert";
     }
 
@@ -40,7 +37,6 @@ export class TemplateToken {
     }
 
     public isEmptyMask(): boolean {
-        console.log(this.normalizeTag, this.normalizeTag.replace(/\d+$/, "").toLowerCase());
         return this.isGeneralMask() && this.default === "";
     }
 

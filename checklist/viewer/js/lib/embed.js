@@ -7,10 +7,6 @@
 // Export widget models and views, and the npm package version number.
 export var version =  require('../package.json').version;
 
-import * as TestRater from '../src/components/test_rater/viewer.tsx'
-export var TestRaterModel = TestRater.Model;
-export var TestRaterView = TestRater.View;
-
 import * as TemplateEditor from '../src/components/template_editor/viewer.tsx';
 export var TemplateEditorModel = TemplateEditor.Model;
 export var TemplateEditorView = TemplateEditor.View;

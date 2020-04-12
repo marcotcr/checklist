@@ -50,44 +50,26 @@ export const View = widgets.DOMWidgetView.extend({
     */
     // to get data from the backend
     onSuggestChanged: function(redraw: boolean=false): void {
-        templateStore.bertSuggests = this.model.get("suggest_dict");
+        templateStore.setBertSuggests(this.model.get("bert_suggests"));
         //if (redraw) { this.renderApp(); }
     },
-    onCandidateChanged: function(redraw: boolean=false): void {
+    onTagDictChanged: function(redraw: boolean=false): void {
+        templateStore.setTagDict(this.model.get("tag_dict"))
         //templateStore.setSources(this.model.get("sources"));
         //templateStore.setOriToken(this.model.get("masked_tokens"));
         
         //if (redraw) { this.renderApp(); }
     },
-    onSentenceChanged: function(redraw: boolean=false): void {
+    onTemplatesChanged: function(redraw: boolean=false): void {
+        templateStore.setTemplate(this.model.get("templates"))
         //templateStore.setSources(this.model.get("sources"));
         //templateStore.setOriToken(this.model.get("masked_tokens"));
         
         //if (redraw) { this.renderApp(); }
     },
 
-    // frontend value.
-    onReset: function(): void {
-        //templateStore.reset();
-        this.renderApp();
-    },
-
-    onGetSuggestion: function(): void {
-        // save the masked token list to the backend
-        const maskedTokens = templateStore.templates.map(t => t.serialize())
-        this.send({event: 'get_suggest', masked_tokens: maskedTokens});
-        this.renderApp();
-    },
-
-    onConfirmFillIn: function(): void {
-        console.log(templateStore.tagDict);
-        const maskedTokens = templateStore.templates.map(t => t.serialize())
-        this.send({event: 'confirm_fillin', fillin_dict: templateStore.tagDict, masked_tokens: maskedTokens});
-        //this.renderApp();
-    },
-
-    onAddNewWordList: function(name: string, wordList: string[]): void {
-        this.send({event: 'add_new_wordlist', name: name, word_list: wordList});
+    onChangeSelected: function(selected_idxes: string[]): void {
+        this.send({event: 'select_suggests', idxes: selected_idxes});
         //this.renderApp();
     },
 
@@ -97,40 +79,31 @@ export const View = widgets.DOMWidgetView.extend({
         }
         const $app = document.createElement("div");
         $app.setAttribute("id", "app-wrapper");
-        /*
-        const wrapper = <TemplateEditor 
-            onReset={this.onReset}
-            onExtendWordList={this.onAddNewWordList}
-            onGetSuggestion={this.onGetSuggestion}
-            onConfirmFillIn={this.onConfirmFillIn}/>
-        */
-       const wrapper = null;
+        
+        const wrapper = <TemplateEditor onChangeSelected={this.onChangeSelected} />
+    
         ReactDOM.render(wrapper, $app);
         this.el.appendChild($app);
     },
 
     render: function() {
-        // bind functions
-        //this.savedChanged = this.savedChanged.bind(this);
-        //this.onChangeMask = this.onChangeMask.bind(this);
-        this.onReset = this.onReset.bind(this);
-        this.onAddNewWordList = this.onAddNewWordList.bind(this);
-        this.onSentenceChanged = this.onSentenceChanged.bind(this);
         this.onSuggestChanged = this.onSuggestChanged.bind(this);
-        this.onCandidateChanged = this.onCandidateChanged.bind(this);
-        this.onConfirmFillIn = this.onConfirmFillIn.bind(this);
-        this.onGetSuggestion = this.onGetSuggestion.bind(this);
+        this.onTagDictChanged = this.onTagDictChanged.bind(this);
+        this.onTemplatesChanged = this.onTemplatesChanged.bind(this);
+
         this.renderApp = this.renderApp.bind(this);
+        this.onChangeSelected = this.onChangeSelected.bind(this);
+
         // init the value
-        this.onSentenceChanged(false);
+        this.onTagDictChanged(false);
         this.onSuggestChanged(false);
-        this.onCandidateChanged(false);
+        this.onTemplatesChanged(false);
         this.renderApp();
 
         // Python -> JavaScript update
-        this.listenTo(this.model, 'change:suggest_dict', this.onSuggestChanged, this);
-        this.listenTo(this.model, 'change:masked_tokens', this.onMaskTokenChanged, this);
-        this.listenTo(this.model, 'change:sources', this.onCandidateChanged, this);
+        this.listenTo(this.model, 'change:tag_dict', this.onTagDictChanged, this);
+        this.listenTo(this.model, 'change:bert_suggests', this.onSuggestChanged, this);
+        this.listenTo(this.model, 'change:templates', this.onTemplatesChanged, this);
 
     }
 });
