@@ -25,7 +25,6 @@ export class PerTemplateEditor extends React.Component<PerTemplateEditorProps, {
 
     public render(): JSX.Element {
         let bertIdx: number = 0;
-        console.log(templateStore.bertSuggests)
         return <Row style={{display: "flex", flexWrap: "wrap"}}>
             {this.template.tokens.map((t: TemplateToken, idx: number) => {
                 const options = t.isGeneralMask() ? 

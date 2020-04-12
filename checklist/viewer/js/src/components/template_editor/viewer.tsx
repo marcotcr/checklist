@@ -9,7 +9,8 @@ import * as ReactDOM from 'react-dom';
 import { TemplateEditor } from './TemplateEditor';
 import '../../style.css';
 import { templateStore } from '../../stores/templates/TemplateStore';
- 
+import  $ from 'jquery';
+
 
 // Custom Model. Custom widgets models must at least provide default values
 // for model attributes, including
@@ -84,6 +85,9 @@ export const View = widgets.DOMWidgetView.extend({
     
         ReactDOM.render(wrapper, $app);
         this.el.appendChild($app);
+        $('.checklist').scroll(function(){
+            $('.checklist').scrollTop($(this).scrollTop());    
+        })
     },
 
     render: function() {

@@ -31,21 +31,20 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
     }
 
     public componentDidMount() {
-        $('.checklist').scroll(function(){
-            $('.checklist').scrollTop($(this).scrollTop());    
-        })
-
         if ((window as any).Jupyter) {
             (window as any).Jupyter.keyboard_manager.disable();
         }
+        $('.checklist').scroll(function(){
+            $('.checklist').scrollTop($(this).scrollTop());    
+        })
     }
     public componentDidUpdate() {
-        $('.checklist').scroll(function(){
-            $('.checklist').scrollTop($(this).scrollTop());    
-        })
         if ((window as any).Jupyter) {
             (window as any).Jupyter.keyboard_manager.disable();
         }
+        $('.checklist').scroll(function(){
+            $('.checklist').scrollTop($(this).scrollTop());    
+        })
     }
 
 
@@ -70,13 +69,13 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
         const colorClass = this.token.isGeneralMask() ? 
             "mask-token" : 
             this.token.isAbstract() ? "abstract-token": "";
-        const token = <span className={`template-token ${colorClass}`}>
+        const token = <span 
+            className={`template-token ${this.token.isEmptyMask() ? colorClass : ""}`}>
             {this.token.needArticle && !this.token.isEmptyMask() ?
                 <span className="article-token">
                 {`${utils.genArticle(this.token.default)} `}</span> : null}
             {this.token.displayStr()}
         </span>;
-
         if (this.token.isAbstract() && !this.token.isEmptyMask()) {
             return <Badge 
                 //style={{backgroundColor: color, top: -15, opacity: 0.8}}
@@ -91,6 +90,9 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
         if (this.options.length === 0) {
             return null;
         }
+        $('.checklist').scroll(function(){
+            $('.checklist').scrollTop($(this).scrollTop());    
+        })
         return <div 
             key={this.props.token.displayTag() + this.props.token.key()}
             className="full-width">
@@ -106,7 +108,13 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
                 <i>Check All</i>
             </Checkbox>
             </div>
-            <div style={{height: 100}} className="checklist full-width overflow-y">
+            <div 
+                onScroll={() => {
+                    $('.checklist').scroll(function(){
+                        $('.checklist').scrollTop($(this).scrollTop());    
+                    })
+                }}
+                style={{height: 100}} className="checklist full-width overflow-y">
             <Checkbox.Group 
                 value={templateStore.selectedSuggestIdxes} 
                 onChange={this.onSelectSuggests}>
@@ -132,6 +140,9 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             { this.colorToken() }
         </Popover>
         */
+        $('.checklist').scroll(function(){
+            $('.checklist').scrollTop($(this).scrollTop());    
+        })
         return <div className="template-token-box" key={`${this.token.key()}`}>
             {this.colorToken()}
             <Row>{this.SuggestChecklist()}</Row>

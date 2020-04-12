@@ -35,6 +35,7 @@ export class TemplateStoreClass {
         if (!suggests) {
             this.bertSuggests = [];
         }
+        this.selectedSuggestIdxes = [];
         this.bertSuggests = suggests.map((s: string[]|string) => typeof(s) === "string" ? [s] : s);
     }
 

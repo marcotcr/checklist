@@ -1,15 +1,10 @@
 import ipywidgets as widgets
 from traitlets import Unicode, List, Dict
-from collections import defaultdict
 import os
 import typing
 import itertools
-from nltk.tokenize import MWETokenizer, word_tokenize
-from copy import deepcopy
-
-from .template import Template
-from .token import Token
-from .fake_data import candidate_dict
+from spacy.attrs import LEMMA, ORTH, NORM
+from spacy.lang.en import English
 
 try:
     from IPython.core.display import display, Javascript
@@ -32,125 +27,75 @@ class TemplateEditor(widgets.DOMWidget):
     _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode('^0.1.0').tag(sync=True)
 
-    ori_str = Unicode('', help="The original sentence that needs to be tested.").tag(sync=True)
-    masked_tokens = List([], help="The token list, with edited masks.").tag(sync=True)
-    sources = List([], help="The name of the candidates lists").tag(sync=True)
-    suggest_dict = Dict({}, help="The suggested tokens, for each sentence").tag(sync=True)
+    templates = List([], help="The template list, with tags and masks.").tag(sync=True)
+    bert_suggests = List([], help="The BERT suggestion list").tag(sync=True)
 
     def __init__(self, \
-        sentences: typing.Dict[str, str], \
-        sources: typing.List[str], \
-        suggest_fn: typing.Callable, \
-        get_testcase_fn: typing.Callable, \
-        add_word_list_fn: typing.Callable, \
-        processor,
-        allowed_sources: typing.List[str]=None,
+        template_strs: typing.List[str], \
+        tagged_keys: typing.List[str], \
+        tag_dict: typing.Dict[str, str], \
+        bert_suggests: typing.List[typing.Union[str, tuple]], \
+        format_fn: typing.Callable, \
+        select_suggests_fn: typing.Callable, \
         **kwargs):
         widgets.DOMWidget.__init__(self, **kwargs)
-        self.processor = processor
-        self.add_word_list_fn = add_word_list_fn
-        self.allowed_sources = allowed_sources if allowed_sources else None
-        #sources = self.set_allowed_resources(allowed_sources, sources)
-        self.set_resources(sources)
-        self.set_ori_tokens(sentences)
-        self.suggest_fn = suggest_fn
-        self.get_testcase_fn = get_testcase_fn
-        #super(TemplateCtrler, self).__init__(**kwargs)
-        # #print(value)
-        # Configures message handler
+        self.format_fn = format_fn
+        self.select_suggests_fn = select_suggests_fn
+
+        nlp = English()
+        # ONLY do tokenization here
+        self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
+        self.bert_suggests = bert_suggests
+        self.templates = [
+            self.tokenize_template_str(s, tagged_keys, tag_dict) for \
+            s in template_strs]
         self.on_msg(self.handle_events)
+    
+    def tokenize_template_str(self, template_str, tagged_keys, tag_dict, max_count=3):
+        tagged_keys = list(tagged_keys)
+        trans_keys = ["{" + key + "}" for key in tagged_keys]
+        #keys = list(fillins.keys()) + [bert_key]
+        for idx, key in enumerate(tagged_keys):
+            case = [{LEMMA: key.split(":")[-1], NORM: key, ORTH: trans_keys[idx] }]
+            self.tokenizer.add_special_case(trans_keys[idx], case)
+        tokens = self.tokenizer(template_str)
+        template_tokens = []
+        item_keys = [x[0] for x in tag_dict.items()]
+        item_vals = [[x[1][:max_count]] if type(x[1][:max_count]) not in [list, tuple] else x[1] for x in tag_dict.items()]
+        local_items = []
+        for item_val in itertools.product(*item_vals):
+            if len(item_val) != len(set([str(x) for x in item_val])):
+                continue
+            local_item = {item_keys[i]: item_val[i] for i, _ in enumerate(item_val)}
+            local_items.append(local_item)                    
 
-    def set_allowed_resources(self, allowed_sources, sources):
-        if type(allowed_sources) == list:
-            self.allowed_sources = allowed_sources
-        elif type(allowed_sources) == dict:
-            for name, word_list in allowed_sources.items():
-                self.add_word_list_fn(name, word_list)
-                if name not in sources:
-                    sources.append(name)
-            self.allowed_sources = list(allowed_sources.keys())
-        else:
-            self.allowed_sources = []
-        return sources
-
-    def set_resources(self, sources):
-        if self.allowed_sources is not None:
-            self.sources = [s for s in self.allowed_sources if s in sources]
-        else:
-            self.sources = sources
-
-    def create_templates(self, sentences):
-        self.templates = []
-        for sentence in sentences:
-            tokens = [Token(**t) for t in sentence["tokens"]]
-            self.templates.append(Template(tokens=tokens, target=sentence["target"]))
-
-    def _tokenizer(self, string: str) -> typing.List[str]:
-        """
-        A customized tokenizer. To make sure [MASK] would be treated as a whole.
-        """
-        version_dict = defaultdict(int)
-        doc = self.processor(string)
-        tokens = []
-        for t in doc:
-            if True or t.ent_type_ == "":
-                tokens.append((t.text, ""))
+        for t in tokens:
+            if t.norm_ in tagged_keys:
+                tag = t.norm_
+                texts = list()
+                for local_item in local_items:
+                    try:
+                        text = self.format_fn(["{" + t.lemma_  +"}"], local_item)[0]
+                        texts.append(text)
+                    except:
+                        pass
+                template_tokens.append((texts, t.norm_))
             else:
-                version_dict[t.ent_type_] += 1
-                tokens.append((t.text, f"{t.ent_type_}{version_dict[t.ent_type_]}"))
-        return tokens
+                template_tokens.append(t.text)
+        return template_tokens
 
     def handle_events(self, _, content, buffers):
         """
         Event handler. Users trigger python functions through the frontend interaction.
         """
-        if content.get('event', '') == 'get_suggest':
-            masked_tokens = content.get("masked_tokens", [])
-            self.create_templates(masked_tokens)
-            self.get_suggestions(self.templates)
-        elif content.get('event', '') == 'confirm_fillin':
-            fillins = content.get("fillin_dict", {})
-            masked_tokens = content.get("masked_tokens", [])
-            self.create_templates(masked_tokens)
-            self.gen_test_cases(self.templates, fillins)
-            # logger.info(output_test_results)
-        elif content.get('event', '') == 'add_new_wordlist':
-            name = content.get("name", None)
-            word_list = content.get("word_list", None)
-            if self.add_word_list_fn is not None:
-                sources, new_source = self.add_word_list_fn(name, word_list)
-                # logger.info(output_test_results)
-                if new_source and self.allowed_sources is not None:
-                    self.allowed_sources.append(new_source)
-                self.set_resources(sources)
-
-
+        if content.get('event', '') == 'select_suggests':
+            idxes = content.get("idxes", [])
+            selected_suggests = [self.bert_suggests[i] for i in idxes]
+            if self.select_suggests_fn:
+                self.select_suggests_fn(selected_suggests)
 
     def render(self):
         """
         Customized renderer. Directly load the bundled index.
         """
         display(Javascript(open(os.path.join(DIRECTORY, 'static', 'index.js')).read()))
-
-    def set_ori_tokens(self, sentences: typing.Dict[str, str]) -> None:
-        """
-        Update the tested str.
-        """
-        self.suggest_dict = { }
-        self.masked_tokens = [
-            {
-                "target" : target,
-                "tokens": self._tokenizer(sentence) if type(sentence) == str else sentence
-            } for target, sentence in sentences.items() ]
-
-    def get_suggestions(self, sentence_tokens: typing.Dict[str, typing.List[str]]) -> None:
-        """
-        The function that gets the suggestions from the backend.
-        """
-        self.suggest_dict = { }
-        self.suggest_dict = self.suggest_fn(sentence_tokens)
-
-    def gen_test_cases(self,
-        templates: typing.List[Template],
-        fillin_dicts: typing.Dict[str, typing.List[str]]) -> typing.List[typing.Dict[str, str]]:
-        self.get_testcase_fn(templates, fillin_dicts)

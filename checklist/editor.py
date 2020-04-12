@@ -8,6 +8,8 @@ import os
 import json
 import munch
 
+from .viewer import TemplateEditor
+
 class SafeFormatter(string.Formatter):
     def vformat(self, format_string, args, kwargs):
         args_len = len(args)  # for checking IndexError
@@ -53,7 +55,6 @@ def recursive_format(obj, mapping, ignore_missing=False):
                     ret += '%s ' % add_article(word).split()[0]
             ret += '{%s}' % thing
             return ret
-        # print(x)
         x = options.sub(mysub, x)
         return formatz(x, mapping)
     return recursive_apply(obj, formatfn, mapping)
@@ -126,6 +127,18 @@ def get_all_strings(obj):
             ret = ret.union(x)
     return set([x for x in ret if x])
 
+def get_all_strings_ordered(obj):
+    ret = list()
+    if type(obj) in [str, bytes]:
+        ret.append(obj)
+    elif type(obj) in [tuple, list, dict]:
+        if type(obj) == dict:
+            obj = obj.values()
+        k = [get_all_strings(x) for x in obj]
+        for x in k:
+            ret += x
+    return [x for x in ret if x]
+
 def wrapped_random_choice(x, *args, **kwargs):
     try:
         return np.random.choice(x, *args, **kwargs)
@@ -147,6 +160,7 @@ class Editor(object):
         self.data['names'] = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'names.json')))
         self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
 
+        self.temp_selects = []
 
     def __getattr__(self, attr):
         if attr == 'tg':
@@ -172,6 +186,8 @@ class Editor(object):
         #     replace_with_bert = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{bert}', x)
         #     templates = recursive_apply(templates, replace_with_bert)
         bert_index, ops = get_bert_index(templates)
+        #print(templates)
+        #print(self.template(templates, **kwargs, bert_only=True))
         if not bert_index:
             return []
         if len(bert_index) != 1:
@@ -182,6 +198,30 @@ class Editor(object):
             print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
         return xs
 
+    def _set_temp_selects(self, bert_suggests):
+        self.temp_selects = bert_suggests
+        return self.temp_selects
+
+
+    def visual_suggest(self, templates, **kwargs):
+        tagged_keys = find_all_keys(templates)
+        template_strs = get_all_strings_ordered(templates)
+        items = self._get_fillin_items(tagged_keys, max_count=5, **kwargs)
+        kwargs["verbose"] = False
+        bert_suggests = self.suggest(templates, **kwargs)
+
+        if not bert_suggests:
+            raise Exception('No valid suggestions for the given template!')
+        self.temp_selects = []
+        return template_strs, tagged_keys, items, bert_suggests
+        return TemplateEditor(
+            template_strs=template_strs,
+            tagged_keys=tagged_keys,
+            tag_dict=items,
+            bert_suggests=bert_suggests[:50],
+            format_fn=recursive_format,
+            select_suggests_fn=self._set_temp_selects
+        )
 
     def add_lexicon(self, name, values, overwrite=False):
         # words can be strings, dictionarys, and other objects
@@ -189,23 +229,12 @@ class Editor(object):
             raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
         self.lexicons[name] = values
 
-
-    def template(self, templates, return_meta=False, nsamples=None,
-                 product=True, remove_duplicates=False, bert_only=False,
-                 unroll=False, save=False, **kwargs):
-    # 1. go through object, find every attribute inside brackets
-    # 2. check if they are in kwargs and self.attributes
-    # 3. generate keys and vals
-    # 4. go through object, generate
-        templates = copy.deepcopy(templates)
-        saved = templates
-        all_keys = find_all_keys(templates)
+    def _get_fillin_items(self, all_keys, max_count=None, **kwargs):
         items = {}
         bert_match = re.compile(r'bert\d*')
         for k in kwargs:
             if re.search(r'\d+$', k):
                 raise(Exception('Error: keys cannot end in integers, we use that to index multiple copies of the same key (offending key: "%s")' % k))
-
         for k in all_keys:
             # TODO: process if ends in number
             # TODO: process if is a:key to add article
@@ -221,7 +250,23 @@ class Editor(object):
                 items[k] = self.lexicons[newk]
             else:
                 raise(Exception('Error: key "%s" not in items or lexicons' % newk))
+            if max_count:
+                items[k] = items[k][:max_count]
+        return items
+
+    def template(self, templates, return_meta=False, nsamples=None,
+                 product=True, remove_duplicates=False, bert_only=False,
+                 unroll=False, save=False, **kwargs):
+    # 1. go through object, find every attribute inside brackets
+    # 2. check if they are in kwargs and self.attributes
+    # 3. generate keys and vals
+    # 4. go through object, generate
+        templates = copy.deepcopy(templates)
+        saved = templates
+        all_keys = find_all_keys(templates)
+        items = self._get_fillin_items(all_keys, **kwargs)
         bert_index, bert_options = get_bert_index(templates)
+
         for bert, strings in bert_index.items():
             # ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
             ks = {}

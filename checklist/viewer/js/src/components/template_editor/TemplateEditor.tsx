@@ -60,9 +60,10 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
 
 
     public render(): JSX.Element {
-        return <Row key={templateStore.templates.map(t => t.key()).join("-")} gutter={30}>
+        return <Row 
+            style={{marginTop: 15}}
+            key={templateStore.templates.map(t => t.key()).join("-")} gutter={30}>
             <Col span={17}>
-
                 <List
                     itemLayout="horizontal"
                     dataSource={templateStore.templates}
