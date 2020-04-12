@@ -7,6 +7,7 @@ import { TemplateToken } from '../../stores/templates/TemplateToken';
 
 import { TokenSpan } from './TokenSpan';
 import { templateStore } from '../../stores/templates/TemplateStore';
+import { utils } from '../../stores/Utils';
 
 interface PerTemplateEditorProps {
     template: Template;
@@ -28,7 +29,8 @@ export class PerTemplateEditor extends React.Component<PerTemplateEditorProps, {
         return <Row style={{display: "flex", flexWrap: "wrap"}}>
             {this.template.tokens.map((t: TemplateToken, idx: number) => {
                 const options = t.isGeneralMask() ? 
-                    templateStore.bertSuggests.map(b => b[bertIdx]) : [];
+                    templateStore.bertSuggests.map(b => b[bertIdx]) : 
+                    t.candidates.filter(utils.uniques);
                 bertIdx += t.isGeneralMask() ? 1 : 0;
                 return <TokenSpan 
                     key={`${t.key()}-${idx}-${t.displayTag()}`}
