@@ -1,0 +1,205 @@
+@import '~antd/dist/antd.css';
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100vh;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.overflow {
+    overflow: auto;
+}
+
+.overflow-y {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.overflow-height {
+    max-height: 100px;
+}
+
+
+.display-table-cell {
+    display: table-cell;
+}
+
+/* FOR EXAMPLES */
+
+.testcase-block {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: solid;
+    background: #f8f8f8;
+}
+
+.sentence-mark-token {
+    font-weight: bold;
+    font-family: "Courier New", Courier;
+    background-color: #969696;
+    color: white;
+    padding: 2px;
+    margin-right: 10px;
+}
+
+
+.example-token.rewrite-arrow {
+    /* this should overwrite whatever default color it has. */
+    font-size: 10px!important;
+    font-weight: bold!important;
+}
+
+.example-token.rewrite-add {
+    /* this should overwrite whatever default color it has. */
+    background: #e5faf5!important;
+    color: #007857!important;
+}
+  
+.example-token.rewrite-remove {
+    background: #ffefea!important;
+    color: #d35229!important;
+    /* text-decoration: line-through!important; */
+}
+
+/* FOR TEMPLATES */
+
+.template-token-box {    
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 7px;
+    background-color: #efefef;
+}
+
+.template-token-box.has-abstract {    
+    display: inline-block;
+    min-width: 120px;
+    margin-bottom: 10px;
+    padding: 7px;
+    background-color: #efefef;
+}
+
+.template-token {
+    white-space: pre;
+    /*margin-top: 1px!important; */
+    /*margin-bottom: 1px!important; */
+    font-weight: bold;
+    font-family: "Courier New", Courier;
+    font-size: 17px;
+    display: inline-block;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    background-color: #efefef;
+
+}
+
+.template-token.mask-token {
+    background-color: #1890ff!important;
+    color: white;
+    padding-left: 7px;
+    padding-right: 7px;
+    border-radius: 10px;
+}
+
+.mask-token sup {
+    background-color: #1890ff!important;
+}
+
+.abstract-token sup {
+    background-color: #ababab!important; /*#faad14*/
+}
+
+.example-token {
+    color: #696969;
+}
+
+.example-token.mask-token:not(.article-token) {
+    color: #1890ff!important;
+    background: none;
+}
+
+.example-token.abstract-token:not(.article-token) {
+    background: #eee;
+}
+
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 80px;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.badge sup {
+    top: -10px;
+    opacity: 0.8;
+}
+
+
+.info-header {
+    font-weight: bold;
+    color: steelblue;
+    font-variant-caps: all-petite-caps;
+}
+
+.header {
+    width: 100%;
+    height: 22px;
+    border-color: grey;
+    border-bottom: 1px solid;
+}
+
+
+
+
+.compact-divider {
+    margin: 8px 0px;
+}
+
+.test-desc.title {
+    text-align: right;
+    font-weight: bold;
+}
+
+.test-desc.content {
+    text-align: left;
+}
+
+details {
+    display: none;
+}
+
+.vega-embed {
+    bottom: 0px;
+}
+
+.compact .ant-list-item {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.article-token {
+    color: #aaa;
+    font-style: italic;
+}
+
+.tag-candidate-token {
+    color: #aaa;
+}
+.tag-candidate-token.info-header {
+    color: grey;
+}
+.tag-candidate-token.ellipsis {
+    max-width: 100px;
+}

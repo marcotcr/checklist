@@ -1,0 +1,5 @@
+checklist.egg-info/
+__pycache__
+.ipynb_checkpoints
+v8-compile-cache-0
+node_modules
