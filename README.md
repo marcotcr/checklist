@@ -25,6 +25,9 @@ The demo is in `./notebooks/Interactive Demo.ipynb`.
 ```py
 test.visual_summary()
 ```
+![fig](./figs/test_summary_sentiment.gif)
+
+![fig](./figs/test_summary_qqp.gif)
 
 #### Contains
 1. Test stats of
@@ -51,6 +54,9 @@ test.visual_summary()
 editor.visual_suggest(templates, **kwargs)
 # after the change on checkbox selection, the result will get into `editor.temp_selects`
 ```
+![fig](./figs/template_editor_sentiment.gif)
+
+![fig](./figs/template_editor_qqp.gif)
 
 #### Contains
 Temlate tokens that distinguish:
