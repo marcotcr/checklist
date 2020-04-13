@@ -51,7 +51,7 @@ class TemplateEditor(widgets.DOMWidget):
             s in template_strs]
         self.on_msg(self.handle_events)
     
-    def tokenize_template_str(self, template_str, tagged_keys, tag_dict, max_count=3):
+    def tokenize_template_str(self, template_str, tagged_keys, tag_dict, max_count=5):
         tagged_keys = list(tagged_keys)
         trans_keys = ["{" + key + "}" for key in tagged_keys]
         #keys = list(fillins.keys()) + [bert_key]
@@ -61,13 +61,13 @@ class TemplateEditor(widgets.DOMWidget):
         tokens = self.tokenizer(template_str)
         template_tokens = []
         item_keys = [x[0] for x in tag_dict.items()]
-        item_vals = [[x[1][:max_count]] if type(x[1][:max_count]) not in [list, tuple] else x[1] for x in tag_dict.items()]
+        item_vals = [[x[1][:max_count]] if type(x[1]) not in [list, tuple] else x[1][:max_count] for x in tag_dict.items()]
         local_items = []
         for item_val in itertools.product(*item_vals):
             if len(item_val) != len(set([str(x) for x in item_val])):
                 continue
             local_item = {item_keys[i]: item_val[i] for i, _ in enumerate(item_val)}
-            local_items.append(local_item)                    
+            local_items.append(local_item)
 
         for t in tokens:
             if t.norm_ in tagged_keys:

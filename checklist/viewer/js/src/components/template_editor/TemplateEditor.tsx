@@ -84,7 +84,7 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
                 <h4 className="header">Preview</h4>
                 <div 
                 key={templateStore.templates.map(t => t.key()).join("-")}
-                style={{maxHeight: 400, overflow: "auto"}}>
+                style={{maxHeight: templateStore.templates.length * 200, overflow: "auto"}}>
                 <List
                     itemLayout="horizontal"
                     size="small"

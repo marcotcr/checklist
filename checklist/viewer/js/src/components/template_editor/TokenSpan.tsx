@@ -70,7 +70,8 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             "mask-token" : 
             this.token.isAbstract() ? "abstract-token": "";
         const token = <span 
-            className={`template-token ${this.token.isEmptyMask() ? colorClass : ""}`}>
+            className={
+                `template-token ${this.token.isEmptyMask() ? colorClass : ""}`}>
             {this.token.needArticle && !this.token.isEmptyMask() ?
                 <span className="article-token">
                 {`${utils.genArticle(this.token.default)} `}</span> : null}
@@ -141,7 +142,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
         return <div 
             key={this.props.token.displayTag() + this.props.token.key()}
             className="full-width">
-            <div><b className='info-header tag-candidate-token'>More Samples</b></div>
+            <div><b className='info-header tag-candidate-token'>More Word</b></div>
             <div style={{height: 121}} className="full-width overflow-y">
             <Row>
                 {this.options.map((s, idx: number) => 
@@ -163,10 +164,11 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             { this.colorToken() }
         </Popover>
         */
-        $('.checklist').scroll(function(){
-            $('.checklist').scrollTop($(this).scrollTop());    
-        })
-        return <div className="template-token-box" key={`${this.token.key()}`}>
+       if (this.token === null) {
+           return null;
+       }
+        const absClass = this.token.isAbstract() ? "has-abstract" : "";
+        return <div className={`template-token-box ${absClass}`} key={`${this.token.key()}`}>
             {this.colorToken()}
             <Row>{ this.token.isGeneralMask() ? this.SuggestChecklist() : this.TagCandidate()}</Row>
         </div>

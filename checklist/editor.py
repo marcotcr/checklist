@@ -213,7 +213,7 @@ class Editor(object):
         if not bert_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.temp_selects = []
-        return template_strs, tagged_keys, items, bert_suggests
+        #return template_strs, tagged_keys, items, bert_suggests
         return TemplateEditor(
             template_strs=template_strs,
             tagged_keys=tagged_keys,

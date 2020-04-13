@@ -30,7 +30,7 @@ export class PerTemplateEditor extends React.Component<PerTemplateEditorProps, {
             {this.template.tokens.map((t: TemplateToken, idx: number) => {
                 const options = t.isGeneralMask() ? 
                     templateStore.bertSuggests.map(b => b[bertIdx]) : 
-                    t.candidates.filter(utils.uniques);
+                    t.candidates.filter(utils.uniques).filter(w => w !== t.default);
                 bertIdx += t.isGeneralMask() ? 1 : 0;
                 return <TokenSpan 
                     key={`${t.key()}-${idx}-${t.displayTag()}`}

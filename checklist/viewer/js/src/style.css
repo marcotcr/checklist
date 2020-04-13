@@ -75,7 +75,14 @@ body {
 
 .template-token-box {    
     display: inline-block;
-    min-width: 110px;
+    margin-bottom: 10px;
+    padding: 7px;
+    background-color: #efefef;
+}
+
+.template-token-box.has-abstract {    
+    display: inline-block;
+    min-width: 120px;
     margin-bottom: 10px;
     padding: 7px;
     background-color: #efefef;
