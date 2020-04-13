@@ -1,4 +1,5 @@
 import collections
+from collections import defaultdict, OrderedDict
 import dill
 from .abstract_test import load_test, read_pred_file
 from .mft import MFT
@@ -6,9 +7,8 @@ from .inv_dir import INV, DIR
 
 class TestSuite:
     def __init__(self, format_example_fn=None, print_fn=None):
-        self.tests = {}
-        self.by_capability = collections.defaultdict(lambda: set())
-        self.info = collections.defaultdict(lambda: collections.defaultdict(lambda: ''))
+        self.tests = OrderedDict()
+        self.info = defaultdict(lambda: defaultdict(lambda: ''))
         self.format_example_fn = format_example_fn
         self.print_fn = print_fn
 
@@ -28,7 +28,6 @@ class TestSuite:
         }
         typez = type_map[type(test)]
         self.tests[name] = test
-        self.by_capability[capability].add(name)
         self.info[name]['capability'] = capability
         self.info[name]['type'] = typez
         if description:
@@ -37,6 +36,12 @@ class TestSuite:
             self.info[name]['format_example_fn'] = format_example_fn
         if print_fn:
             self.info[name]['print_fn'] = format_example_fn
+
+    def remove(self, name):
+        if name not in self.tests:
+            raise(Exception('%s not in suite.' % name))
+        del self.tests[name]
+        del self.info[name]
 
     def to_raw_file(self, path, file_format=None, format_fn=None, header=None, n=None, seed=None):
         ret = ''
@@ -74,14 +79,16 @@ class TestSuite:
 
     def summary(self, types=None, capabilities=None, **kwargs):
         vals = collections.defaultdict(lambda: 100, {'MFT': 0, 'INV': 1, 'DIR': 2})
+        tests = self.tests.keys()
         capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'Temporal', 'Fairness', 'SRL', 'Coref', 'Negation', 'Logic']
-
-        for capability, tests in sorted(self.by_capability.items(), key=lambda x: capability_order.index(x) if x in capability_order else 100):
+        cap_order = lambda x:capability_order.index(x) if x in capability_order else 100
+        caps = sorted(set([x['capability'] for x in self.info.values()]), key=cap_order)
+        for capability in caps:
             if capabilities is not None and capability not in capabilities:
                 continue
             print(capability)
             print()
-            tests = sorted(tests, key=lambda x:(vals[self.info[x]['type']], x))
+            tests = [x for x in self.tests if self.info[x]['capability'] == capability]
             for n in tests:
                 if types is not None and self.info[n]['type'] not in types:
                     continue
@@ -90,7 +97,6 @@ class TestSuite:
                     kwargs['format_example_fn'] = self.info[n].get('format_example_fn', self.format_example_fn)
                 if 'print_fn' not in kwargs:
                     kwargs['print_fn'] = self.info[n].get('print_fn', self.print_fn)
-
                 self.tests[n].summary(**kwargs)
                 print()
                 print()
