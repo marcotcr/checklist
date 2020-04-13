@@ -1,4 +1,3 @@
-from .mask_editor import MaskEditor
 from .template_editor import TemplateEditor
 from .test_summarizer import TestSummarizer
 

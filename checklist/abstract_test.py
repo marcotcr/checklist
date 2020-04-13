@@ -359,5 +359,4 @@ class AbstractTest(ABC):
                     "succeed": int(succeed),
                     "tags": []
                 })
-        print(test_info)
         return TestSummarizer(test_info, testcases)
