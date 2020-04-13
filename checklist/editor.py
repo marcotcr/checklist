@@ -10,6 +10,23 @@ import munch
 
 from .viewer import TemplateEditor
 
+class MunchWithAdd(munch.Munch):
+    def __add__(self, other):
+        temp = copy.deepcopy(self)
+        for k in self:
+            try:
+                temp[k] = temp[k] + other[k]
+            except KeyError:
+                raise Exception('Both Munches must have the same keys')
+
+
+        return temp
+
+    def __iadd__(self, other):
+        for k in self:
+            self[k] = self[k] + other[k]
+        return self
+
 class SafeFormatter(string.Formatter):
     def vformat(self, format_string, args, kwargs):
         args_len = len(args)  # for checking IndexError
@@ -254,15 +271,22 @@ class Editor(object):
                 items[k] = items[k][:max_count]
         return items
 
-    def template(self, templates, return_meta=False, nsamples=None,
+    def template(self, templates, nsamples=None,
                  product=True, remove_duplicates=False, bert_only=False,
-                 unroll=False, save=False, **kwargs):
+                 unroll=False, labels=None, meta=False,  save=False, **kwargs):
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
     # 3. generate keys and vals
     # 4. go through object, generate
+        params = locals()
+        ret = MunchWithAdd()
+        del params['kwargs']
+        del params['self']
         templates = copy.deepcopy(templates)
-        saved = templates
+        added_labels = False
+        if labels is not None and type(labels) != int:
+            added_labels = True
+            templates = (templates, labels)
         all_keys = find_all_keys(templates)
         items = self._get_fillin_items(all_keys, **kwargs)
         bert_index, bert_options = get_bert_index(templates)
@@ -287,11 +311,11 @@ class Editor(object):
             ts = recursive_format(strings, ks, ignore_missing=True)
             np.random.seed(1)
             samp = self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
-                                 thisisaratherlongtokenthatwillnotexist=['a'], **kwargs)
+                                 thisisaratherlongtokenthatwillnotexist=['a'], **kwargs).data
             samp += self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
-                                 thisisaratherlongtokenthatwillnotexist=['an'], **kwargs)
-            print(samp)
-            print(len([x for x in samp if ' an ' in x[0]]))
+                                 thisisaratherlongtokenthatwillnotexist=['an'], **kwargs).data
+            # print(samp)
+            # print(len([x for x in samp if ' an ' in x[0]]))
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
             samp = list(set(samp))
             # print(samp)
@@ -307,7 +331,7 @@ class Editor(object):
             if bert_only:
                 return options
         if save:
-            return (saved, items)
+            ret.templates = [(params, items)]
         templates = recursive_apply(templates, replace_bert)
         # print(templates)
         keys = [x[0] for x in items.items()]
@@ -325,8 +349,9 @@ class Editor(object):
                 vals = zip(*vals)
             else:
                 vals = itertools.product(*vals)
-        ret = []
-        ret_maps = []
+        data = []
+        use_meta = meta
+        meta = []
         for v in vals:
             # print(v)
             if remove_duplicates and len(v) != len(set([str(x) for x in v])):
@@ -334,11 +359,17 @@ class Editor(object):
             mapping = dict(zip(keys, v))
             # print(templates)
             # print(mapping)
-            ret.append(recursive_format(templates, mapping))
-            ret_maps.append(mapping)
-        if unroll and ret and type(ret[0]) in [list, np.array, tuple]:
-            ret = [x for y in ret for x in y]
-            ret_maps = [x for y in ret_maps for x in y]
-        if return_meta:
-            return ret, ret_maps
+            data.append(recursive_format(templates, mapping))
+            meta.append(mapping)
+        if unroll and data and type(data[0]) in [list, np.array, tuple]:
+            data = [x for y in data for x in y]
+            meta = [x for y in meta for x in y]
+        if use_meta:
+            ret.meta = meta
+        if added_labels:
+            data, labels = map(list, zip(*data))
+            ret.labels = labels
+        if labels is not None and type(labels) == int:
+            ret.labels = [labels for _ in range(len(data))]
+        ret.data = data
         return ret

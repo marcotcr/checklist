@@ -2,7 +2,7 @@ import numpy as np
 import re
 import os
 import json
-from .editor import recursive_apply
+from .editor import recursive_apply, MunchWithAdd
 
 def load_data():
     cur_folder = os.path.dirname(__file__)
@@ -31,10 +31,13 @@ def process_ret(ret, ret_m=None, meta=False, n=10):
 
 class Perturb:
     data = load_data()
+
     @staticmethod
-    def perturb(data, perturb_fn, keep_original=True, returns_meta=False, nsamples=None, *args, **kwargs):
-        ret = []
-        ret_add = []
+    def perturb(data, perturb_fn, keep_original=True, meta=False, nsamples=None, *args, **kwargs):
+        ret = MunchWithAdd()
+        use_meta = meta
+        ret_data = []
+        meta = []
         order = list(range(len(data)))
         samples = 0
         if nsamples:
@@ -55,9 +58,9 @@ class Perturb:
             p = perturb_fn(d, *args, **kwargs)
             a = []
             x = []
-            if not p:
+            if not p or all([x is None for x in p]):
                 continue
-            if returns_meta:
+            if use_meta:
                 p, a = p
             if type(p) in [np.array, list]:
                 t.extend(p)
@@ -65,13 +68,14 @@ class Perturb:
             else:
                 t.append(p)
                 add.append(a)
-            ret.append(t)
-            ret_add.append(add)
+            ret_data.append(t)
+            meta.append(add)
             samples += 1
             if nsamples and samples == nsamples:
                 break
-        if returns_meta:
-            return ret, ret_add
+        ret.data = ret_data
+        if use_meta:
+            ret.meta = meta
         return ret
 
     @staticmethod
