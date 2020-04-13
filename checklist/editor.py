@@ -286,8 +286,12 @@ class Editor(object):
             # print(strings)
             ts = recursive_format(strings, ks, ignore_missing=True)
             np.random.seed(1)
-            samp = self.template(ts, nsamples=10, remove_duplicates=remove_duplicates, # **kwargs)
-                                 thisisaratherlongtokenthatwillnotexist=['a', 'an'], **kwargs)
+            samp = self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
+                                 thisisaratherlongtokenthatwillnotexist=['a'], **kwargs)
+            samp += self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
+                                 thisisaratherlongtokenthatwillnotexist=['an'], **kwargs)
+            print(samp)
+            print(len([x for x in samp if ' an ' in x[0]]))
             samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
             samp = list(set(samp))
             # print(samp)
