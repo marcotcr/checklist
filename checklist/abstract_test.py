@@ -26,6 +26,15 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
                 pred = int(pred)
             return pred, float(conf)
         format_fn = formatz
+    if file_format == 'pred_and_softmax':
+        def formatz(x):
+            allz = x.split()
+            pred = allz[0]
+            confs = np.array([float(x) for x in allz[1:]])
+            if pred.isdigit():
+                pred = int(pred)
+            return pred, confs
+        format_fn = formatz
     elif file_format is None:
         pass
     else:
@@ -237,7 +246,8 @@ class AbstractTest(ABC):
             print('Test cases run:  %d' % n_run)
         if filtered:
             print('After filtering: %d (%.1f%%)' % (nonfiltered, 100 * nonfiltered / n_run))
-        print('Fails (rate):    %d (%.1f%%)' % (fails, 100 * fails / nonfiltered))
+        if nonfiltered != 0:
+            print('Fails (rate):    %d (%.1f%%)' % (fails, 100 * fails / nonfiltered))
 
     def label_meta(self, i):
         if self.labels is None:
@@ -264,14 +274,15 @@ class AbstractTest(ABC):
             binary = False
             if softmax:
                 if conf.shape[0] == 2:
-                    binary = True
                     conf = conf[1]
+                    return '%.1f %s' % (conf, str(x))
+                elif conf.shape[0] <= 4:
+                    confs = ' '.join(['%.1f' % c for c in conf])
+                    return '%s %s' % (confs, str(x))
+
                 else:
                     conf = conf[pred]
-            if binary:
-                return '%.1f %s' % (conf, str(x))
-            else:
-                return '%s (%.1f) %s' % (pred, conf, str(x))
+                    return '%s (%.1f) %s' % (pred, conf, str(x))
 
         if format_example_fn is None:
             format_example_fn = default_format_example
