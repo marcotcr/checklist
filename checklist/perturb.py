@@ -261,7 +261,10 @@ class Perturb:
             if x == '2' or x == '4':
                 continue
             sub_re = re.compile(r'\b%s\b' % x)
-            change = int(int(x) * .2) + 1
+            try:
+                change = int(int(x) * .2) + 1
+            except:
+                continue
             to_sub = np.random.randint(-min(change, int(x) - 1), change + 1, n * 3)
             to_sub = ['%s' % str(int(x) + t) for t in to_sub if t != x][:n]
             ret.extend([sub_re.sub(n, doc.text) for n in to_sub])

@@ -228,6 +228,7 @@ class TextGenerator(object):
 
     def more_general(self, texts, word, threshold=5, pos=None):
         options = all_possible_hypernyms(word, pos=pos)
+        # print(options)
         return self.filter_options(texts, word, options, threshold)
     def more_specific(self, texts, word, threshold=5, depth=3, pos=None):
         options = all_possible_hyponyms(word, depth=depth, pos=pos)
@@ -245,7 +246,7 @@ class TextGenerator(object):
         return self.filter_options(texts, words[0], options, threshold)
     def antonyms(self, texts, word, threshold=5, pos=None):
         options = all_possible_antonyms(word, pos=pos)
-        print(options)
+        # print(options)
         return self.filter_options(texts, word, options, threshold)
     def synonyms(self, texts, word, threshold=5, pos=None):
         options = all_possible_synonyms(word, pos=pos)
@@ -253,7 +254,7 @@ class TextGenerator(object):
         return self.filter_options(texts, word, options, threshold)
 
     def filter_options(self, texts, word, options, threshold=5):
-        print(options)
+        # print(options)
         if type(texts) != list:
             texts = [texts]
         options = options + [word]
@@ -266,9 +267,9 @@ class TextGenerator(object):
             non_word = [x for x in ret if np.all([y not in ['[UNK]', word] for y in x[0]])]
             score = [x for x in ret if np.all([y in [word, '[UNK]'] for y in x[0]])][0][-1]
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
-            print(text)
-            print(new_ret)
-            print()
+            # print(text)
+            # print(new_ret)
+            # print()
             if text == texts[0]:
                 orig_ret = new_ret
             in_all = in_all.intersection(set([x[0][0] for x in new_ret]))
@@ -299,8 +300,12 @@ class TextGenerator(object):
             words = self.bert_tokenizer.tokenize(text)
         new_ret = []
         for word in words:
+            word = word.strip('Ġ')
             try:
-                ret = self.antonym(text, word, threshold, synonym=synonym)
+                if synonym:
+                    ret = self.synonyms(text, word, threshold)
+                else:
+                    ret = self.antonyms(text, word, threshold)
             except:
                 print('Error', word)
                 print()

@@ -13,11 +13,11 @@ class MFT(AbstractTest):
 class INV(AbstractTest):
     def __init__(self, data, expect=None, threshold=0.1, meta=None, agg_fn='all_except_first', templates=None):
         if expect is None:
-            self.expect = Expect.inv(threshold)
-        super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
+            expect = Expect.inv(threshold)
+        super().__init__(data, expect, labels=None, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=True)
 
 class DIR(AbstractTest):
     def __init__(self, data, expect, meta=None, agg_fn='all_except_first', templates=None):
-        super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
+        super().__init__(data, expect, labels=None, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=True)
