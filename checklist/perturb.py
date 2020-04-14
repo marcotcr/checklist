@@ -33,9 +33,9 @@ class Perturb:
     data = load_data()
 
     @staticmethod
-    def perturb(data, perturb_fn, keep_original=True, meta=False, nsamples=None, *args, **kwargs):
+    def perturb(data, perturb_fn, keep_original=True, nsamples=None, *args, **kwargs):
         ret = MunchWithAdd()
-        use_meta = meta
+        use_meta = kwargs.get('meta', False)
         ret_data = []
         meta = []
         order = list(range(len(data)))
@@ -108,12 +108,12 @@ class Perturb:
         return ''.join(string)
 
     @staticmethod
-    def contractions(sentence):
+    def contractions(sentence, **kwargs):
         expanded = [Perturb.expand_contractions(sentence), Perturb.contract(sentence)]
         return [t for t in expanded if t != sentence]
 
     @staticmethod
-    def expand_contractions(sentence):
+    def expand_contractions(sentence, **kwargs):
         contraction_map = {
             "ain't": "is not", "aren't": "are not", "can't": "cannot",
             "can't've": "cannot have", "could've": "could have", "couldn't":
@@ -157,7 +157,7 @@ class Perturb:
         return contraction_pattern.sub(expand_match, sentence)
 
     @staticmethod
-    def contract(sentence):
+    def contract(sentence, **kwargs):
         reverse_contraction_map = {
             'is not': "isn't", 'are not': "aren't", 'cannot': "can't",
             'could not': "couldn't", 'did not': "didn't", 'does not':

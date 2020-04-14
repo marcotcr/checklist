@@ -2,8 +2,7 @@ import collections
 from collections import defaultdict, OrderedDict
 import dill
 from .abstract_test import load_test, read_pred_file
-from .mft import MFT
-from .inv_dir import INV, DIR
+from .test_types import MFT, INV, DIR
 
 class TestSuite:
     def __init__(self, format_example_fn=None, print_fn=None):

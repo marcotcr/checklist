@@ -38,11 +38,14 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     return preds, confs
 
 class AbstractTest(ABC):
-    def __init__(self):
-        self.data = None
-        self.labels = None
-        self.meta = None
-        self.print_first = None
+    def __init__(self, data, expect, labels=None, meta=None, agg_fn='all', templates=None, print_first=None):
+        self.data = data
+        self.expect = expect
+        self.labels = labels
+        self.meta = meta
+        self.agg_fn = agg_fn
+        self.templates = templates
+        self.print_first = print_first
         self.run_idxs = None
     def save(self, file):
         try:
@@ -67,7 +70,7 @@ class AbstractTest(ABC):
         # test, expect = load_test(file)
         # test.expect = dill.loads(expect)
         # return test
-    
+
     def _extract_examples_per_testcase(
         self, xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
@@ -329,8 +332,8 @@ class AbstractTest(ABC):
             "expect_meta": {},
             "tags": [],
             "stats": {
-                "nfailed": fails, 
-                "npassed": n - filtered - fails, 
+                "nfailed": fails,
+                "npassed": n - filtered - fails,
                 "nfiltered": filtered
             }
         }
