@@ -50,7 +50,7 @@ class TemplateEditor(widgets.DOMWidget):
             self.tokenize_template_str(s, tagged_keys, tag_dict) for \
             s in template_strs]
         self.on_msg(self.handle_events)
-    
+
     def tokenize_template_str(self, template_str, tagged_keys, tag_dict, max_count=5):
         tagged_keys = list(tagged_keys)
         trans_keys = ["{" + key + "}" for key in tagged_keys]

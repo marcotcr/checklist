@@ -89,12 +89,12 @@ def recursive_apply(obj, fn, *args, **kwargs):
         return fn(obj, *args, **kwargs)
         # return obj
 
-def replace_bert(obj):
-    bert_finder = re.compile(r'\{((?:[^\}]*:)?bert\d*)\}')
-    # bert_finder = re.compile(r'\{(bert\d*)\}')
+def replace_mask(obj):
+    mask_finder = re.compile(r'\{((?:[^\}]*:)?mask\d*)\}')
+    # mask_finder = re.compile(r'\{(mask\d*)\}')
     i = 0
-    while bert_finder.search(obj):
-        obj = bert_finder.sub(r'{\1[%d]}' % i, obj, 1)
+    while mask_finder.search(obj):
+        obj = mask_finder.sub(r'{\1[%d]}' % i, obj, 1)
         i += 1
     return obj
 
@@ -111,21 +111,21 @@ def find_all_keys(obj):
             ret.add(r)
     return set([x for x in ret if x])
 
-def get_bert_index(obj):
+def get_mask_index(obj):
     strings = get_all_strings(obj)
     # ?: after parenthesis makes group non-capturing
-    bert_finder = re.compile(r'\{(?:[^\}]*:)?bert\d*\}')
-    bert_rep = re.compile(r'[\{\}]')
+    mask_finder = re.compile(r'\{(?:[^\}]*:)?mask\d*\}')
+    mask_rep = re.compile(r'[\{\}]')
     find_options = re.compile(r'.*:')
     ret = collections.defaultdict(lambda: [])
     options = collections.defaultdict(lambda: '')
     for s in strings:
-        berts = bert_finder.findall(s)
-        nooptions = [bert_rep.sub('', find_options.sub('', x)) for x in berts]
-        ops = [find_options.search(bert_rep.sub('', x)) for x in berts]
+        masks = mask_finder.findall(s)
+        nooptions = [mask_rep.sub('', find_options.sub('', x)) for x in masks]
+        ops = [find_options.search(mask_rep.sub('', x)) for x in masks]
         ops = [x.group().strip(':') for x in ops if x]
         if len(set(nooptions)) > 1:
-            raise Exception('Can only have one bert index per template string')
+            raise Exception('Can only have one mask index per template string')
         if nooptions:
             ret[nooptions[0]].append(s)
             options[nooptions[0]] += ''.join(ops)
@@ -200,23 +200,23 @@ class Editor(object):
 
     def suggest(self, templates, **kwargs):
         # if replace:
-        #     replace_with_bert = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{bert}', x)
-        #     templates = recursive_apply(templates, replace_with_bert)
-        bert_index, ops = get_bert_index(templates)
+        #     replace_with_mask = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{mask}', x)
+        #     templates = recursive_apply(templates, replace_with_mask)
+        mask_index, ops = get_mask_index(templates)
         #print(templates)
-        #print(self.template(templates, **kwargs, bert_only=True))
-        if not bert_index:
+        #print(self.template(templates, **kwargs, mask_only=True))
+        if not mask_index:
             return []
-        if len(bert_index) != 1:
-            raise Exception('Only one bert index is allowed')
-        ret = self.template(templates, **kwargs, bert_only=True)
+        if len(mask_index) != 1:
+            raise Exception('Only one mask index is allowed')
+        ret = self.template(templates, **kwargs, mask_only=True)
         xs = [tuple(x[0]) if len(x[0]) > 1 else x[0][0] for x in ret]
         if kwargs.get('verbose', False):
             print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
         return xs
 
-    def _set_temp_selects(self, bert_suggests):
-        self.temp_selects = bert_suggests
+    def _set_temp_selects(self, mask_suggests):
+        self.temp_selects = mask_suggests
         return self.temp_selects
 
 
@@ -225,17 +225,17 @@ class Editor(object):
         template_strs = get_all_strings_ordered(templates)
         items = self._get_fillin_items(tagged_keys, max_count=5, **kwargs)
         kwargs["verbose"] = False
-        bert_suggests = self.suggest(templates, **kwargs)
+        mask_suggests = self.suggest(templates, **kwargs)
 
-        if not bert_suggests:
+        if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.temp_selects = []
-        #return template_strs, tagged_keys, items, bert_suggests
+        #return template_strs, tagged_keys, items, mask_suggests
         return TemplateEditor(
             template_strs=template_strs,
             tagged_keys=tagged_keys,
             tag_dict=items,
-            bert_suggests=bert_suggests[:50],
+            mask_suggests=mask_suggests[:50],
             format_fn=recursive_format,
             select_suggests_fn=self._set_temp_selects
         )
@@ -248,7 +248,7 @@ class Editor(object):
 
     def _get_fillin_items(self, all_keys, max_count=None, **kwargs):
         items = {}
-        bert_match = re.compile(r'bert\d*')
+        mask_match = re.compile(r'mask\d*')
         for k in kwargs:
             if re.search(r'\d+$', k):
                 raise(Exception('Error: keys cannot end in integers, we use that to index multiple copies of the same key (offending key: "%s")' % k))
@@ -259,7 +259,7 @@ class Editor(object):
             k = re.sub(r'\[.*\]', '', k)
             k = re.sub(r'.*?:', '', k)
             newk = re.sub(r'\d+$', '', k)
-            if bert_match.match(k):
+            if mask_match.match(k):
                 continue
             if newk in kwargs:
                 items[k] = kwargs[newk]
@@ -272,7 +272,7 @@ class Editor(object):
         return items
 
     def template(self, templates, nsamples=None,
-                 product=True, remove_duplicates=False, bert_only=False,
+                 product=True, remove_duplicates=False, mask_only=False,
                  unroll=False, labels=None, meta=False,  save=False, **kwargs):
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
@@ -289,21 +289,21 @@ class Editor(object):
             templates = (templates, labels)
         all_keys = find_all_keys(templates)
         items = self._get_fillin_items(all_keys, **kwargs)
-        bert_index, bert_options = get_bert_index(templates)
+        mask_index, mask_options = get_mask_index(templates)
 
-        for bert, strings in bert_index.items():
+        for mask, strings in mask_index.items():
             # ks = {re.sub(r'.*?:', '', a): '{%s}' % a for a in all_keys}
             ks = {}
             tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
-            ks[bert] = tok
+            ks[mask] = tok
             a_tok = 'thisisaratherlongtokenthatwillnotexist'
-            # print(bert)
-            # print('options:', bert_options[bert])
+            # print(mask)
+            # print('options:', mask_options[mask])
             top = 100
-            find_top = re.search(r't(\d+)', bert_options[bert])
+            find_top = re.search(r't(\d+)', mask_options[mask])
             if find_top:
                 top = int(find_top.group(1))
-            sub_a = lambda x: re.sub(r'{[^:}]*a[^:}]*:(%s)}' % bert, r'{%s} {\1}' % a_tok, x)
+            sub_a = lambda x: re.sub(r'{[^:}]*a[^:}]*:(%s)}' % mask, r'{%s} {\1}' % a_tok, x)
             # print(strings)
             strings = recursive_apply(strings, sub_a)
             ks[a_tok] = '{%s}' % a_tok
@@ -327,12 +327,12 @@ class Editor(object):
             # print(options)
             # print(top)
             v = [x[0] for x in options][:top]
-            items[bert] = v
-            if bert_only:
+            items[mask] = v
+            if mask_only:
                 return options
         if save:
             ret.templates = [(params, items)]
-        templates = recursive_apply(templates, replace_bert)
+        templates = recursive_apply(templates, replace_mask)
         # print(templates)
         keys = [x[0] for x in items.items()]
         vals = [[x[1]] if type(x[1]) not in [list, tuple] else x[1] for x in items.items()]

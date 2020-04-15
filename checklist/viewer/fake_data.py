@@ -1,7 +1,7 @@
 tag_dict = {'pos_adj': 'good', 'air_noun': 'flight', 'intens': 'very'}
 raw_templates = [
     ['It', 'is', ['good', 'a:pos_adj'], ['flight', 'air_noun'], '.'],
-    ['It', ['', 'a:bert'], ['very', 'a:intens'], ['good', 'pos_adj'], ['', 'bert'],'.']
+    ['It', ['', 'a:mask'], ['very', 'a:intens'], ['good', 'pos_adj'], ['', 'mask'],'.']
 ]
 
 suggests = [
@@ -107,13 +107,13 @@ raw_testcases = [
     }
 ]
 
-raw_testresult = { 
+raw_testresult = {
     "name": "Change the PERSON order",
     "type": "inv",
     "expect_meta": {"expected": "equal"},
     "tags": [
-        "person1=Mary", 
-        "person2=Heather", 
+        "person1=Mary",
+        "person2=Heather",
         "person2=Marco",
         "comparative=cooler",
         "comparative=taller"
