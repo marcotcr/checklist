@@ -15,7 +15,17 @@ class TestSuite:
     def from_file(path):
         return load_test(path)
 
-    def add(self, test, name, capability, description=None, format_example_fn=None, print_fn=None, overwrite=False):
+    def add(self, test, name=None, capability=None, description=None, format_example_fn=None, print_fn=None, overwrite=False):
+        if name is None and test.name is None:
+            raise(Exception('If test does not have test.name, you must specify a name'))
+        if capability is None and test.capability is None:
+            raise(Exception('If test does not have test.capabiliy, you must specify a capability'))
+        if name is None:
+            name = test.name
+        if capability is None:
+            capability = test.capability
+        if description is None:
+            description = test.description
         if name in self.tests and not overwrite:
             raise(Exception('There is already a test named %s suite. Run with overwrite=True to overwrite' % name))
         if name in self.info:
@@ -79,7 +89,7 @@ class TestSuite:
     def summary(self, types=None, capabilities=None, **kwargs):
         vals = collections.defaultdict(lambda: 100, {'MFT': 0, 'INV': 1, 'DIR': 2})
         tests = self.tests.keys()
-        capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'Temporal', 'Fairness', 'SRL', 'Coref', 'Negation', 'Logic']
+        capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
         cap_order = lambda x:capability_order.index(x) if x in capability_order else 100
         caps = sorted(set([x['capability'] for x in self.info.values()]), key=cap_order)
         for capability in caps:

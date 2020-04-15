@@ -177,7 +177,7 @@ class Editor(object):
         self.data['names'] = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'names.json')))
         self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
 
-        self.temp_selects = []
+        self.selected_suggestions = []
 
     def __getattr__(self, attr):
         if attr == 'tg':
@@ -215,9 +215,9 @@ class Editor(object):
             print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
         return xs
 
-    def _set_temp_selects(self, mask_suggests):
-        self.temp_selects = mask_suggests
-        return self.temp_selects
+    def _set_selected_suggestions(self, mask_suggests):
+        self.selected_suggestions = mask_suggests
+        return self.selected_suggestions
 
 
     def visual_suggest(self, templates, **kwargs):
@@ -229,7 +229,7 @@ class Editor(object):
 
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
-        self.temp_selects = []
+        self.selected_suggestions = []
         #return template_strs, tagged_keys, items, mask_suggests
         return TemplateEditor(
             template_strs=template_strs,
@@ -237,7 +237,7 @@ class Editor(object):
             tag_dict=items,
             mask_suggests=mask_suggests[:50],
             format_fn=recursive_format,
-            select_suggests_fn=self._set_temp_selects
+            select_suggests_fn=self._set_selected_suggestions
         )
 
     def add_lexicon(self, name, values, overwrite=False):

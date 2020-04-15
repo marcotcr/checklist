@@ -47,7 +47,9 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     return preds, confs
 
 class AbstractTest(ABC):
-    def __init__(self, data, expect, labels=None, meta=None, agg_fn='all', templates=None, print_first=None):
+    def __init__(self, data, expect, labels=None, meta=None, agg_fn='all',
+                 templates=None, print_first=None, name=None, capability=None,
+                 description=None):
         self.data = data
         self.expect = expect
         self.labels = labels
@@ -56,21 +58,10 @@ class AbstractTest(ABC):
         self.templates = templates
         self.print_first = print_first
         self.run_idxs = None
+        self.name = name
+        self.capability = capability
+        self.description = description
     def save(self, file):
-        try:
-            if not hasattr(self, 'inspect_source'):
-                self.inspect_source = inspect.getsource(self.expect)
-        except Exception as e:
-            print('Warning: could not save inspect sourcecode')
-            print(str(e))
-        try:
-            if type(self.agg_fn) != str and not hasattr(self, 'agg_source'):
-                self.agg_source = inspect.getsource(self.agg_fn)
-        except Exception as e:
-            print('Warning: could not save agg_fn sourcecode')
-            print(str(e))
-        # expect = dill.dumps(self.expect, recurse=True)
-        # self.expect = None
         dill.dump(self, open(file, 'wb'), recurse=True)
 
     @staticmethod
