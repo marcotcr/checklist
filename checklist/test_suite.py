@@ -111,5 +111,17 @@ class TestSuite:
                 print()
             print()
             print()
+    
+    def visual_summary_by_name(self, testname):
+        if not testname in self.tests:
+            raise(Exception(f"There's no test named {testname} in the suite!"))
+        test, info = self.tests[testname], self.info[testname]
+        return test.visual_summary(
+            name=testname,
+            capability=info["capability"] if "capability" in info else None,
+            description=info["description"] if "description" in info else None
+        )
+
+
     def save(self, file):
         dill.dump(self, open(file, 'wb'), recurse=True)
