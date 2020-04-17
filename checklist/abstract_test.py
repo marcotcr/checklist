@@ -5,7 +5,7 @@ import numpy as np
 import inspect
 from .expect import iter_with_optional, Expect
 
-from .viewer import TestSummarizer
+from .viewer.test_summarizer import TestSummarizer
 
 def load_test(file):
     dill._dill._reverse_typemap['ClassType'] = type
