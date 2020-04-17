@@ -13,7 +13,9 @@ import { TestStats } from '../../stores/tests/TestStats';
 import * as d3Scale from 'd3-scale';
 
 interface SuiteSummarizerProps {
-  onSelect: (testname: string) => void;
+  	onSelect: (testname: TestResult) => void;
+  	onSearch: () => void;
+    onFetch: () => void;
 }
 
 type CellValue = {
@@ -70,7 +72,11 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 	public renderPerType(tests: TestResult[], maxNameLength: number): JSX.Element {
 		// first, get the types
 		const sources = tests.map(t => {
-			return {name: t.name, key: t.key(), fail_rate: t.testStats}
+			return {
+				name: t.name, 
+				key: t.key(), 
+				test: t,
+				fail_rate: t.testStats}
 		});
 
 		const columns: any[] = [
@@ -80,7 +86,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 					style={{ marginTop: 0, marginBottom: -1}}>{name.padEnd(maxNameLength)}</pre>
 			}, { 
 				title: 'failure rate', dataIndex: 'fail_rate', key: 'fail_rate', 
-				render: (stats: TestStats, __, _) => <div style={{ marginTop: 0, marginBottom: -15}}>
+				render: (stats: TestStats, __, _) => <div style={{ marginTop: 0, marginBottom: -5}}>
 					<pre>
 						<span style={{"verticalAlign": "super", display: "inline"}}>
 							<code>{stats.strRate("fail", true)}</code></span>
@@ -90,18 +96,21 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 				</div>
 			},
 		]
+		type RecordType = {name: string, key: string, test: TestResult, fail_rate: TestStats};
 		return <Table size="small" bordered
 			onExpand={
-				(expanded: boolean, record: {name: string, key: string, fail_rate: TestStats}) => {
-				this.props.onSelect(record.name)
+				(expanded: boolean, record: RecordType) => {
+				this.props.onSelect(record.test);
 			}}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
 				const selectedTest = testStore.testResult;
 				const selectedKey = selectedTest ? selectedTest.key() : "";
-				return selectedKey === record.key ? <Card><TestSummarizer 
+				return selectedKey === record.key ? <div
+					style={{backgroundColor: "white"}}
+					><TestSummarizer 
 					key={`${record.key} ${selectedKey}`}
-					onFetch={ () => {testStore.fetchMoreExample ()}}
-					onSearch={() => { testStore.search() }} /></Card> : null
+					onFetch={this.props.onFetch}
+					onSearch={this.props.onSearch} /></div> : null
 			}}
 			pagination={false}
 			dataSource={sources} columns={columns} />;
@@ -174,6 +183,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 			})
 		})
 		return <Table 
+			key={tests.map(t => t.key()).join("-")}
 			pagination={false}
 			expandedRowRender={this.renderPerCapability}
 			dataSource={sources} columns={columns} />;
@@ -181,7 +191,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 
 	public render(): JSX.Element {
 		if (!suiteStore.overviewTests) { return null; }
-		//console.log(testStore.testResult);
+		console.log(testStore.testResult);
 		return this.renderTable();
 	}
 }

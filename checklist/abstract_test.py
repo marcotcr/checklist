@@ -340,11 +340,7 @@ class AbstractTest(ABC):
                 "nfiltered": filtered
             }
         }
-
-    def visual_summary(self, name=None, description=None, capability=None, n_per_testcase=3):
-        self.check_results()
-        # get the test meta
-        test_info = self.form_test_info(name, description, capability)
+    def form_testcases(self, n_per_testcase=3):
         testcases = []
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
@@ -365,4 +361,11 @@ class AbstractTest(ABC):
                     "succeed": int(succeed),
                     "tags": []
                 })
+        return testcases
+
+    def visual_summary(self, name=None, description=None, capability=None, n_per_testcase=3):
+        self.check_results()
+        # get the test meta
+        test_info = self.form_test_info(name, description, capability)
+        testcases = self.form_testcases(n_per_testcase)
         return TestSummarizer(test_info, testcases)

@@ -27,7 +27,10 @@ export class App extends React.Component<{}, {}> {
             <Layout>
                 <Layout.Content style={{ padding: '50px 50px' }}>
                 <Card>
-                <SuiteSummarizer onSelect={suiteStore.onSelectTest} />
+                <SuiteSummarizer 
+                    onFetch={ () => {testStore.fetchMoreExample ()}}
+                    onSearch={() => { testStore.search() }}
+                    onSelect={suiteStore.onSelectTest} />
                 </Card>
                 <Card>
                 <TemplateEditor onChangeSelected={(idx: number[]) => {console.log(idx)}} />
