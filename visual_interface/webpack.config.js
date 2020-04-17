@@ -25,7 +25,7 @@ module.exports = [
         },
         output: {
             filename: 'extension.js',
-            path: path.resolve(__dirname, '..', 'static'),
+            path: path.resolve(__dirname, '..', 'checklist', 'viewer', 'static'),
             libraryTarget: 'amd'
         }
     },
@@ -42,7 +42,7 @@ module.exports = [
         },
         output: {
             filename: 'index.js',
-            path: path.resolve(__dirname, '..', 'static'),
+            path: path.resolve(__dirname, '..', 'checklist', 'viewer', 'static'),
             libraryTarget: 'amd'
         },
         devtool: 'source-map',
