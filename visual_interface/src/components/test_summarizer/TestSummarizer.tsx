@@ -66,7 +66,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
             </code>
         });
         if (description) {
-            metas.push({key: "Describe", value: <div>{description}</div>});
+            metas.push({key: "Describe", value: <code style={{fontSize: "small"}}>{description}</code>});
         }
         metas.push({
             key: "Result", 
@@ -84,9 +84,9 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         return <Row>
             <h4 className="header">Test Summary</h4>
             {metas.map(desc => {
-                return <Row key={desc.key} gutter={30}>
-                    <Col span={6} className={`test-desc title`}>{desc.key}</Col>
-                    <Col span={18}  className={`test-desc content`}>{desc.value}</Col>
+                return <Row key={desc.key} gutter={10}>
+                    <Col span={5} className={`test-desc title`}>{desc.key}</Col>
+                    <Col span={19}  className={`test-desc content`}>{desc.value}</Col>
                     <Divider className="compact-divider"/>
                 </Row>
             })}
@@ -179,12 +179,14 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         let baseWidth = 200;
         const increment = 30;
         if (testStore.testResult.testStats.nfiltered) { baseWidth += 50};
-        for (let key of ["name", "description", "capability"]) {
+        for (let key of ["name", "capability"]) {
             baseWidth += testStore.testResult[key] ? increment : 0;
         }
-        return <Row gutter={50}>
-            <Col span={9}>{ this.renderDescription() }</Col>
-            <Col span={15}>
+        const description = testStore.testResult["description"]
+        baseWidth += description ? increment * description.split(" ").length / 10  : 0;
+        return <Row gutter={30} className="test-summarizer-panel">
+            <Col span={10}>{ this.renderDescription() }</Col>
+            <Col span={14}>
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>
                 <div 
                 //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}

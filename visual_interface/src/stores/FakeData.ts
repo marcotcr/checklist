@@ -170,17 +170,32 @@ export const rawTestcases: RawTestCase[] = [
     }
 ]
 
-export const rawTestResult: RawTestResult =  { 
-    name: "",
-    type: "inv",
-    capability: "Robustness",
-    description: 'Use positive and negative verbs and adjectives with airline nouns such as seats, pilot, flight, etc. E.g. "This was a bad flight"',
-    tags: [
-        "person1=Mary", 
-        "person2=Heather", 
-        "person2=Marco",
-        "comparative=cooler",
-        "comparative=taller"
-    ],
-    stats: {nfailed: 10, npassed: 20, nfiltered: 20}
- }
+export const rawTestResults: RawTestResult[] = [
+    {
+        'name': 'Sentiment-laden words in context',
+        'description': 'Use positive and negative verbs and adjectives with airline nouns such as seats, pilot, flight, etc. E.g. "This was a bad flight"',
+        'capability': 'Vocabulary',
+        'type': 'mft',
+        'tags': [],
+        'stats': {'nfailed': 1, 'npassed': 2963, 'nfiltered': 0}
+    },
+    {
+        'name': 'intensifiers',
+        'description': 'Test is composed of pairs of sentences (x1, x2), where we add an intensifier\nsuch as "really",or "very" to x2 and expect the confidence to NOT go down (with tolerance=0.1). e.g.:\nx1 = "That was a good flight"\nx2 = "That was a very good flight"\nWe disregard cases where the prediction of x1 is neutral.\n',
+        'capability': 'Vocabulary',
+        'type': 'dir',
+        'tags': [],
+        'stats': {'nfailed': 88, 'npassed': 1909, 'nfiltered': 3}
+    },
+    {
+        'name': 'intensifiers1',
+        'description': 'Test is composed of pairs of sentences (x1, x2), where we add an intensifier\nsuch as "really",or "very" to x2 and expect the confidence to NOT go down (with tolerance=0.1). e.g.:\nWe disregard cases where the prediction of x1 is neutral.\n',
+        'capability': 'Vocabulary',
+        'type': 'dir',
+        'tags': [],
+        'stats': {'nfailed': 82, 'npassed': 1910, 'nfiltered': 8}
+    }
+
+]
+
+export const rawTestResult: RawTestResult = rawTestResults[0]

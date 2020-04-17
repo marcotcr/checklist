@@ -14,3 +14,7 @@ export var TemplateEditorView = TemplateEditor.View;
 import * as TestSummarizer from '../src/components/test_summarizer/viewer.tsx';
 export var TestSummarizerModel = TestSummarizer.Model;
 export var TestSummarizerView = TestSummarizer.View;
+
+import * as SuiteSummarizer from '../src/components/suite_summarizer/viewer.tsx';
+export var SuiteSummarizerModel = SuiteSummarizer.Model;
+export var SuiteSummarizerView = SuiteSummarizer.View;

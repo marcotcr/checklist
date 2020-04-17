@@ -25,6 +25,7 @@ body {
     overflow-y: auto;
 }
 
+
 .overflow-height {
     max-height: 100px;
 }
@@ -33,6 +34,11 @@ body {
 .display-table-cell {
     display: table-cell;
 }
+
+.test-summarizer-panel code {
+    background: none;
+}
+
 
 /* FOR EXAMPLES */
 

@@ -27,7 +27,7 @@ export class TestStore {
     }
 
     public setTest(rawTest: RawTestResult): void {
-        this.testcases = [];
+        this.setTestcases([]);
         this.setTestStats({npassed: 0, nfailed: 0, nfiltered: 0});
         this.setSearchTags([]);
         this.failCaseOnly = true;

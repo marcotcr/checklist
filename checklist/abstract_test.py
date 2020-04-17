@@ -324,7 +324,7 @@ class AbstractTest(ABC):
             examples.append(example)
         return examples
 
-    def _form_test_info(self, name=None, description=None, capability=None):
+    def form_test_info(self, name=None, description=None, capability=None):
         n = len(self.data)
         fails = self.fail_idxs().shape[0]
         filtered = self.filtered_idxs().shape[0]
@@ -344,7 +344,7 @@ class AbstractTest(ABC):
     def visual_summary(self, name=None, description=None, capability=None, n_per_testcase=3):
         self.check_results()
         # get the test meta
-        test_info = self._form_test_info(name, description, capability)
+        test_info = self.form_test_info(name, description, capability)
         testcases = []
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
