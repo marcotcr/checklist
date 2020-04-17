@@ -66,7 +66,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
             </code>
         });
         if (description) {
-            metas.push({key: "Describe", value: <code>{description}</code>});
+            metas.push({key: "Describe", value: <div>{description}</div>});
         }
         metas.push({
             key: "Result", 

@@ -150,16 +150,14 @@ export const rawTestcases: RawTestCase[] = [
         }, {
             new: {
                 tokens: [
-                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
-                    ["Who", "is", "cooler", ",", "Heather", "?"]
+                    ["That", "is", "an", "amazingly", "sad", "staff", "."],
                 ],
                 pred: "1",
                 conf: 0.7
             },
             old: {
                 tokens: [
-                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
-                    ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"]
+                    ["That", "is", "a", "sad", "staff", "."],
                 ],
                 pred: "0",
                 conf: 0.8
@@ -176,7 +174,7 @@ export const rawTestResult: RawTestResult =  {
     name: "",
     type: "inv",
     capability: "Robustness",
-    description: "add randomly generated urls and handles to the start or end of sentence",
+    description: 'Use positive and negative verbs and adjectives with airline nouns such as seats, pilot, flight, etc. E.g. "This was a bad flight"',
     tags: [
         "person1=Mary", 
         "person2=Heather", 

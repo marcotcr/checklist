@@ -83,7 +83,7 @@ body {
 }
 
 .template-token-box.abstract-token { min-width: 120px; }
-.template-token-box.mask-token { min-width: 190px; }
+.template-token-box.mask-token { min-width: 190px; /* Or: can be 170px */  }
 
 .ellipsis {
     white-space: nowrap;

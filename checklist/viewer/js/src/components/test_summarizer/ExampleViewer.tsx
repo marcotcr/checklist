@@ -50,7 +50,8 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
             const curClass = `${utils.genStrId(t.text)}:${t.etype}${t.idx}`;
             // get the current span
             const curSpan: JSX.Element = <span key={ curClass }>
-                <span className={`example-token ${editClass}`}>{t.text}{this.replaceArrow(t.isReplace)} </span>                
+                <span className={`example-token ${editClass}`}>{t.text}</span>
+                <span>{this.replaceArrow(t.isReplace)} </span>                
             </span>;
             return curSpan;
         })}</div>
