@@ -9,6 +9,7 @@ import * as ReactDOM from 'react-dom';
 import '../../style.css';
 import { RawTestCase, RawTestResult, RawTestStats } from '../../stores/Interface';
 import { testStore } from '../../stores/tests/TestStore';
+import { SuiteSummarizer } from './SuiteSummarizer';
  
 
 // Custom Model. Custom widgets models must at least provide default values
@@ -93,15 +94,9 @@ export const View = widgets.DOMWidgetView.extend({
         }
         const $app = document.createElement("div");
         $app.setAttribute("id", "app-wrapper");
-        /*
-        const wrapper = <TestRatePanel 
-            onSwitchTest={this.onSwitchTest}
-            onSubmit={this.onConfirmRate}
-            onFetch={this.onFetchMoreExample}
-            onSearch={this.onApplyFilter}/>
-        */
-       const wrapper = null;
         
+        const wrapper = <SuiteSummarizer onSelect={this.onSelectTest} />
+            
         ReactDOM.render(wrapper, $app);
         this.el.appendChild($app);
     },

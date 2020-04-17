@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { Table, Row, Col , Divider, Card } from 'antd';
+import { Table, Divider, Card } from 'antd';
 import { suiteStore } from '../../stores/tests/SuiteStore';
 import { TestType } from '../../stores/Interface';
 import { utils } from '../../stores/Utils';
@@ -10,7 +10,6 @@ import { testStore } from '../../stores/tests/TestStore';
 import { TestSummarizer } from "../test_summarizer/TestSummarizer"; 
 import { TestStats } from '../../stores/tests/TestStats';
 
-import * as d3Color from 'd3-scale-chromatic';
 import * as d3Scale from 'd3-scale';
 
 interface SuiteSummarizerProps {
@@ -92,8 +91,9 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 			},
 		]
 		return <Table size="small" bordered
-			onExpand={(expanded: boolean, record: {name: string, key: string, fail_rate: TestStats}) => {
-				this.props.onSelect(expanded ? record.name : null)
+			onExpand={
+				(expanded: boolean, record: {name: string, key: string, fail_rate: TestStats}) => {
+				this.props.onSelect(record.name)
 			}}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
 				const selectedTest = testStore.testResult;
@@ -134,13 +134,13 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 			const testsByType = utils.groupBy(localTests, "type");
 			const curSource = { "capability": cap };
 			types.forEach((ttype: TestType) => {
-			const cellTests = ttype in testsByType ? testsByType[ttype] : [];
-			curSource[ttype] = {
-			key: `${ttype}-${cap}`,
-			tests: cellTests,
-			}
-		});
-		sources.push(curSource as CellType);
+				const cellTests = ttype in testsByType ? testsByType[ttype] : [];
+				curSource[ttype] = {
+					key: `${ttype}-${cap}`,
+					tests: cellTests,
+				}
+			});
+			sources.push(curSource as CellType);
 		})
 
 		const columns: any[] = [{ 
@@ -158,15 +158,14 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 				const nTests = tests.length;
 				const avgRate = nTests === 0 ? 
 					0 : tests.map(t => t.testStats.rate("fail")).reduce((a, b) => a + b, 0) / nTests;
-				const color = nTests === 0 ? "white" : this.colorScale(avgRate / 0.2)
-				const rateStr = (avgRate / 0.2 * 100).toFixed(1) + "%";
+				const rateStr = (avgRate * 100).toFixed(1) + "%";
 				return {
 						props: {
 						  style: { 
-							  background: color,
+							  background: nTests === 0 ? "white" : this.colorScale(avgRate),
 							  //boxShadow: "inset 0px 0px 0px 5px white" ,
 							  //boxSizing: "border-box",
-							  color: this.colorFontScale(avgRate / 0.2) 
+							  color: this.colorFontScale(avgRate) 
 							}
 						},
 						children: <div>{nTests > 0 ? `${rateStr} (${nTests})` : null}</div>
