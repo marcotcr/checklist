@@ -244,13 +244,13 @@ class TextGenerator(object):
         else:
             options = all_possible_related(words, depth=depth)
         return self.filter_options(texts, words[0], options, threshold)
-    def antonyms(self, texts, word, threshold=5, pos=None):
+    def antonyms(self, texts, word, threshold=5, pos=None, **kwargs):
         options = all_possible_antonyms(word, pos=pos)
         # print(options)
         return self.filter_options(texts, word, options, threshold)
-    def synonyms(self, texts, word, threshold=5, pos=None):
+    def synonyms(self, texts, word, threshold=5, pos=None, **kwargs):
         options = all_possible_synonyms(word, pos=pos)
-        print(options)
+        # print(options)
         return self.filter_options(texts, word, options, threshold)
 
     def filter_options(self, texts, word, options, threshold=5):

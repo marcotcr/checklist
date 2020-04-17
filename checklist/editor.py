@@ -198,6 +198,35 @@ class Editor(object):
         else:
             return [tuple(x[0]) if len(x[0]) > 1 else x[0][0] for x in ret]
 
+    def _wordnet_stuff(self, templates, word, type, threshold=5, depth=3, pos=None, **kwargs):
+        texts = self.template(templates, **kwargs).data
+        idxs = np.random.choice(len(texts), min(10, len(texts)), replace=False)
+        texts = [texts[i] for i in idxs]
+        if type != 'related' and any([word not in x for x in texts]):
+            raise Exception('word %s must be in all templates' % word)
+        fn = {'antonyms': self.tg.antonyms,
+         'synonyms': self.tg.synonyms,
+         'related': self.tg.related_words,
+         'hypernyms': self.tg.more_general,
+         'hyponyms': self.tg.more_specific,
+        }[type]
+        return [x[0][0] for x in fn(texts, word, threshold=threshold, pos=pos, depth=depth)]
+
+    def antonyms(self, templates, word, threshold=5, **kwargs):
+        return self._wordnet_stuff(templates, word, 'antonyms', threshold=threshold, **kwargs)
+
+    def synonyms(self, templates, word, threshold=5, **kwargs):
+        return self._wordnet_stuff(templates, word, 'synonyms', threshold=threshold, **kwargs)
+
+    def related_words(self, templates, word, threshold=5, **kwargs):
+        return self._wordnet_stuff(templates, word, 'related', threshold=threshold, **kwargs)
+
+    def hypernyms(self, templates, word, threshold=5, **kwargs):
+        return self._wordnet_stuff(templates, word, 'hypernyms', threshold=threshold, **kwargs)
+
+    def hyponyms(self, templates, word, threshold=5, **kwargs):
+        return self._wordnet_stuff(templates, word, 'hyponyms', threshold=threshold, **kwargs)
+
     def suggest(self, templates, **kwargs):
         # if replace:
         #     replace_with_mask = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{mask}', x)

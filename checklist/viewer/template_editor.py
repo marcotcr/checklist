@@ -34,7 +34,7 @@ class TemplateEditor(widgets.DOMWidget):
         template_strs: typing.List[str], \
         tagged_keys: typing.List[str], \
         tag_dict: typing.Dict[str, str], \
-        bert_suggests: typing.List[typing.Union[str, tuple]], \
+        mask_suggests: typing.List[typing.Union[str, tuple]], \
         format_fn: typing.Callable, \
         select_suggests_fn: typing.Callable, \
         **kwargs):
@@ -45,7 +45,7 @@ class TemplateEditor(widgets.DOMWidget):
         nlp = English()
         # ONLY do tokenization here
         self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
-        self.bert_suggests = bert_suggests
+        self.bert_suggests = mask_suggests
         self.templates = [
             self.tokenize_template_str(s, tagged_keys, tag_dict) for \
             s in template_strs]
