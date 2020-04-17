@@ -35,6 +35,10 @@ body {
     display: table-cell;
 }
 
+.ant-table-thead > tr > th, .ant-table-tbody > tr > td {
+    padding: 8px 8px
+}
+
 .test-summarizer-panel code {
     background: none;
 }
@@ -164,6 +168,10 @@ body {
 
 .compact-divider {
     margin: 8px 0px;
+}
+
+.test-desc-suite {
+    text-align: right;
 }
 
 .test-desc.title {

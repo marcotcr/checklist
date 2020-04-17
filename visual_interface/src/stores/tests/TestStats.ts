@@ -13,13 +13,22 @@ export class TestStats {
         return `${this.nfailed}-${this.npassed}-$${this.nfiltered}`;
     }
 
-    public strRate(type: "fail"|"filter"): string {
+    public rate(type: "fail"|"filter"="fail"): number {
+        const subset = type === "fail" ? 
+            this.nfailed : this.npassed + this.nfailed;
+        const total = type === "fail" ? 
+        this.nfailed + this.npassed : this.npassed + this.nfailed + this.nfiltered;
+        const rate = total ? subset / total : 0;
+        return rate;
+    }
+
+    public strRate(type: "fail"|"filter", isPad: boolean=false): string {
         const subset = type === "fail" ? 
             this.nfailed : this.npassed + this.nfailed;
         const total = type === "fail" ? 
         this.nfailed + this.npassed : this.npassed + this.nfailed + this.nfiltered;
         const rate = total ? subset / total : 0;
         const rateStr = (rate * 100).toFixed(1) + "%";
-        return `${subset} / ${total} = ${rateStr}`
+        return `${String(subset).padStart(isPad?4:0)} / ${String(total).padStart(isPad?4:0)} = ${rateStr.padStart(isPad?5:0)}`
     }
 }

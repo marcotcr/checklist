@@ -1,12 +1,29 @@
 import * as jsdiff from 'diff';
 import { Token } from "./Interface";
-
+if (!String.prototype.padStart) {
+    String.prototype.padStart = function padStart(targetLength,padString) {
+        targetLength = targetLength>>0; //floor if number or convert non-number to 0;
+        padString = String((typeof padString !== 'undefined' ? padString : ' '));
+        if (this.length > targetLength) {
+            return String(this);
+        }
+        else {
+            targetLength = targetLength-this.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength/padString.length); //append to original to ensure we are longer than needed
+            }
+            return padString.slice(0,targetLength) + String(this);
+        }
+    };
+}
 class UtilsClass {
     public color: {success: string, fail: string, kept: string, filter: string};
 
     constructor() {
         this.color = {
-            success: "#1f77b4", fail: "#ff7f0e", kept: "#969696", filter: "#d9d9d9"
+            success: "#1f77b4", fail: "#ff7f0e", 
+            //success: "#9ecae1", fail: "#fdae6b",
+            kept: "#969696", filter: "#d9d9d9"
         };
     }
 
