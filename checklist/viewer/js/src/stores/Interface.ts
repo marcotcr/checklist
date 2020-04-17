@@ -26,8 +26,9 @@ export type RawTestStats = {
 }
 export type RawTestResult = { 
     name: string;
+    description: string;
+    capability: string;
     type: TestType;
-    expect_meta: {[key: string]: string};
     tags: string[]; // ["person1", "person2", "comparative"];
     stats: RawTestStats
 }

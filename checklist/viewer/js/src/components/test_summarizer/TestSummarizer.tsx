@@ -50,18 +50,26 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     }
 
     public renderDescription(): JSX.Element {
-        const description = [
-            {key: "Name", value: <code>
-                <b>{`[${testStore.testResult.type.toUpperCase()}]`}</b>
-                {testStore.testResult.name}</code>
-            },
-            //{key: "Category", value: <code>{testStore.testResult.category}</code>},
-            //{key: "AuthorType", value: <code>{testStore.testResult.authorType}</code>},
-            //{key: "Expect", value: <Descriptions column={1}>
-            //    {Object.keys(testStore.testResult.expectationMeta).map((key: string) => 
-            //        <Descriptions.Item label={key} key={key}>{testStore.testResult.expectationMeta[key]}</Descriptions.Item>)}
-            //</Descriptions>},
-            {key: "Result", 
+        const result = testStore.testResult;
+        const metas = [];
+        const name = result.name;
+        const type = result.type.toUpperCase();
+        const description = result.description;
+        const capability = result.capability ? result.capability.toUpperCase() : "";
+
+        metas.push({
+            key: "Test", 
+            value: <code>
+                <b>{`[${type}] `}</b>
+                {capability ? <span>on <b>{`[${capability}] `}</b><br /></span> : null}
+                {name ? <span>{name}</span> : null}
+            </code>
+        });
+        if (description) {
+            metas.push({key: "Describe", value: <code>{description}</code>});
+        }
+        metas.push({
+            key: "Result", 
             value: <Row>
                 {this.renderVizPart("all cases", testStore.testResult.testStats)}
                 <br />
@@ -71,12 +79,11 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                 ? null :
                     this.renderVizPart("filtered slice", testStore.testStats)}
                 </Row>
-            }
-        ];
+        })
         
         return <Row>
             <h4 className="header">Test Summary</h4>
-            {description.map(desc => {
+            {metas.map(desc => {
                 return <Row key={desc.key} gutter={30}>
                     <Col span={6} className={`test-desc title`}>{desc.key}</Col>
                     <Col span={18}  className={`test-desc content`}>{desc.value}</Col>
@@ -169,13 +176,19 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
 
     public render(): JSX.Element {
         if (!testStore.testResult) { return null; }
+        let baseWidth = 200;
+        const increment = 30;
+        if (testStore.testResult.testStats.nfiltered) { baseWidth += 50};
+        for (let key of ["name", "description", "capability"]) {
+            baseWidth += testStore.testResult[key] ? increment : 0;
+        }
         return <Row gutter={50}>
-            <Col span={10}>{ this.renderDescription() }</Col>
-            <Col span={14}>
+            <Col span={9}>{ this.renderDescription() }</Col>
+            <Col span={15}>
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>
                 <div 
                 //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
-                style={{maxHeight: testStore.testResult.testStats.nfiltered > 0 ? 250 : 200, overflow: "auto"}}>
+                style={{maxHeight: baseWidth, overflow: "auto"}}>
                 <InfiniteScroll
                     initialLoad={false}
                     pageStart={0}

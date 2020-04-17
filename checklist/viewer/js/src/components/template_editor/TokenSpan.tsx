@@ -122,7 +122,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
             <Row>
                 {this.options.map((s, idx: number) => 
                     <Row key={`${s}${idx}`}><Checkbox value={idx}>
-                        <span className="ellipsis">
+                        <span className="ellipsis mask-token">
                             {this.token.needArticle ?
                                 <span className="article-token">{`${utils.genArticle(s)} `}</span> : null}
                             {s}
@@ -142,12 +142,12 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
         return <div 
             key={this.props.token.displayTag() + this.props.token.key()}
             className="full-width">
-            <div><b className='info-header tag-candidate-token'>More Word</b></div>
+            <div><b className='info-header abstract-token'>More Word</b></div>
             <div style={{height: 121}} className="full-width overflow-y">
             <Row>
                 {this.options.map((s, idx: number) => 
                     <Row key={`${s}${idx}`}>
-                        <span className="ellipsis tag-candidate-token">
+                        <span className="ellipsis abstract-token">
                             {this.token.needArticle ?
                                 <span className="article-token">{`${utils.genArticle(s)} `}</span> : null}
                             {s}
@@ -167,7 +167,7 @@ export class TokenSpan extends React.Component<TokenProps, {}> {
        if (this.token === null) {
            return null;
        }
-        const absClass = this.token.isAbstract() ? "has-abstract" : "";
+        const absClass = this.token.isGeneralMask() ? "mask-token" : this.token.isAbstract () ? "abstract-token" : "";
         return <div className={`template-token-box ${absClass}`} key={`${this.token.key()}`}>
             {this.colorToken()}
             <Row>{ this.token.isGeneralMask() ? this.SuggestChecklist() : this.TagCandidate()}</Row>

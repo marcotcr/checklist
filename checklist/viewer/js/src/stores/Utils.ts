@@ -55,7 +55,11 @@ class UtilsClass {
                 const curT = diff.removed ? oldArr[idx] : newArr[idx];
                 const etype: "add"|"keep"|"remove" = diff.removed ? 'remove' : diff.added ? 'add' : 'keep';
                 const isReplace = etype === "add" && lastTokenEtype === "remove";
-                const curToken = { text: curT, etype: etype, idx: idx, isReplace: isReplace};
+                const curToken = { text: curT, etype: etype, idx: idx, isReplace: false };
+                if (isReplace) {
+                    // change the isReplace for the last token
+                    tokens[tokens.length-1].isReplace = isReplace;
+                }
                 tokens.push(curToken);
                 newIdx = diff.removed ? newIdx : newIdx + 1;
                 oldIdx = diff.added ? oldIdx : oldIdx + 1;

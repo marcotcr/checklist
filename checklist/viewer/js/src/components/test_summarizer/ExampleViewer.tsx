@@ -24,7 +24,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         return <span className="token-example">{token.default} </span>
     }
 
-    public renderTemplate(example: TestExample): JSX.Element {
+    public renderExamples(example: TestExample): JSX.Element {
         const newTokens = example.new.tokens;
         const oldTokens = example.old ? example.old.tokens : example.new.tokens;
         return <div >
@@ -45,12 +45,12 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         const tokens = utils.computeRewrite(oldTokens, newTokens);
         return <div>{tokens.map((t: Token, idx: number) => {
             // generate the current class for the token
-            const editClass = `example-token rewrite-${t.etype}`;
+            const replaceClass = t.isReplace ? "" : "no-replace";
+            const editClass = `example-token rewrite-${t.etype} ${replaceClass}`;
             const curClass = `${utils.genStrId(t.text)}:${t.etype}${t.idx}`;
             // get the current span
             const curSpan: JSX.Element = <span key={ curClass }>
-                {this.replaceArrow(t.isReplace)}
-                <span className={`example-token ${editClass}`}>{t.text} </span>
+                <span className={`example-token ${editClass}`}>{t.text}{this.replaceArrow(t.isReplace)} </span>                
             </span>;
             return curSpan;
         })}</div>
@@ -90,7 +90,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         return <List.Item 
             key={1} className="full-width"
             actions={this.renderTags()}>
-            <List.Item.Meta description={<div>{this.renderTemplate(this.props.example)}</div>}/>
+            <List.Item.Meta description={<div>{this.renderExamples(this.props.example)}</div>}/>
         </List.Item>
     }
 }

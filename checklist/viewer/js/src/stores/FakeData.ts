@@ -55,27 +55,31 @@ export const rawTemplates: RawTemplate[] = [
         ]
     ]
 ]
-export const suggests: (string|string[])[] = ['that',
-    'this',
-    'me',
-    'before',
-    'usual',
-    'ever',
-    'normal',
-    'her',
-    'us',
-    'most',
-    'you',
-    'average',
-    'expected',
-    'anything',
-    'it',
-    'I',
-    'him',
-    'them',
-    'anyone',
-    'life'
-]
+export const suggests: (string|string[])[] = [
+    'an International',
+    'a unconventionally',
+    'a Christian',
+'Protestant',
+'Roman Catholic',
+'Eastern Orthodox' ,
+'Anglican',
+'Jew',
+'Orthodox Jew',
+'Muslim',
+'Sunni',
+"Shi'a",
+'Ahmadiyya',
+'Buddhist',
+'Zoroastrian',
+'Hindu',
+'Sikh',
+'Shinto',
+"Baha'i",
+'Taoist',
+'Confucian',
+'Jain',
+'Atheist',
+'Agnostic']
 
 // test data
 export const rawTestcases: RawTestCase[] = [
@@ -147,7 +151,7 @@ export const rawTestcases: RawTestCase[] = [
             new: {
                 tokens: [
                     ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
-                    ["Who", "is", "cooler", ",", "Heather", "or", "Mary", "?"]
+                    ["Who", "is", "cooler", ",", "Heather", "?"]
                 ],
                 pred: "1",
                 conf: 0.7
@@ -169,9 +173,10 @@ export const rawTestcases: RawTestCase[] = [
 ]
 
 export const rawTestResult: RawTestResult =  { 
-    name: "Change the PERSON order",
+    name: "",
     type: "inv",
-    expect_meta: {expected: "equal"},
+    capability: "Robustness",
+    description: "add randomly generated urls and handles to the start or end of sentence",
     tags: [
         "person1=Mary", 
         "person2=Heather", 

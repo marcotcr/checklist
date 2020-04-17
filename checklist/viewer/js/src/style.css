@@ -54,7 +54,6 @@ body {
 
 
 .example-token.rewrite-arrow {
-    /* this should overwrite whatever default color it has. */
     font-size: 10px!important;
     font-weight: bold!important;
 }
@@ -70,6 +69,9 @@ body {
     color: #d35229!important;
     /* text-decoration: line-through!important; */
 }
+.example-token.rewrite-remove.no-replace {
+    text-decoration: line-through;
+}
 
 /* FOR TEMPLATES */
 
@@ -80,13 +82,28 @@ body {
     background-color: #efefef;
 }
 
-.template-token-box.has-abstract {    
+.template-token-box.abstract-token { min-width: 120px; }
+.template-token-box.mask-token { min-width: 190px; }
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: inline-block;
-    min-width: 120px;
-    margin-bottom: 10px;
-    padding: 7px;
-    background-color: #efefef;
 }
+
+.ellipsis.abstract-token { max-width: 80px; color: #aaa; }
+.ellipsis.mask-token { max-width: 120px; }
+
+.mask-token sup { background-color: #1890ff!important; }
+.abstract-token sup { background-color: #ababab!important; /*#faad14*/}
+.badge sup {
+    top: -10px;
+    opacity: 0.8;
+}
+
+
+
 
 .template-token {
     white-space: pre;
@@ -111,39 +128,15 @@ body {
     border-radius: 10px;
 }
 
-.mask-token sup {
-    background-color: #1890ff!important;
-}
-
-.abstract-token sup {
-    background-color: #ababab!important; /*#faad14*/
-}
-
 .example-token {
     color: #696969;
 }
-
 .example-token.mask-token:not(.article-token) {
     color: #1890ff!important;
     background: none;
 }
-
 .example-token.abstract-token:not(.article-token) {
     background: #eee;
-}
-
-
-.ellipsis {
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 80px;
-    text-overflow: ellipsis;
-    display: inline-block;
-}
-
-.badge sup {
-    top: -10px;
-    opacity: 0.8;
 }
 
 
@@ -194,12 +187,6 @@ details {
     font-style: italic;
 }
 
-.tag-candidate-token {
-    color: #aaa;
-}
-.tag-candidate-token.info-header {
+.info-header.abstract-token {
     color: grey;
-}
-.tag-candidate-token.ellipsis {
-    max-width: 100px;
 }

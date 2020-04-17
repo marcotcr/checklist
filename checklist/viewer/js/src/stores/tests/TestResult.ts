@@ -1,4 +1,4 @@
-import { RawTestStats } from "../Interface";
+import { RawTestStats, TestType } from "../Interface";
 import { utils } from "../Utils";
 import { TestTag } from "./TestTag";
 import { testStore } from "./TestStore";
@@ -7,20 +7,23 @@ import { TestStats } from "./TestStats";
 
 export class TestResult {
     public name: string;
-    public type: string; // min functionality, invariance, monotonicity, fairness
+    public description: string;
+    public type: TestType;
+    public capability: string;
     public tags: TestTag[];//{[key: string]: string[]};
-    public expectationMeta: {[key: string]: string};
     @observable public testStats: TestStats;
 
     constructor (
         name: string,
-        type: string,
+        description: string,
+        type: TestType,
+        capability: string,
         stats: RawTestStats={npassed: 0, nfailed: 0, nfiltered: 0},
-        tags: string[]=[],
-        expectationMeta: {[key: string]: string}={}) {
+        tags: string[]=[]) {
         this.name = name;
         this.type = type;
-        this.expectationMeta = expectationMeta;
+        this.description = description;
+        this.capability = capability;
         //this.parseRawTag(tags);
         this.tags = tags.map(t => new TestTag(t));
         this.setGlobalTestStat(stats);
@@ -30,6 +33,6 @@ export class TestResult {
     }
 
     public key(): string {
-        return utils.normalizeKey(`name:${this.name}-category:${this.type}`)
+        return utils.normalizeKey(`name:${this.name}-description:${this.description}-type:${this.type}-capability:${this.capability}`)
     }
 }

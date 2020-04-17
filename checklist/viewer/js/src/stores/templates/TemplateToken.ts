@@ -32,7 +32,8 @@ export class TemplateToken {
     }
 
     public isGeneralMask(): boolean {
-        return this.normalizeTag.replace(/\d+$/, "").toLowerCase() === "bert";
+        const identifier = this.normalizeTag.replace(/\d+$/, "").toLowerCase();
+        return identifier === "bert" || identifier === "mask";
     }
 
     public isAbstract(): boolean {
