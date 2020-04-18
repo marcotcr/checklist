@@ -140,21 +140,20 @@ class TestSuite:
         return test_info, testcases
 
     def visual_summary_table(self, types=None, capabilities=None):
-        # IN PROGRESS
+        print("Please wait as we prepare the table data...")
         test_infos = []
         for testname in self.tests.keys():
             test, info = self.tests[testname], self.info[testname]
-            try:
-                local_info = test.form_test_info(
-                    name=testname,
-                    capability=info["capability"] if "capability" in info else None,
-                    description=info["description"] if "description" in info else None
-                )
-                if (not capabilities or local_info["capability"] in capabilities) and \
-                    (not types or local_info["type"] in types):
-                    test_infos.append(local_info)
-            except:
-                pass
+            
+            local_info = test.form_test_info(
+                name=testname,
+                capability=info["capability"] if "capability" in info else None,
+                description=info["description"] if "description" in info else None
+            )
+            if (not capabilities or local_info["capability"] in capabilities) and \
+                (not types or local_info["type"] in types):
+                test_infos.append(local_info)
+            
         capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
         cap_order = lambda x: capability_order.index(x["capability"]) if x in capability_order else 100
         test_infos = sorted(test_infos, key=cap_order)

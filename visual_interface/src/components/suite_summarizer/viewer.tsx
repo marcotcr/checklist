@@ -86,22 +86,33 @@ export const View = widgets.DOMWidgetView.extend({
     },
 
     onSelectTest: function(test: TestResult): void {
-        this.send({ event: 'switch_test', testname: test ? test.name : "" });
-        
         if (test) {
-            testStore.setTest({
-                name: test.name,
-                description: test.description,
-                capability: test.capability,
-                type: test.type,
-                stats: {
-                    nfailed: test.testStats.nfailed,
-                    npassed: test.testStats.npassed,
-                    nfiltered: test.testStats.nfiltered,
-                },
-                tags: test.tags.map(t => t.raw),
-            })
+            if (testStore.testResult && testStore.testResult.key() === test.key()) {
+                console.log(`UNSELECT: ${test.key()}`);
+                testStore.setTest(null);
+                this.send({ event: 'switch_test', testname: "" });
+            } else {
+                console.log(`SELECT: ${test.key()}`);
+                testStore.setTest({
+                    name: test.name,
+                    description: test.description,
+                    capability: test.capability,
+                    type: test.type,
+                    stats: {
+                        nfailed: test.testStats.nfailed,
+                        npassed: test.testStats.npassed,
+                        nfiltered: test.testStats.nfiltered,
+                    },
+                    tags: test.tags.map(t => t.raw),
+                });
+                this.send({ event: 'switch_test', testname: test.name });
+            }
+        } else {
+            testStore.setTest(null);
+            this.send({ event: 'switch_test', testname: "" });
         }
+        
+        
         //this.renderApp();
     },
 

@@ -98,21 +98,22 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 			},
 		]
 		type RecordType = {name: string, key: string, test: TestResult, fail_rate: TestStats};
+		//console.log(testStore.testResult)
 		return <Table size="small" bordered
 			expandedRowKeys={testStore.testResult ? [testStore.testResult.key()] : []}
 			onExpand={
 				(expanded: boolean, record: RecordType) => {
-				this.props.onSelect(null);
-				if (expanded) {
-					this.props.onSelect(record.test);
-				}
+				//if (expanded) {
+				this.props.onSelect(record.test);
+				//} else {
+				//	this.props.onSelect(null);
+				//}
 			}}
 			rowKey={(row) => row.key}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
 				const selectedTest = testStore.testResult;
 				const selectedKey = selectedTest ? selectedTest.key() : "NOT-A-KEY";
 				return selectedKey === record.key ? <div
-					key={`${record.key} ${selectedKey}`}
 					style={{backgroundColor: "white"}}
 					><TestSummarizer 
 					forceSkip={selectedKey !== record.key}
@@ -199,8 +200,8 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 	}
 
 	public render(): JSX.Element {
+		console.log(testStore.testResult)
 		if (!suiteStore.overviewTests) { return null; }
-		//console.log(testStore.testResult);
 		return this.renderTable();
 	}
 }
