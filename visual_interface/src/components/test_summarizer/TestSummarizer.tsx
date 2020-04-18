@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from "mobx";
 
-import { Row, Col, Divider, Switch, Input, Icon, List, Select, Descriptions, Spin } from 'antd';
+import { Row, Col, Divider, Switch, Input, Spin, List, Select, Descriptions } from 'antd';
 import { TestResult } from "../../stores/tests/TestResult";
 
 import { TestStatsViz } from './TestResultBar';
@@ -17,6 +17,7 @@ import { TestStats } from '../../stores/tests/TestStats';
 
 
 interface TestSummarizerProps {
+    forceSkip?: boolean;
     onSearch: () => void;
     onFetch: () => void;
 }
@@ -176,8 +177,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     }
 
     public render(): JSX.Element {
-        console.log(testStore.testResult);
-        if (!testStore.testResult) { return null; }
+        if (!testStore.testResult || this.props.forceSkip) { return null; }
         let baseWidth = 200;
         const increment = 30;
         if (testStore.testResult.testStats.nfiltered) { baseWidth += 50};
@@ -207,20 +207,15 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
                     className="compact full-width overflow-y"
                     dataSource={testStore.testcases}
-                    renderItem={(testcase: TestCase, idx: number) =>
-                        <List itemLayout="horizontal" 
-                            size="small" split={false} key={"key1"}
-                            className="testcase-block full-width"
-                            style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
-                            dataSource={testcase.examples}
-                            renderItem={(example: TestExample, i: number) =>
-                                <List.Item key={"key2"}>
-                                    {/*<div 
-                                        style={{borderBottom: i === 0 ? null : "1px dashed #ebedf0"}}
-                                    className="full-width"></div>*/}
-                                    <TestExampleView example={example} />
-                                </List.Item>} />
-                    }/>
+                    renderItem={(testcase: TestCase, idx: number) => {
+                        const key = testcase.key();
+                        return <List itemLayout="horizontal" 
+                        size="small" split={false} key={key}
+                        className="testcase-block full-width"
+                        style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
+                        dataSource={testcase.examples}
+                        renderItem={(example: TestExample, i: number) => <TestExampleView example={example} />} />
+                }}/>
                 </InfiniteScroll>
                 </div>
                 </Spin>

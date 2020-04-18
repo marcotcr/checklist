@@ -68,7 +68,7 @@ export class TemplateEditor extends React.Component<TemplateEditorProps, {}> {
                     itemLayout="horizontal"
                     dataSource={templateStore.templates}
                     renderItem={(template: Template, idx: number) => (
-                        <List.Item key={template.key()}>
+                        <List.Item key={idx}>
                             <List.Item.Meta
                             avatar={<Avatar style={{backgroundColor: "#f56a00", verticalAlign: "middle"}} size="small">
                                 ></Avatar>}
