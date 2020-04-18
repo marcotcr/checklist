@@ -4,6 +4,7 @@ import { RawTemplateToken } from "../Interface";
 
 export class TemplateToken {
     public default: string;
+    public identifier: string;
     public tag: string;
     public candidates: string[];
     public normalizeTag: string;
@@ -13,16 +14,17 @@ export class TemplateToken {
         if (typeof token === "string") {
             this.default = token as string;
             this.candidates = [];
-            this.convertTag("");
+            this.convertTag("", "");
         } else {
             this.candidates = token[0]; //.filter(utils.uniques)
             this.default = token[0].length > 0 ? token[0][0] : "";
-            this.convertTag(token[1]);
+            this.convertTag(token[1], token[2]);
         }
     }
 
-    public convertTag(rawTag_: string): void {
+    public convertTag(rawTag_: string, identifier: string): void {
         this.needArticle = rawTag_.startsWith("a:");
+        this.identifier = identifier;
         this.normalizeTag = rawTag_.split("a:")[rawTag_.split("a:").length-1];
         this.tag = rawTag_;
     }

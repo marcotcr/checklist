@@ -12,7 +12,7 @@ export const rawTemplates: RawTemplate[] = [
                 'Jessica','Jessica','Jessica','Jessica','Jessica',
                 'Matthew','Matthew','Matthew','Matthew','Matthew'
             ], 
-            'first_name'
+            'first_name', 'first_name'
         ],
         'is',
         [
@@ -23,10 +23,11 @@ export const rawTemplates: RawTemplate[] = [
                 'bigger','warmer','colder','poorer','richer',
                 'bigger','warmer','colder','poorer','richer',
             ],
-            'comp[0]'
+            'comp[0]',
+            'comp'
         ],
         'than',
-        [[], 'bert'],
+        [[], 'bert', 'bert'],
         '.'
     ],[
         'Who',
@@ -39,7 +40,7 @@ export const rawTemplates: RawTemplate[] = [
                 'smaller','colder','warmer','richer','poorer',
                 'smaller','colder','warmer','richer','poorer'
             ],
-            'comp[1]'
+            'comp[1]', 'comp'
         ],
         '?'
     ],[
@@ -51,7 +52,7 @@ export const rawTemplates: RawTemplate[] = [
                 'Jessica','Jessica','Jessica','Jessica','Jessica',
                 'Matthew','Matthew','Matthew','Matthew','Matthew'
             ],
-            'first_name'
+            'first_name', 'first_name'
         ]
     ]
 ]
