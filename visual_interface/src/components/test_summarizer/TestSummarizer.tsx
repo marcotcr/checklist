@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from "mobx";
 
-import { Row, Col, Divider, Switch, Input, Icon, List, Select, Descriptions } from 'antd';
+import { Row, Col, Divider, Switch, Input, Icon, List, Select, Descriptions, Spin } from 'antd';
 import { TestResult } from "../../stores/tests/TestResult";
 
 import { TestStatsViz } from './TestResultBar';
@@ -26,7 +26,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     @observable public loading: boolean;
     constructor(state: TestSummarizerProps, context: any) {
         super(state, context);
-        this.loading = false;
+        this.loading = true;
         this.handleInfiniteOnLoad = this.handleInfiniteOnLoad.bind(this);
     }
 
@@ -162,6 +162,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         if ((window as any).Jupyter) {
             (window as any).Jupyter.keyboard_manager.disable();
         }
+        this.loading = false;
     }
     public componentDidUpdate() {
         if ((window as any).Jupyter) {
@@ -175,6 +176,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     }
 
     public render(): JSX.Element {
+        console.log(testStore.testResult);
         if (!testStore.testResult) { return null; }
         let baseWidth = 200;
         const increment = 30;
@@ -188,12 +190,14 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
             <Col span={10}>{ this.renderDescription() }</Col>
             <Col span={14}>
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>
+                <Spin spinning={this.loading}>
                 <div 
                 //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
                 style={{maxHeight: baseWidth, overflow: "auto"}}>
                 <InfiniteScroll
                     initialLoad={false}
                     pageStart={0}
+                    loader={<Spin spinning={this.loading}/>}
                     loadMore={this.handleInfiniteOnLoad}
                     hasMore={!this.loading}
                     useWindow={false}>
@@ -205,12 +209,12 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     dataSource={testStore.testcases}
                     renderItem={(testcase: TestCase, idx: number) =>
                         <List itemLayout="horizontal" 
-                            size="small" split={false} key={testcase.key()}
+                            size="small" split={false} key={"key1"}
                             className="testcase-block full-width"
                             style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
                             dataSource={testcase.examples}
                             renderItem={(example: TestExample, i: number) =>
-                                <List.Item key={`${testcase.key()}-${i}`}>
+                                <List.Item key={"key2"}>
                                     {/*<div 
                                         style={{borderBottom: i === 0 ? null : "1px dashed #ebedf0"}}
                                     className="full-width"></div>*/}
@@ -219,6 +223,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     }/>
                 </InfiniteScroll>
                 </div>
+                </Spin>
             </Col>
         </Row>
     }
