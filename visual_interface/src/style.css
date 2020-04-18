@@ -42,9 +42,24 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
     background: #f6f6f6;
 }
 
+.test-name-col { 
+    max-width: 500px; 
+}
+
+.test-name-col pre {
+    word-break: keep-all;
+    white-space: pre-wrap!important;
+}
+.test-stat-col { 
+    min-width: 270px!important;
+    max-width: 50%;
+}
+
 .test-summarizer-panel code {
     background: none;
 }
+
+
 
 
 /* FOR EXAMPLES */
@@ -172,6 +187,11 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
 .compact-divider {
     margin: 8px 0px;
 }
+
+.xm-divider {
+    margin: 4px 0px;
+}
+
 
 .test-desc-suite {
     text-align: right;

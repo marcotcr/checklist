@@ -171,7 +171,8 @@ export const rawTestcases: RawTestCase[] = [
     }
 ]
 
-export const rawTestResults: RawTestResult[] = [{'name': 'single positive words',
+export const rawTestResults: RawTestResult[] = [{
+    'name': 'single positive words single positive words single positive words single positive words',
 'description': '',
 'capability': 'Vocabulary',
 'type': 'mft',

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { Tag, List, Icon } from 'antd';
+import { Row, Tag, List, Col, Icon } from 'antd';
 import { Token, TestExample } from '../../stores/Interface';
 import { TemplateToken } from '../../stores/templates/TemplateToken';
 import { utils } from '../../stores/Utils';
@@ -57,7 +57,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         })}</div>
     }
 
-    public renderTags(): JSX.Element[] {
+    public renderTags(): JSX.Element {
         const newobj = this.props.example.new;
         const oldobj = this.props.example.old;
         const isSuccess = this.props.example.succeed;
@@ -68,33 +68,36 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
                 </span>;
         const confStr = newobj.conf ? ` (${newobj.conf.toFixed(2)})` : "";
     
-        let predTag = <Tag>{expectIcon}Pred: {newobj.pred}{confStr}</Tag>;
+        let predTag = <Tag style={{marginRight: 10}}>{expectIcon}Pred: {newobj.pred}{confStr}</Tag>;
         if (oldobj !== null) {
             const replaceArrow = this.replaceArrow(oldobj !== null);
             const confStrOld = oldobj.conf ? ` (${oldobj.conf.toFixed(2)})` : "";
-            predTag = <Tag>
+            predTag = <Tag style={{verticalAlign: "middle"}}>
                 Pred: <span className="example-token rewrite-remove">{newobj.pred}{confStr}</span>
                 {replaceArrow}
                 <span className="example-token rewrite-add">{oldobj.pred}{confStrOld}</span>
             </Tag>
         }
 
-        const icons = [
-            predTag,
-            <Icon style={{ fontSize: 20}}
+        return <span>
+            {predTag}
+            <Icon style={{ fontSize: 16, verticalAlign: "middle"}}
                 type={isSuccess ? "check-circle" : "close-circle"}
                 theme="twoTone" 
                 twoToneColor={isSuccess ? utils.color.success : utils.color.fail} />
-        ];
-        return icons[0] ? icons : icons.slice(1);
+        </span>;
     }
 
     public render(): JSX.Element {
         if (!this.props.example) { return null; }
-        return <List.Item 
-            key={1} className="full-width"
-            actions={this.renderTags()}>
-            <List.Item.Meta description={<div>{this.renderExamples(this.props.example)}</div>}/>
-        </List.Item>
+        return <Row gutter={20}>
+            <Col sm={24} md={24} lg={10} xl={12}>
+                {this.renderExamples(this.props.example)}
+            </Col>
+            <Col sm={24} md={24} lg={14} xl={12}
+                style={{textAlign: "right", paddingRight: 15}}>
+                {this.renderTags()}
+            </Col>
+        </Row>
     }
 }

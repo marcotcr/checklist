@@ -27,21 +27,26 @@ export class SuiteStore {
     public onSelectTest(test: TestResult): void {
         // a placeholder selection function.
         if (test) {
-            console.log(`selected: ${test.key()}`)
-            testStore.setTest({
-                name: test.name,
-                description: test.description,
-                capability: test.capability,
-                type: test.type,
-                stats: {
-                    nfailed: test.testStats.nfailed,
-                    npassed: test.testStats.npassed,
-                    nfiltered: test.testStats.nfiltered,
-                },
-                tags: test.tags.map(t => t.raw),
-            })
-            testStore.setTestcases(rawTestcases);
-            testStore.randomTestStats();
+            if (testStore.testResult && testStore.testResult.key() === test.key()) {
+                console.log(`UNSELECT: ${test.key()}`);
+                testStore.setTest(null);
+            } else {
+                console.log(`SELECT: ${test.key()}`);
+                testStore.setTest({
+                    name: test.name,
+                    description: test.description,
+                    capability: test.capability,
+                    type: test.type,
+                    stats: {
+                        nfailed: test.testStats.nfailed,
+                        npassed: test.testStats.npassed,
+                        nfiltered: test.testStats.nfiltered,
+                    },
+                    tags: test.tags.map(t => t.raw),
+                });
+                testStore.setTestcases(rawTestcases);
+                testStore.randomTestStats();
+            }
         } else {
             testStore.setTest(null);
         }

@@ -209,12 +209,18 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     dataSource={testStore.testcases}
                     renderItem={(testcase: TestCase, idx: number) => {
                         const key = testcase.key();
-                        return <List itemLayout="horizontal" 
-                        size="small" split={false} key={key}
-                        className="testcase-block full-width"
-                        style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
-                        dataSource={testcase.examples}
-                        renderItem={(example: TestExample, i: number) => <TestExampleView example={example} />} />
+                        return <Row key={key}>
+                            <Row
+                            className="testcase-block full-width"
+                            style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}>
+                                {testcase.examples.map(
+                                    (example: TestExample, i: number) => <Row key={i}>
+                                    <TestExampleView example={example} />
+                                    {i === testcase.examples.length-1 ? null :<Divider className="compact-divider"/>}
+                                </Row>)}
+                            </Row>
+                            {<Divider className="compact-divider"/>}
+                        </Row>
                 }}/>
                 </InfiniteScroll>
                 </div>
