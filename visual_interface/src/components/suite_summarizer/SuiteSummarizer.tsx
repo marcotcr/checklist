@@ -100,17 +100,17 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		type RecordType = {name: string, key: string, test: TestResult, fail_rate: TestStats};
 		return <Table size="small" bordered
 			expandedRowKeys={testStore.testResult ? [testStore.testResult.key()] : []}
-
 			onExpand={
 				(expanded: boolean, record: RecordType) => {
 				this.props.onSelect(null);
-				this.props.onSelect(record.test);
+				if (expanded) {
+					this.props.onSelect(record.test);
+				}
 			}}
-			rowKey={(row) => row.name}
+			rowKey={(row) => row.key}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
 				const selectedTest = testStore.testResult;
 				const selectedKey = selectedTest ? selectedTest.key() : "NOT-A-KEY";
-				console.log(selectedKey, record.key)
 				return selectedKey === record.key ? <div
 					key={`${record.key} ${selectedKey}`}
 					style={{backgroundColor: "white"}}

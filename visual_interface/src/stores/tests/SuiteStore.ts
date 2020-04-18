@@ -26,8 +26,8 @@ export class SuiteStore {
 
     public onSelectTest(test: TestResult): void {
         // a placeholder selection function.
-        console.log(`selected: ${test.key()}`)
         if (test) {
+            console.log(`selected: ${test.key()}`)
             testStore.setTest({
                 name: test.name,
                 description: test.description,
