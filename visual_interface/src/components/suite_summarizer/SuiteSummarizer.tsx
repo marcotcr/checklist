@@ -99,6 +99,8 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		]
 		type RecordType = {name: string, key: string, test: TestResult, fail_rate: TestStats};
 		return <Table size="small" bordered
+			expandedRowKeys={testStore.testResult ? [testStore.testResult.key()] : []}
+
 			onExpand={
 				(expanded: boolean, record: RecordType) => {
 				this.props.onSelect(record.test);
@@ -112,6 +114,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 					key={`${record.key} ${selectedKey}`}
 					style={{backgroundColor: "white"}}
 					><TestSummarizer 
+					forceSkip={selectedKey !== record.key}
 					key={`${record.key} ${selectedKey}`}
 					onFetch={this.props.onFetch}
 					onSearch={this.props.onSearch} /></div> : null
@@ -196,7 +199,6 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 
 	public render(): JSX.Element {
 		if (!suiteStore.overviewTests) { return null; }
-		console.log(testStore.testResult);
 		return this.renderTable();
 	}
 }

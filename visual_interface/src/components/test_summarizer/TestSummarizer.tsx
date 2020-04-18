@@ -17,6 +17,7 @@ import { TestStats } from '../../stores/tests/TestStats';
 
 
 interface TestSummarizerProps {
+    forceSkip?: boolean;
     onSearch: () => void;
     onFetch: () => void;
 }
@@ -175,7 +176,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
     }
 
     public render(): JSX.Element {
-        if (!testStore.testResult) { return null; }
+        if (!testStore.testResult || this.props.forceSkip) { return null; }
         let baseWidth = 200;
         const increment = 30;
         if (testStore.testResult.testStats.nfiltered) { baseWidth += 50};
@@ -206,9 +207,8 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     dataSource={testStore.testcases}
                     renderItem={(testcase: TestCase, idx: number) => {
                         const key = testcase.key();
-                        console.log(key);
                         return <List itemLayout="horizontal" 
-                        size="small" split={false} key={"key-SMALL"}
+                        size="small" split={false} key={key}
                         className="testcase-block full-width"
                         style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
                         dataSource={testcase.examples}
