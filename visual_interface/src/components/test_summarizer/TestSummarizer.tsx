@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from "mobx";
 
-import { Row, Col, Divider, Switch, Input, Icon, List, Select, Descriptions } from 'antd';
+import { Row, Col, Divider, Switch, Input, Spin, List, Select, Descriptions } from 'antd';
 import { TestResult } from "../../stores/tests/TestResult";
 
 import { TestStatsViz } from './TestResultBar';
@@ -194,6 +194,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                 <InfiniteScroll
                     initialLoad={false}
                     pageStart={0}
+                    loader={<Spin spinning={this.loading}/>}
                     loadMore={this.handleInfiniteOnLoad}
                     hasMore={!this.loading}
                     useWindow={false}>
@@ -203,20 +204,16 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
                     //key={testStore.testResult.key() + testStore.searchTags.join("-") + `${testStore.failCaseOnly}`}
                     className="compact full-width overflow-y"
                     dataSource={testStore.testcases}
-                    renderItem={(testcase: TestCase, idx: number) =>
-                        <List itemLayout="horizontal" 
-                            size="small" split={false} key={testcase.key()}
-                            className="testcase-block full-width"
-                            style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
-                            dataSource={testcase.examples}
-                            renderItem={(example: TestExample, i: number) =>
-                                <List.Item key={`${testcase.key()}-${i}`}>
-                                    {/*<div 
-                                        style={{borderBottom: i === 0 ? null : "1px dashed #ebedf0"}}
-                                    className="full-width"></div>*/}
-                                    <TestExampleView example={example} />
-                                </List.Item>} />
-                    }/>
+                    renderItem={(testcase: TestCase, idx: number) => {
+                        const key = testcase.key();
+                        console.log(key);
+                        return <List itemLayout="horizontal" 
+                        size="small" split={false} key={"key-SMALL"}
+                        className="testcase-block full-width"
+                        style={{ borderColor: testcase.succeed ? utils.color.success : utils.color.fail }}
+                        dataSource={testcase.examples}
+                        renderItem={(example: TestExample, i: number) => <TestExampleView example={example} />} />
+                }}/>
                 </InfiniteScroll>
                 </div>
             </Col>

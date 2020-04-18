@@ -15,9 +15,16 @@ export class TestCase {
     }
 
     public key(): string {
-        const keyOfSentence = (t: TestSentence) => 
-            t ? utils.normalizeKey(`${t.tokens.join("-")}-${t.pred}-${t.conf}`) : "";
+        function keyPerSentence(sentence: TestSentence) {
+            if (!sentence) {
+                return "";
+            }
+            let key = sentence.tokens.map(tokens => tokens.join("-")).join("-");
+            key += String(sentence.pred) + String(sentence.pred);
+            return key;
+        }
+
         return this.examples.map(
-            i => `old:${keyOfSentence(i.old)}-new:${keyOfSentence(i.new)}-${i.label}-${i.succeed}`).join("-");
+            i => `old:${keyPerSentence(i.old)}-new:${keyPerSentence(i.new)}-${i.label}-${i.succeed}`).join("-");
     }
 }

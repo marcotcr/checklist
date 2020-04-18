@@ -62,10 +62,13 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
         const oldobj = this.props.example.old;
         const isSuccess = this.props.example.succeed;
         const expectIcon = this.props.example.label === "" || this.props.example.label === null || this.props.example.label === undefined ? 
-            null: <Tag>Expect: {this.props.example.label}</Tag>;
+            null: <span>
+                Expect: {this.props.example.label}
+                <span style={{color: "lightgray", fontWeight: "bold"}}>{` | `}</span>
+                </span>;
         const confStr = newobj.conf ? ` (${newobj.conf.toFixed(2)})` : "";
-        
-        let predTag = <Tag>Pred: {newobj.pred}{confStr}</Tag>;
+    
+        let predTag = <Tag>{expectIcon}Pred: {newobj.pred}{confStr}</Tag>;
         if (oldobj !== null) {
             const replaceArrow = this.replaceArrow(oldobj !== null);
             const confStrOld = oldobj.conf ? ` (${oldobj.conf.toFixed(2)})` : "";
@@ -76,7 +79,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
             </Tag>
         }
 
-        const icons = [expectIcon,
+        const icons = [
             predTag,
             <Icon style={{ fontSize: 20}}
                 type={isSuccess ? "check-circle" : "close-circle"}

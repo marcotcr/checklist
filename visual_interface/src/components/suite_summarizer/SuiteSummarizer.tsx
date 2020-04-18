@@ -22,10 +22,11 @@ type CellValue = {
 }
 
 type CellType = {
-  capability: string;
-  mft: CellValue;
-  inv: CellValue;
-  dir: CellValue;
+	key: string;
+  	capability: string;
+	mft: CellValue;
+	inv: CellValue;
+	dir: CellValue;
 }
 
 const headerMapper: {[key: string]: JSX.Element} = {
@@ -70,7 +71,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 	public renderPerType(tests: TestResult[], maxNameLength: number): JSX.Element {
 		// first, get the types
 		const sources = tests.map(t => {
-			return {name: t.name, key: t.key(), fail_rate: t.testStats}
+			return {name: t.name.padEnd(maxNameLength), key: t.key(), fail_rate: t.testStats}
 		});
 
 		const columns: any[] = [
@@ -95,10 +96,12 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 				(expanded: boolean, record: {name: string, key: string, fail_rate: TestStats}) => {
 				this.props.onSelect(record.name)
 			}}
+			rowKey={(row) => row.name}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
 				const selectedTest = testStore.testResult;
-				const selectedKey = selectedTest ? selectedTest.key() : "";
-				return selectedKey === record.key ? <Card><TestSummarizer 
+				const selectedKey = selectedTest ? selectedTest.key() : "NOT-A-KEY";
+				console.log(selectedKey, record.key)
+				return selectedKey === record.key ? <Card key={`${record.key} ${selectedKey}`}><TestSummarizer 
 					key={`${record.key} ${selectedKey}`}
 					onFetch={ () => {testStore.fetchMoreExample ()}}
 					onSearch={() => { testStore.search() }} /></Card> : null
@@ -109,11 +112,11 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 
 	public renderPerCapability(row: CellType): JSX.Element {
 		const types: TestType[] = ["mft", "inv", "dir"];
-		return <div>
+		return <div key={row.capability}>
 		{types.map(ttype => {
 			const tests = row[ttype].tests.sort((a, b) => b.testStats.rate("fail") - a.testStats.rate("fail"));
 			const maxNameLength = Math.max(...tests.map(t => t.name.length));
-			return tests.length > 0 ? <div>
+			return tests.length > 0 ? <div key={ttype}>
 				<Divider className="info-header" >{headerMapper[ttype]}</Divider>
 				{this.renderPerType(tests, maxNameLength)} 
 			</div> : null
@@ -132,7 +135,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		capabilities.forEach((cap: string) => {
 			const localTests = cap in testsByCaps ? testsByCaps[cap] : [];
 			const testsByType = utils.groupBy(localTests, "type");
-			const curSource = { "capability": cap };
+			const curSource = { key: cap, capability: cap };
 			types.forEach((ttype: TestType) => {
 				const cellTests = ttype in testsByType ? testsByType[ttype] : [];
 				curSource[ttype] = {
@@ -168,13 +171,14 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 							  color: this.colorFontScale(avgRate) 
 							}
 						},
-						children: <div>{nTests > 0 ? `${rateStr} (${nTests})` : null}</div>
+						children: <div key={ttype}>{nTests > 0 ? `${rateStr} (${nTests})` : null}</div>
 					};
 				}
 			})
 		})
 		return <Table 
 			pagination={false}
+			rowKey={(row: CellType) => row.capability}
 			expandedRowRender={this.renderPerCapability}
 			dataSource={sources} columns={columns} />;
 	}
