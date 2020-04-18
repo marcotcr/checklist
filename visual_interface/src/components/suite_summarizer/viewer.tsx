@@ -10,6 +10,8 @@ import '../../style.css';
 import { RawTestCase, RawTestResult, RawTestStats } from '../../stores/Interface';
 import { testStore } from '../../stores/tests/TestStore';
 import { SuiteSummarizer } from './SuiteSummarizer';
+import { suiteStore } from '../../stores/tests/SuiteStore';
+import { TestResult } from '../../stores/tests/TestResult';
  
 
 // Custom Model. Custom widgets models must at least provide default values
@@ -30,8 +32,8 @@ import { SuiteSummarizer } from './SuiteSummarizer';
 export const Model = widgets.DOMWidgetModel.extend({
     defaults: _.extend(_.result(this, 'widgets.DOMWidgetModel.prototype.defaults'), {
     //defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
-        _model_name : 'TestRateModel',
-        _view_name : 'TestRateView',
+        _model_name : 'SuiteSummarizerModel',
+        _view_name : 'SuiteSummarizerView',
         _model_module : 'viewer',
         _view_module : 'viewer',
         _model_module_version : '0.1.0',
@@ -51,7 +53,8 @@ export const View = widgets.DOMWidgetView.extend({
     */
     // to get data from the backend
     onExistTestsChanged: function(): void {
-        //rateStore.setTestsToRate(this.model.get("test_infos"));
+        console.log("SuiteSummarizer")
+        suiteStore.setTestOverview(this.model.get("test_infos"));
         //if (redraw) { this.renderApp(); }
     },
     
@@ -82,8 +85,25 @@ export const View = widgets.DOMWidgetView.extend({
         //this.renderApp();
     },
 
-    onSelectTest: function(testname: number): void {
-        this.send({ event: 'switch_test', testname: testname });
+    onSelectTest: function(test: TestResult): void {
+        
+        if (test) {
+            testStore.setTest({
+                name: test.name,
+                description: test.description,
+                capability: test.capability,
+                type: test.type,
+                stats: {
+                    nfailed: test.testStats.nfailed,
+                    npassed: test.testStats.npassed,
+                    nfiltered: test.testStats.nfiltered,
+                },
+                tags: test.tags.map(t => t.raw),
+            })
+        }
+        
+        
+        this.send({ event: 'switch_test', testname: test ? test.name : "" });
         //this.renderApp();
     },
 
@@ -95,7 +115,10 @@ export const View = widgets.DOMWidgetView.extend({
         const $app = document.createElement("div");
         $app.setAttribute("id", "app-wrapper");
         
-        const wrapper = <SuiteSummarizer onSelect={this.onSelectTest} />
+        const wrapper = <SuiteSummarizer
+            onFetch={this.onFetchMoreExample}
+            onSearch={this.onApplyFilter}
+            onSelect={this.onSelectTest} />
             
         ReactDOM.render(wrapper, $app);
         this.el.appendChild($app);
@@ -115,14 +138,14 @@ export const View = widgets.DOMWidgetView.extend({
         this.renderApp = this.renderApp.bind(this);
         // init the value
         this.onExistTestsChanged();
-        this.onSelectTest();
-        this.onSummarizerChanged(false);
+        this.onSelectTest("");
+        //this.onSummarizerChanged(false);
         this.onExampleChanged(false);
         this.onStatsChanged(false);
         this.renderApp();
 
         // Python -> JavaScript update
-        this.listenTo(this.model, 'change:test_infos', this.onExistTestsChanged, this);
+        //this.listenTo(this.model, 'change:test_infos', this.onExistTestsChanged, this);
         this.listenTo(this.model, 'change:summarizer', this.onSummarizerChanged, this);
         this.listenTo(this.model, 'change:testcases', this.onExampleChanged, this);
         this.listenTo(this.model, 'change:stats', this.onStatsChanged, this);

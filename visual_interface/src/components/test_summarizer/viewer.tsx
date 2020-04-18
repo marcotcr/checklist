@@ -53,7 +53,7 @@ export const View = widgets.DOMWidgetView.extend({
         testStore.setTest(this.model.get("summarizer") as RawTestResult);
         //if (redraw) { this.renderApp(); }
     },
-    onExampleChanged: function(redraw: boolean=false): void {     
+    onExampleChanged: function(redraw: boolean=false): void {
         testStore.addMoreTestcases(this.model.get("testcases") as RawTestCase[]);
         //if (redraw) { this.renderApp(); }
     },

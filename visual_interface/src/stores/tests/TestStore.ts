@@ -31,8 +31,7 @@ export class TestStore {
         this.setTestStats({npassed: 0, nfailed: 0, nfiltered: 0});
         this.setSearchTags([]);
         this.failCaseOnly = true;
-
-        if (rawTest) {
+        if (rawTest && Object.keys(rawTest).length > 0) {
             this.testResult = new TestResult(
                 rawTest.name, rawTest.description,
                 rawTest.type, rawTest.capability,

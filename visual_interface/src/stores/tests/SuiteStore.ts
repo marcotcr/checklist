@@ -13,6 +13,7 @@ export class SuiteStore {
     }
 
     public setTestOverview(rawTests: RawTestResult[]): void {
+        this.overviewTests = [];
         rawTests.forEach(rawTest => {
             this.overviewTests.push(new TestResult(
                 rawTest.name, rawTest.description,
@@ -23,11 +24,22 @@ export class SuiteStore {
         testStore.setTest(null);
     }
 
-    public onSelectTest(testname: string): void {
+    public onSelectTest(test: TestResult): void {
         // a placeholder selection function.
-        console.log(`selected: ${testname}`)
-        if (!testStore.testResult) {
-            testStore.setTest(rawTestResult);
+        console.log(`selected: ${test.key()}`)
+        if (test) {
+            testStore.setTest({
+                name: test.name,
+                description: test.description,
+                capability: test.capability,
+                type: test.type,
+                stats: {
+                    nfailed: test.testStats.nfailed,
+                    npassed: test.testStats.npassed,
+                    nfiltered: test.testStats.nfiltered,
+                },
+                tags: test.tags.map(t => t.raw),
+            })
             testStore.setTestcases(rawTestcases);
             testStore.randomTestStats();
         } else {

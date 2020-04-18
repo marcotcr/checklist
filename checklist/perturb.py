@@ -266,7 +266,7 @@ class Perturb:
             except:
                 continue
             to_sub = np.random.randint(-min(change, int(x) - 1), change + 1, n * 3)
-            to_sub = ['%s' % str(int(x) + t) for t in to_sub if t != x][:n]
+            to_sub = ['%s' % str(int(x) + t) for t in to_sub if str(int(x) + t) != x][:n]
             ret.extend([sub_re.sub(n, doc.text) for n in to_sub])
             ret_m.extend([(x, n) for n in to_sub])
         return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
