@@ -67,7 +67,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
             </code>
         });
         if (description) {
-            metas.push({key: "Describe", value: <code style={{fontSize: "small"}}>{description}</code>});
+            metas.push({key: "Desc.", value: <code style={{fontSize: "small"}}>{description}</code>});
         }
         metas.push({
             key: "Result", 
@@ -85,7 +85,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         return <Row>
             <h4 className="header">Test Summary</h4>
             {metas.map(desc => {
-                return <Row key={desc.key} gutter={10}>
+                return <Row key={desc.key} gutter={8}>
                     <Col span={5} className={`test-desc title`}>{desc.key}</Col>
                     <Col span={19}  className={`test-desc content`}>{desc.value}</Col>
                     <Divider className="compact-divider"/>
@@ -186,7 +186,7 @@ export class TestSummarizer extends React.Component<TestSummarizerProps, {}> {
         }
         const description = testStore.testResult["description"]
         baseWidth += description ? increment * description.split(" ").length / 10  : 0;
-        return <Row gutter={30} className="test-summarizer-panel">
+        return <Row gutter={20} className="test-summarizer-panel">
             <Col span={10}>{ this.renderDescription() }</Col>
             <Col span={14}>
                 <h4 className="header">Examples {this.renderValidChecker()}</h4>

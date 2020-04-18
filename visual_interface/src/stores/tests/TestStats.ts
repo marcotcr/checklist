@@ -29,6 +29,6 @@ export class TestStats {
         this.nfailed + this.npassed : this.npassed + this.nfailed + this.nfiltered;
         const rate = total ? subset / total : 0;
         const rateStr = (rate * 100).toFixed(1) + "%";
-        return `${String(subset).padStart(isPad?4:0)} / ${String(total).padStart(isPad?4:0)} = ${rateStr.padStart(isPad?5:0)}`
+        return `${String(subset).padStart(isPad ? 4:0)} / ${String(total).padStart(isPad?4:0)} = ${rateStr.padStart(isPad?6:0)}`
     }
 }

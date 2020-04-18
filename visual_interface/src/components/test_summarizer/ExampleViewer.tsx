@@ -90,12 +90,12 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
 
     public render(): JSX.Element {
         if (!this.props.example) { return null; }
-        return <Row gutter={20}>
-            <Col sm={24} md={24} lg={10} xl={12}>
+        return <Row>
+            <Col sm={24} md={24} lg={24} xl={15}>
                 {this.renderExamples(this.props.example)}
             </Col>
-            <Col sm={24} md={24} lg={14} xl={12}
-                style={{textAlign: "right", paddingRight: 15}}>
+            <Col sm={24} md={24} lg={24} xl={9}
+                style={{textAlign: "right", paddingRight: 10}}>
                 {this.renderTags()}
             </Col>
         </Row>
