@@ -86,6 +86,7 @@ export const View = widgets.DOMWidgetView.extend({
     },
 
     onSelectTest: function(test: TestResult): void {
+        this.send({ event: 'switch_test', testname: test ? test.name : "" });
         
         if (test) {
             testStore.setTest({
@@ -101,9 +102,6 @@ export const View = widgets.DOMWidgetView.extend({
                 tags: test.tags.map(t => t.raw),
             })
         }
-        
-        
-        this.send({ event: 'switch_test', testname: test ? test.name : "" });
         //this.renderApp();
     },
 

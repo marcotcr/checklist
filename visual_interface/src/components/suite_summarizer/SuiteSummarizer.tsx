@@ -98,8 +98,10 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		]
 		type RecordType = {name: string, key: string, test: TestResult, fail_rate: TestStats};
 		return <Table size="small" bordered
+			expandedRowKeys={testStore.testResult ? [testStore.testResult.key()] : []}
 			onExpand={
 				(expanded: boolean, record: RecordType) => {
+				this.props.onSelect(null);
 				this.props.onSelect(record.test);
 			}}
 			expandedRowRender={(record: {name: string, key: string, fail_rate: TestStats}) => {
@@ -109,8 +111,8 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 					style={{backgroundColor: "white"}}
 					><TestSummarizer 
 					key={`${record.key} ${selectedKey}`}
-					onFetch={this.props.onFetch}
-					onSearch={this.props.onSearch} /></div> : null
+					onFetch={() => {this.props.onFetch()}}
+					onSearch={() => {this.props.onSearch()}} /></div> : null
 			}}
 			pagination={false}
 			dataSource={sources} columns={columns} />;
@@ -120,7 +122,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		const types: TestType[] = ["mft", "inv", "dir"];
 		return <div>
 		{types.map(ttype => {
-			const tests = row[ttype].tests.sort((a, b) => b.testStats.rate("fail") - a.testStats.rate("fail"));
+			const tests = row[ttype].tests//.sort((a, b) => b.testStats.rate("fail") - a.testStats.rate("fail"));
 			const maxNameLength = Math.max(...tests.map(t => t.name.length));
 			return tests.length > 0 ? <div>
 				<Divider className="info-header" >{headerMapper[ttype]}</Divider>
@@ -191,7 +193,7 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 
 	public render(): JSX.Element {
 		if (!suiteStore.overviewTests) { return null; }
-		console.log(testStore.testResult);
+		//console.log(testStore.testResult);
 		return this.renderTable();
 	}
 }

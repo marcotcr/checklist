@@ -76,6 +76,8 @@ class AbstractTest(ABC):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
         idxs = [0] if self.print_first else []
         idxs = [i for i in np.argsort(expect_results) if not only_include_fail or expect_results[i] <= 0]
+        if len(idxs) > len(iters):
+            return None
         if self.print_first:
             if 0 in idxs:
                 idxs.remove(0)
@@ -85,9 +87,11 @@ class AbstractTest(ABC):
         return idxs, iters, [expect_results[i] for i in idxs]
 
     def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
-        idxs, iters, _ = self._extract_examples_per_testcase(
+        result = self._extract_examples_per_testcase(
             xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True)
-
+        if not result:
+            return
+        idxs, iters, _ = result
         for x, pred, conf, label, meta in iters:
             print(format_example_fn(x, pred, conf, label, meta))
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
@@ -294,8 +298,11 @@ class AbstractTest(ABC):
 
     def _form_examples_per_testcase_for_viz(
         self, xs, preds, confs, expect_results, labels=None, meta=None, nsamples=3):
-        idxs, iters, expect_results_sample = self._extract_examples_per_testcase(
+        result = self._extract_examples_per_testcase(
             xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=False)
+        if not result:
+            return []
+        idxs, iters, expect_results_sample = result
         if not iters:
             return []
         start_idx = 1 if self.print_first else 0
