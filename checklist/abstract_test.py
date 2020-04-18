@@ -76,7 +76,7 @@ class AbstractTest(ABC):
         iters = list(iter_with_optional(xs, preds, confs, labels, meta))
         idxs = [0] if self.print_first else []
         idxs = [i for i in np.argsort(expect_results) if not only_include_fail or expect_results[i] <= 0]
-        if len(idxs) > len(iters):
+        if preds is None or (type(preds) == list and len(preds) == 0) or len(idxs) > len(iters):
             return None
         if self.print_first:
             if 0 in idxs:

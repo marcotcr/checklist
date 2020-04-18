@@ -176,7 +176,6 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 				<small><i>failure rate % (over N tests)</i></small>
 			</div>, 
 			dataIndex: ttype, key: ttype,
-			width: "20%",
 			render: (cell, row, _) => {
 				const tests = cell.tests;
 				const nTests = tests.length;

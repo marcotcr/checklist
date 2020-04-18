@@ -79,7 +79,7 @@ class TemplateEditor(widgets.DOMWidget):
                         texts.append(text)
                     except:
                         pass
-                template_tokens.append((texts, t.norm_))
+                template_tokens.append((texts, t.norm_, t.lemma_.split('[')[0].split('.')[0]))
             else:
                 template_tokens.append(t.text)
         return template_tokens
