@@ -113,7 +113,7 @@ class AbstractTest(ABC):
         self.run_idxs = None
         idxs = list(range(len(self.data)))
         if n is not None:
-            idxs = np.random.choice(idxs, min(n, len(idxs)))
+            idxs = np.random.choice(idxs, min(n, len(idxs)), replace=False)
             self.run_idxs = idxs
         if type(self.data[0]) in [list, np.array]:
             all = [(i, y) for i in idxs for y in self.data[i]]
