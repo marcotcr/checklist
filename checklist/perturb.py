@@ -238,9 +238,9 @@ class Perturb:
         ret_m = []
         for x in ents:
             if x in Perturb.data['city']:
-                names = Perturb.data['city']
+                names = Perturb.data['city'][:100]
             elif x in Perturb.data['country']:
-                names = Perturb.data['country']
+                names = Perturb.data['country'][:50]
             else:
                 continue
             sub_re = re.compile(r'\b%s\b' % re.escape(x))
