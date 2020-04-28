@@ -38,7 +38,7 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     elif file_format is None:
         pass
     else:
-        raise(Exception('file_format %s not suported. Accepted values are pred_only, pred_and_conf' % file_format))
+        raise(Exception('file_format %s not suported. Accepted values are pred_only, pred_and_conf, pred_and_softmax' % file_format))
     for l in f:
         l = l.strip('\n')
         p, c = format_fn(l)
@@ -67,9 +67,6 @@ class AbstractTest(ABC):
     @staticmethod
     def from_file(file):
         return load_test(file)
-        # test, expect = load_test(file)
-        # test.expect = dill.loads(expect)
-        # return test
 
     def _extract_examples_per_testcase(
         self, xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True):
@@ -87,7 +84,6 @@ class AbstractTest(ABC):
     def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
         idxs, iters, _ = self._extract_examples_per_testcase(
             xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True)
-
         for x, pred, conf, label, meta in iters:
             print(format_example_fn(x, pred, conf, label, meta))
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
@@ -99,6 +95,14 @@ class AbstractTest(ABC):
             raise(Exception('No results. Run run() first'))
 
     def set_expect(self, expect):
+        """Sets and updates expectation function
+
+        Parameters
+        ----------
+        expect : function
+            Expectation function, takes an AbstractTest (self) as parameter
+            see expect.py for details
+        """
         self.expect = expect
         self.update_expect()
 
@@ -108,6 +112,29 @@ class AbstractTest(ABC):
         self.results.passed = Expect.aggregate(self.results.expect_results, self.agg_fn)
 
     def example_list_and_indices(self, n=None, seed=None):
+        """Subsamples test cases
+
+        Parameters
+        ----------
+        n : int
+            Number of testcases to sample
+        seed : int
+            Seed to use
+
+        Returns
+        -------
+        tuple(list, list)
+            First list is a list of examples
+            Second list maps examples to testcases.
+
+        For example, let's say we have two testcases: [a, b, c] and [d, e].
+        The first list will be [a, b, c, d, e]
+        the second list will be [0, 0, 0, 1, 1]
+
+        Also updates self.run_idxs if n is not None to indicate which testcases
+        were run. Also updates self.result_indexes with the second list.
+
+        """
         if seed is not None:
             np.random.seed(seed)
         self.run_idxs = None
@@ -124,16 +151,19 @@ class AbstractTest(ABC):
         self.result_indexes = result_indexes
         return examples, result_indexes
 
-    # def example_indices(self):
-    #     if type(self.data[0]) in [list, np.array]:
-    #         all = [(i, '') for i, x in enumerate(self.data) for y in x]
-    #         result_indexes, examples = map(list, list(zip(*all)))
-    #         return result_indexes
-    #     else:
-    #         return list(range(len(self.data)))
-
     def update_results_from_preds(self, preds, confs):
-        # result_indexes = self.example_indices()
+        """Updates results from preds and confs
+        Assumes that example_lists_and_indices or to_raw_examples or to_raw_file
+        was called before, so that self.result_indexes exists
+        Parameters
+        ----------
+        preds : list
+            Predictions
+        confs : list
+            Confidences
+
+        Updates self.results.preds and self.results.confs
+        """
         result_indexes = self.result_indexes
         if type(self.data[0]) == list:
             self.results.preds = [[] for _ in self.data]
@@ -152,8 +182,26 @@ class AbstractTest(ABC):
                 self.results.confs[i] = c
 
     def to_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None):
-        # file_format can be jsonl, TODO
-        # format_fn takes an example and outputs a line in the file
+        """Flattens all test examples into a single list
+
+        Parameters
+        ----------
+        file_format : string, must be one of 'jsonl', 'squad', or None
+            None just calls str(x) for each example in self.data
+        format_fn : function or None
+            If not None, call this function to format each example in self.data
+        n : int
+            If not None, number of samples to draw
+        seed : int
+            Seed to use if n is not None
+
+        Returns
+        -------
+        list(string)
+            List of all examples. Indices of example to test case will be
+            stored in self.result_indexes. If n is not None, self.run_idxs will
+            store the test case indexes.
+        """
         if file_format == 'jsonl':
             import json
             format_fn = lambda x: json.dumps(x)
@@ -165,6 +213,25 @@ class AbstractTest(ABC):
         return examples
 
     def to_raw_file(self, path, file_format=None, format_fn=str, header=None, n=None, seed=None):
+        """Flatten test cases into individual examples and print them to file.
+        Indices of example to test case will be stored in self.result_indexes.
+        If n is not None, self.run_idxs will store the test case indexes.
+
+        Parameters
+        ----------
+        path : string
+            File path
+        file_format : string, must be one of 'jsonl', 'squad', or None
+            None just calls str(x) for each example in self.data
+        format_fn : function or None
+            If not None, call this function to format each example in self.data
+        header : string
+            If not None, first line of file
+        n : int
+            If not None, number of samples to draw
+        seed : int
+            Seed to use if n is not None
+        """
         # file_format can be jsonl, TODO
         # format_fn takes an example and outputs a line in the file
         ret = ''
@@ -190,11 +257,41 @@ class AbstractTest(ABC):
             self.results = Munch()
 
     def run_from_preds_confs(self, preds, confs, overwrite=False):
+        """Update self.results (run tests) from list of predictions and confidences
+
+        Parameters
+        ----------
+        preds : list
+            predictions
+        confs : list
+            confidences
+        overwrite : bool
+            If False, raise exception if results already exist
+        """
         self._check_create_results(overwrite)
         self.update_results_from_preds(preds, confs)
         self.update_expect()
 
     def run_from_file(self, path, file_format=None, format_fn=None, ignore_header=False, overwrite=False):
+        """Update self.results (run tests) from a prediction file
+
+        Parameters
+        ----------
+        path : string
+            prediction file path
+        file_format : string
+            None, or one of 'pred_only', 'pred_and_conf', 'pred_and_softmax', 'squad',
+            pred only: each line has a prediction
+            pred_and_conf: each line has a prediction and a confidence value, separated by a space
+            pred_and_softmax: each line has a prediction and all softmax probabilities, separated by a space
+            squad: TODO
+        format_fn : function
+            If not None, function that reads a line in the input file and outputs a tuple of (prediction, confidence)
+        ignore_header : bool
+            If True, skip first line in the file
+        overwrite : bool
+            If False, raise exception if results already exist
+        """
         # file_format can be 'pred_only' (only preds, conf=1), TODO
         # Format_fn takes a line in the file and outputs (pred, conf)
         # Checking just to avoid reading the file in vain
@@ -207,6 +304,28 @@ class AbstractTest(ABC):
 
 
     def run(self, predict_and_confidence_fn, overwrite=False, verbose=True, n=None, seed=None):
+        """Runs tests
+
+        Parameters
+        ----------
+        predict_and_confidence_fn : function
+            Takes as input a list of examples
+            Outputs a tuple (predictions, confidences)
+        overwrite : bool
+            If False, raise exception if results already exist
+        verbose : bool
+            If True, print extra information
+        n : int
+            If not None, number of samples to draw
+        seed : int
+            Seed to use if n is not None
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         # Checking just to avoid predicting in vain, will be created in run_from_preds_confs
         self._check_create_results(overwrite, check_only=True)
         examples, result_indexes = self.example_list_and_indices(n, seed=seed)
@@ -224,7 +343,8 @@ class AbstractTest(ABC):
         self._check_results()
         return np.where(self.results.passed == None)[0]
 
-    def print_stats(self):
+    def get_stats(self):
+        stats = Munch()
         self._check_results()
         n_run = n = len(self.data)
         if self.run_idxs is not None:
@@ -232,15 +352,29 @@ class AbstractTest(ABC):
         fails = self.fail_idxs().shape[0]
         filtered = self.filtered_idxs().shape[0]
         nonfiltered = n_run - filtered
-        print('Test cases:      %d' % n)
+        stats.testcases = n
         if n_run != n:
-            print('Test cases run:  %d' % n_run)
+            stats.testcases_run = n_run
         if filtered:
-            print('After filtering: %d (%.1f%%)' % (nonfiltered, 100 * nonfiltered / n_run))
+            stats.after_filtering = nonfiltered
+            stats.after_filtering_rate = 100 * nonfiltered / n_run
         if nonfiltered != 0:
-            print('Fails (rate):    %d (%.1f%%)' % (fails, 100 * fails / nonfiltered))
+            stats.fails = fails
+            stats.fail_rate = 100 * fails / nonfiltered
+        return stats
 
-    def label_meta(self, i):
+
+    def print_stats(self):
+        stats = self.get_stats()
+        print('Test cases:      %d' % stats.testcases)
+        if 'testcases_run' in stats:
+            print('Test cases run:  %d' % stats.testcases_run)
+        if 'after_filtering' in stats:
+            print('After filtering: %d (%.1f%%)' % (stats.after_filtering, stats.after_filtering_rate))
+        if 'fails' in stats:
+            print('Fails (rate):    %d (%.1f%%)' % (stats.fails, stats.fail_rate))
+
+    def _label_meta(self, i):
         if self.labels is None:
             label = None
         else:
@@ -252,9 +386,21 @@ class AbstractTest(ABC):
         return label, meta
 
     def summary(self, n=3, print_fn=None, format_example_fn=None, n_per_testcase=3):
-        # print_fn_fn takes (xs, preds, confs, expect_results, labels=None, meta=None)
-        # format_example_fn takes (x, pred, conf, label=None, meta=None)
-        # i.e. it prints a single test case
+        """Print stats and example failures
+
+        Parameters
+        ----------
+        n : int
+            number of example failures to show
+        print_fn : function
+            If not None, use this to print a failed test case.
+            Arguments: (xs, preds, confs, expect_results, labels=None, meta=None)
+        format_example_fn : function
+            If not None, use this to print a failed example within a test case
+            Arguments: (x, pred, conf, label=None, meta=None)
+        n_per_testcase : int
+            Maximum number of examples to show for each test case
+        """
         self.print_stats()
         if not n:
             return
@@ -286,7 +432,7 @@ class AbstractTest(ABC):
         for f in fails:
             d_idx = f if self.run_idxs is None else self.run_idxs[f]
             # should be format_fn
-            label, meta = self.label_meta(d_idx)
+            label, meta = self._label_meta(d_idx)
             # print(label, meta)
             print_fn(self.data[d_idx], self.results.preds[d_idx],
                      self.results.confs[d_idx], self.results.expect_results[f],
@@ -348,7 +494,7 @@ class AbstractTest(ABC):
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
             # should be format_fn
-            label, meta = self.label_meta(f)
+            label, meta = self._label_meta(f)
             # print(label, meta)
             succeed = self.results.passed[f]
             if succeed is not None:

@@ -34,6 +34,27 @@ class Perturb:
 
     @staticmethod
     def perturb(data, perturb_fn, keep_original=True, nsamples=None, *args, **kwargs):
+        """Perturbs data according to some function
+
+        Parameters
+        ----------
+        data : list
+            List of examples, could be strings, tuples, dicts, spacy docs, whatever
+        perturb_fn : function
+            Arguments: (example, *args, **kwargs)
+            Returns: list of examples, or (examples, meta) if meta=True in **kwargs.
+            Can also return None if perturbation does not apply, and it will be ignored.
+        keep_original : bool
+            if True, include original example (from data) in output
+        nsamples : int
+            number of examples in data to perturb
+
+        Returns
+        -------
+        MunchWithAdd
+            will have .data and .meta (if meta=True in **kwargs)
+
+        """
         ret = MunchWithAdd()
         use_meta = kwargs.get('meta', False)
         ret_data = []
@@ -80,6 +101,19 @@ class Perturb:
 
     @staticmethod
     def strip_punctuation(doc):
+        """Removes punctuation
+
+        Parameters
+        ----------
+        doc : spacy.tokens.Doc
+            spacy doc
+
+        Returns
+        -------
+        string
+            With punctuation stripped
+
+        """
         # doc is a spacy doc
         while doc[-1].pos_ == 'PUNCT':
             doc = doc[:-1]
@@ -87,6 +121,19 @@ class Perturb:
 
     @staticmethod
     def punctuation(doc):
+        """Perturbation function which adds / removes punctuations
+
+        Parameters
+        ----------
+        doc : spacy.tokens.Doc
+            spacy doc
+
+        Returns
+        -------
+        list(string)
+            With punctuation removed and / or final stop added.
+
+        """
         # doc is a spacy doc
         s = Perturb.strip_punctuation(doc)
         ret = []
@@ -99,6 +146,21 @@ class Perturb:
 
     @staticmethod
     def add_typos(string, typos=1):
+        """Perturbation functions, swaps random characters with their neighbors
+
+        Parameters
+        ----------
+        string : str
+            input string
+        typos : int
+            number of typos to add
+
+        Returns
+        -------
+        list(string)
+            perturbed strings
+
+        """
         string = list(string)
         swaps = np.random.choice(len(string) - 1, typos)
         for swap in swaps:
@@ -109,11 +171,37 @@ class Perturb:
 
     @staticmethod
     def contractions(sentence, **kwargs):
+        """Perturbation functions, contracts and expands contractions if present
+
+        Parameters
+        ----------
+        sentence : str
+            input
+
+        Returns
+        -------
+        list
+            List of strings with contractions expanded or contracted, or []
+
+        """
         expanded = [Perturb.expand_contractions(sentence), Perturb.contract(sentence)]
         return [t for t in expanded if t != sentence]
 
     @staticmethod
     def expand_contractions(sentence, **kwargs):
+        """Expands contractions in a sentence (if any)
+
+        Parameters
+        ----------
+        sentence : str
+            input string
+
+        Returns
+        -------
+        string
+            String with contractions expanded (if any)
+
+        """
         contraction_map = {
             "ain't": "is not", "aren't": "are not", "can't": "cannot",
             "can't've": "cannot have", "could've": "could have", "couldn't":
@@ -158,6 +246,19 @@ class Perturb:
 
     @staticmethod
     def contract(sentence, **kwargs):
+        """Contract expanded contractions in a sentence (if any)
+
+        Parameters
+        ----------
+        sentence : str
+            input string
+
+        Returns
+        -------
+        string
+            String with contractions contracted (if any)
+
+        """
         reverse_contraction_map = {
             'is not': "isn't", 'are not': "aren't", 'cannot': "can't",
             'could not': "couldn't", 'did not': "didn't", 'does not':
@@ -192,6 +293,30 @@ class Perturb:
 
     @staticmethod
     def change_names(doc, meta=False, n=10, first_only=False, last_only=False, seed=None):
+        """Replace names with other names
+
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+        meta : bool
+            if True, will return list of (orig_name, new_name) as meta
+        n : int
+            number of names to replace original names with
+        first_only : bool
+            if True, will only replace first names
+        last_only : bool
+            if True, will only replace last names
+        seed : int
+            random seed
+
+        Returns
+        -------
+        list(str)
+            if meta=True, returns (list(str), list(tuple))
+            Strings with names replaced.
+
+        """
         if seed is not None:
             np.random.seed(seed)
         ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'PERSON' for a in x])]
@@ -231,6 +356,26 @@ class Perturb:
 
     @staticmethod
     def change_location(doc, meta=False, seed=None, n=10):
+        """Change city and country names
+
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+        meta : bool
+            if True, will return list of (orig_loc, new_loc) as meta
+        seed : int
+            random seed
+        n : int
+            number of locations to replace original locations with
+
+        Returns
+        -------
+        list(str)
+            if meta=True, returns (list(str), list(tuple))
+            Strings with locations replaced.
+
+        """
         if seed is not None:
             np.random.seed(seed)
         ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'GPE' for a in x])]
@@ -251,6 +396,27 @@ class Perturb:
 
     @staticmethod
     def change_number(doc, meta=False, seed=None, n=10):
+        """Change integers to other integers within 20% of the original integer
+        Does not change '2' or '4' to avoid abbreviations (this is 4 you, etc)
+
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+        meta : bool
+            if True, will return list of (orig_number, new_number) as meta
+        seed : int
+            random seed
+        n : int
+            number of numbers to replace original locations with
+
+        Returns
+        -------
+        list(str)
+            if meta=True, returns (list(str), list(tuple))
+            Strings with numbers replaced.
+
+        """
         if seed is not None:
             np.random.seed(seed)
         nums = [x.text for x in doc if x.text.isdigit()]

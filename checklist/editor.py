@@ -57,6 +57,25 @@ class SafeFormatter(string.Formatter):
         return string.Formatter.vformat(self, format_string, args, kwargs)
 
 def recursive_format(obj, mapping, ignore_missing=False):
+    """Formats all strings within an object, using mapping
+
+    Parameters
+    ----------
+    obj : string, tuple, list, or dict
+        Object (leaves must be strings, regardless of type)
+    mapping : dict
+        format dictionary, maps keys to values
+    ignore_missing : bool
+        If True, will not throw exception if a string contains a tag not
+        present in mapping, and will keep the tag instead.
+
+    Returns
+    -------
+    string, tuple, list, or dict
+        Object of the same type as obj, with strings formatted (tags replaced
+        by their value)
+
+    """
     def formatfn(x, mapping):
         fmt = SafeFormatter()
         formatz = lambda x, m: x.format(**m) if not ignore_missing else fmt.format(x, **m)
@@ -77,6 +96,21 @@ def recursive_format(obj, mapping, ignore_missing=False):
     return recursive_apply(obj, formatfn, mapping)
 
 def recursive_apply(obj, fn, *args, **kwargs):
+    """Recursively applies a function to an obj
+
+    Parameters
+    ----------
+    obj : string, tuple, list, or dict
+        Object (leaves must be strings, regardless of type)
+    fn : function
+        function to be applied to the leaves (strings)
+
+    Returns
+    -------
+    string, tuple, list, or dict
+        Object of the same type as obj, with fn applied to leaves
+
+    """
     if type(obj) in [str, bytes]:
         return fn(obj, *args, **kwargs)#obj.format(**(mapping))
     elif type(obj) == tuple:
@@ -89,19 +123,45 @@ def recursive_apply(obj, fn, *args, **kwargs):
         return fn(obj, *args, **kwargs)
         # return obj
 
-def replace_mask(obj):
+def replace_mask(text):
+    """Replaces multiple instances of mask with indexed versions.
+
+    Parameters
+    ----------
+    text : string
+        masked input, e.g. "This is a {mask} {mask} and {mask}"
+
+    Returns
+    -------
+    string
+        multiple instances of the same mask are replaced with indexed versions
+        e.g. "This is a {mask[0]} {mask[1]} and {mask[2]}
+
+    """
     mask_finder = re.compile(r'\{((?:[^\}]*:)?mask\d*)\}')
-    # mask_finder = re.compile(r'\{(mask\d*)\}')
     i = 0
-    while mask_finder.search(obj):
-        obj = mask_finder.sub(r'{\1[%d]}' % i, obj, 1)
+    while mask_finder.search(text):
+        text = mask_finder.sub(r'{\1[%d]}' % i, text, 1)
         i += 1
-    return obj
+    return text
 
 def add_article(noun):
     return 'an %s' % noun if noun[0].lower() in ['a', 'e', 'i', 'o', 'u'] else 'a %s' % noun
 
 def find_all_keys(obj):
+    """Finds all tag keys in object
+
+    Parameters
+    ----------
+    obj : string, tuple, list, or dict
+        Object (leaves must be strings, regardless of type)
+
+    Returns
+    -------
+    set
+        Set of all keys (with options)
+
+    """
     strings = get_all_strings(obj)
     ret = set()
     for s in strings:
@@ -112,6 +172,20 @@ def find_all_keys(obj):
     return set([x for x in ret if x])
 
 def get_mask_index(obj):
+    """Find all masked strings in obj and index them by mask id
+
+    Parameters
+    ----------
+    obj : string, tuple, list, or dict
+        Object (leaves must be strings, regardless of type)
+
+    Returns
+    -------
+    tuple(dict, dict)
+        First dict is a map from mask id to list of strings
+        Second dict is a map from mask id to options
+
+    """
     strings = get_all_strings(obj)
     # ?: after parenthesis makes group non-capturing
     mask_finder = re.compile(r'\{(?:[^\}]*:)?mask\d*\}')
@@ -132,6 +206,19 @@ def get_mask_index(obj):
     return ret, options
 
 def get_all_strings(obj):
+    """Returns all strings in obj
+
+    Parameters
+    ----------
+    obj : string, tuple, list, or dict
+        Object (leaves must be strings, regardless of type)
+
+    Returns
+    -------
+    set
+        All strings in obj leaves.
+
+    """
     ret = set()
     if type(obj) in [str, bytes]:
         ret.add(obj)
@@ -188,6 +275,26 @@ class Editor(object):
             raise AttributeError
 
     def suggest_replace(self, text, word, full_sentences=False, words_and_sentences=False, **kwargs):
+        """Masked language model suggestion for replacing word in sentence
+
+        Parameters
+        ----------
+        text : str
+            context
+        word : str
+            word to be replaced
+        full_sentences : bool
+            If True, returns full sentences with replaced suggestions
+        words_and_sentences : bool
+            If True, returns tuples of (replacement word, full_sentence)
+
+        Returns
+        -------
+        list
+            Default: list of strings, suggestions for replacements
+            If full_sentences or words_and_sentences: see documentation above.
+
+        """
         ret = self.tg.replace_word(text, word, **kwargs)
         if kwargs.get('verbose', False):
             print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
@@ -213,27 +320,124 @@ class Editor(object):
         return [x[0][0] for x in fn(texts, word, threshold=threshold, pos=pos, depth=depth)]
 
     def antonyms(self, templates, word, threshold=5, **kwargs):
+        """Find antonyms of word that fit in templates
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+        word : str
+            Word for which we want antonyms
+        threshold : float
+            Maximum allowed log likelihood difference between word and antonym in context
+
+        Returns
+        -------
+        list
+            List of antonyms that fit the given templates
+
+        """
         return self._wordnet_stuff(templates, word, 'antonyms', threshold=threshold, **kwargs)
 
     def synonyms(self, templates, word, threshold=5, **kwargs):
+        """Find synonyms of word that fit in templates
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+        word : str
+            Word for which we want synonyms
+        threshold : float
+            Maximum allowed log likelihood difference between word and antonym in context
+
+        Returns
+        -------
+        list
+            List of synonyms that fit the given templates
+
+        """
         return self._wordnet_stuff(templates, word, 'synonyms', threshold=threshold, **kwargs)
 
     def related_words(self, templates, word, threshold=5, **kwargs):
+        """Find words that are related to word that fit in templates
+        By related words, we mean hyponyms of the word's hypernyms
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+        word : str
+            Word for which we want related words
+        threshold : float
+            Maximum allowed log likelihood difference between word and antonym in context
+
+        Returns
+        -------
+        list
+            List of related words that fit the given templates
+
+        """
         return self._wordnet_stuff(templates, word, 'related', threshold=threshold, **kwargs)
 
     def hypernyms(self, templates, word, threshold=5, **kwargs):
+        """Find hypernyms of word that fit in templates
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+        word : str
+            Word for which we want hypernyms
+        threshold : float
+            Maximum allowed log likelihood difference between word and antonym in context
+
+        Returns
+        -------
+        list
+            List of hypernyms that fit the given templates
+
+        """
         return self._wordnet_stuff(templates, word, 'hypernyms', threshold=threshold, **kwargs)
 
     def hyponyms(self, templates, word, threshold=5, **kwargs):
+        """Find hyponyms of word that fit in templates
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+        word : str
+            Word for which we want hyponyms
+        threshold : float
+            Maximum allowed log likelihood difference between word and antonym in context
+
+        Returns
+        -------
+        list
+            List of hyponyms that fit the given templates
+
+        """
         return self._wordnet_stuff(templates, word, 'hyponyms', threshold=threshold, **kwargs)
 
     def suggest(self, templates, **kwargs):
-        # if replace:
-        #     replace_with_mask = lambda x: re.sub(r'\b%s\b'% re.escape(replace), '{mask}', x)
-        #     templates = recursive_apply(templates, replace_with_mask)
+        """Suggests fill-ins based on a masked language model
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+            Must have at least one {mask}. Cannot have {mask} and {mask1}, but can have multiple {mask}s
+        **kwargs : type
+            See documentation for function 'template'
+
+        Returns
+        -------
+        list(str or tuple)
+            list of fill-in suggestions, sorted by likelihood
+
+        """
         mask_index, ops = get_mask_index(templates)
-        #print(templates)
-        #print(self.template(templates, **kwargs, mask_only=True))
         if not mask_index:
             return []
         if len(mask_index) != 1:
@@ -250,6 +454,22 @@ class Editor(object):
 
 
     def visual_suggest(self, templates, **kwargs):
+        """Spawns a jupyter visualization for masked language model suggestions
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+            Must have at least one {mask}. Cannot have {mask} and {mask1}, but can have multiple {mask}s
+        **kwargs : type
+            See documentation for function 'template'
+
+        Returns
+        -------
+        TemplateEditor
+            visualization. Selected suggestions will be in self.selected_suggestions
+
+        """
         tagged_keys = find_all_keys(templates)
         template_strs = get_all_strings_ordered(templates)
         items = self._get_fillin_items(tagged_keys, max_count=5, **kwargs)
@@ -259,7 +479,6 @@ class Editor(object):
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.selected_suggestions = []
-        #return template_strs, tagged_keys, items, mask_suggests
         return TemplateEditor(
             template_strs=template_strs,
             tagged_keys=tagged_keys,
@@ -270,6 +489,17 @@ class Editor(object):
         )
 
     def add_lexicon(self, name, values, overwrite=False):
+        """Add tag to lexicon
+
+        Parameters
+        ----------
+        name : str
+            Tag name.
+        values : list(str)
+            Tag values.
+        overwrite : bool
+            If True, replaces tag with the same name if it already exists
+        """
         # words can be strings, dictionarys, and other objects
         if name in self.lexicons and not overwrite:
             raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
@@ -303,6 +533,44 @@ class Editor(object):
     def template(self, templates, nsamples=None,
                  product=True, remove_duplicates=False, mask_only=False,
                  unroll=False, labels=None, meta=False,  save=False, **kwargs):
+        """Fills in templates
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+            Can have {mask} tags, which will be replaced by a masked language model.
+            Other tags can be numbered for distinction, e.g. {person} and {person1} will be considered
+            separate tags, but both will use fill-ins for 'person'
+        nsamples : int
+            Number of samples
+        product : bool
+            If true, take cartesian product
+        remove_duplicates : bool
+            If True, will not generate any strings where two or more fill-in values are duplicates.
+        mask_only : bool
+            If True, return only fill-in values for {mask} tokens
+        unroll : bool
+            If True, returns list of strings regardless of template type (i.e. unrolls)
+        labels : int or object with strings on leaves
+            If int, all generated strings will have the same label. Otherwise, can refer
+            to tags, or be strings, etc. Output will be in ret.meta
+        meta : bool
+            If True, ret.meta will contain a dict of fill in values for each item in ret.data
+        save : bool
+            If True, ret.templates will contain all parameters and fill-in lists
+        **kwargs : type
+            Must include fill-in lists for every tag not in editor.lexicons
+
+        Returns
+        -------
+        MunchWithAdd
+            Returns ret, a glorified dict, which will have the filled in templates in ret.data.
+            It may contain ret.labels, ret.templates and ret.meta (depending on parameters as noted above)
+            You can add or += two MunchWithAdd, which will concatenate values
+
+        """
+
     # 1. go through object, find every attribute inside brackets
     # 2. check if they are in kwargs and self.attributes
     # 3. generate keys and vals
