@@ -19,14 +19,20 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     confs = []
     if file_format == 'pred_only':
         format_fn = lambda x: (int(x), 1) if x.isdigit() else (x, 1)
-    if file_format == 'pred_and_conf':
+    elif file_format == 'softmax':
+        def formatz(x):
+            confs = np.array([float(y) for y in x.split()])
+            pred = int(np.argmax(confs))
+            return pred, confs
+        format_fn = formatz
+    elif file_format == 'pred_and_conf':
         def formatz(x):
             pred, conf = x.split()
             if pred.isdigit():
                 pred = int(pred)
             return pred, float(conf)
         format_fn = formatz
-    if file_format == 'pred_and_softmax':
+    elif file_format == 'pred_and_softmax':
         def formatz(x):
             allz = x.split()
             pred = allz[0]
@@ -38,7 +44,7 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     elif file_format is None:
         pass
     else:
-        raise(Exception('file_format %s not suported. Accepted values are pred_only, pred_and_conf, pred_and_softmax' % file_format))
+        raise(Exception('file_format %s not suported. Accepted values are pred_only, softmax, pred_and_conf, pred_and_softmax' % file_format))
     for l in f:
         l = l.strip('\n')
         p, c = format_fn(l)
@@ -280,8 +286,9 @@ class AbstractTest(ABC):
         path : string
             prediction file path
         file_format : string
-            None, or one of 'pred_only', 'pred_and_conf', 'pred_and_softmax', 'squad',
-            pred only: each line has a prediction
+            None, or one of 'pred_only', 'softmax', 'pred_and_conf', 'pred_and_softmax', 'squad',
+            pred_only: each line has a prediction
+            softmax: each line has prediction probabilities separated by spaces
             pred_and_conf: each line has a prediction and a confidence value, separated by a space
             pred_and_softmax: each line has a prediction and all softmax probabilities, separated by a space
             squad: TODO
