@@ -4,6 +4,8 @@ import dill
 from .abstract_test import load_test, read_pred_file
 from .test_types import MFT, INV, DIR
 
+from .viewer.suite_summarizer import SuiteSummarizer
+
 class TestSuite:
     def __init__(self, format_example_fn=None, print_fn=None):
         self.tests = OrderedDict()
@@ -111,5 +113,54 @@ class TestSuite:
                 print()
             print()
             print()
+    
+    def visual_summary_by_name(self, testname):
+        if not testname in self.tests:
+            raise(Exception(f"There's no test named {testname} in the suite!"))
+        test, info = self.tests[testname], self.info[testname]
+        return test.visual_summary(
+            name=testname,
+            capability=info["capability"] if "capability" in info else None,
+            description=info["description"] if "description" in info else None
+        )
+    
+    def _on_select_test(self, testname: str):
+        if not testname:
+            test_info, testcases = {}, []
+        else:
+            if not testname in self.tests:
+                raise(Exception(f"There's no test named {testname} in the suite!"))
+            test, info = self.tests[testname], self.info[testname]
+            test_info = test.form_test_info(
+                name=testname,
+                capability=info["capability"] if "capability" in info else None,
+                description=info["description"] if "description" in info else None
+            )
+            testcases = test.form_testcases()
+        return test_info, testcases
+
+    def visual_summary_table(self, types=None, capabilities=None):
+        print("Please wait as we prepare the table data...")
+        test_infos = []
+        for testname in self.tests.keys():
+            test, info = self.tests[testname], self.info[testname]
+            
+            local_info = test.form_test_info(
+                name=testname,
+                capability=info["capability"] if "capability" in info else None,
+                description=info["description"] if "description" in info else None
+            )
+            if (not capabilities or local_info["capability"] in capabilities) and \
+                (not types or local_info["type"] in types):
+                test_infos.append(local_info)
+            
+        capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
+        cap_order = lambda x: capability_order.index(x["capability"]) if x in capability_order else 100
+        test_infos = sorted(test_infos, key=cap_order)
+        return SuiteSummarizer(
+            test_infos=test_infos,
+            select_test_fn=self._on_select_test
+        )
+
     def save(self, file):
         dill.dump(self, open(file, 'wb'), recurse=True)

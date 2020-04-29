@@ -1,0 +1,233 @@
+@import '~antd/dist/antd.css';
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100vh;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.overflow {
+    overflow: auto;
+}
+
+.overflow-y {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+
+.overflow-height {
+    max-height: 100px;
+}
+
+
+.vega-embed.has-actions {
+    padding-right: 0px!important;
+}
+
+.display-table-cell {
+    display: table-cell;
+}
+
+.ant-table-thead > tr > th, .ant-table-tbody > tr > td {
+    padding: 8px 8px
+}
+tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
+    background: #f6f6f6;
+}
+
+.test-name-col { 
+    max-width: 350px; 
+}
+
+.test-name-col pre {
+    word-break: keep-all;
+    white-space: pre-wrap!important;
+}
+.test-stat-col { 
+    min-width: 240px!important;
+    max-width: 50%;
+}
+
+.test-summarizer-panel code {
+    background: none;
+}
+
+
+
+
+/* FOR EXAMPLES */
+
+.testcase-block {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: solid;
+    background: #f8f8f8;
+}
+
+.sentence-mark-token {
+    font-weight: bold;
+    font-family: "Courier New", Courier;
+    background-color: #969696;
+    color: white;
+    padding: 2px;
+    margin-right: 10px;
+}
+
+
+.example-token.rewrite-arrow {
+    font-size: 10px!important;
+    font-weight: bold!important;
+}
+
+.example-token.rewrite-add {
+    /* this should overwrite whatever default color it has. */
+    background: #e5faf5!important;
+    color: #007857!important;
+}
+  
+.example-token.rewrite-remove {
+    background: #ffefea!important;
+    color: #d35229!important;
+    /* text-decoration: line-through!important; */
+}
+.example-token.rewrite-remove.no-replace {
+    text-decoration: line-through;
+}
+
+/* FOR TEMPLATES */
+
+.template-token-box {    
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 7px;
+    background-color: #efefef;
+}
+
+.template-token-box.abstract-token { min-width: 120px; }
+.template-token-box.mask-token { min-width: 190px; /* Or: can be 170px */  }
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.ellipsis.abstract-token { max-width: 80px; color: #aaa; }
+.ellipsis.mask-token { max-width: 120px; }
+
+.mask-token sup { background-color: #1890ff!important; }
+.abstract-token sup { background-color: #ababab!important; /*#faad14*/}
+.badge sup {
+    top: -10px;
+    opacity: 0.8;
+}
+
+
+
+
+.template-token {
+    white-space: pre;
+    /*margin-top: 1px!important; */
+    /*margin-bottom: 1px!important; */
+    font-weight: bold;
+    font-family: "Courier New", Courier;
+    font-size: 17px;
+    display: inline-block;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    background-color: #efefef;
+
+}
+
+.template-token.mask-token {
+    background-color: #1890ff!important;
+    color: white;
+    padding-left: 7px;
+    padding-right: 7px;
+    border-radius: 10px;
+}
+
+.example-token {
+    color: #696969;
+}
+.example-token.mask-token:not(.article-token) {
+    color: #1890ff!important;
+    background: none;
+}
+.example-token.abstract-token:not(.article-token) {
+    background: #eee;
+}
+
+
+.info-header {
+    font-weight: bold;
+    color: steelblue;
+    font-variant-caps: all-petite-caps;
+}
+
+.header {
+    width: 100%;
+    height: 22px;
+    border-color: grey;
+    border-bottom: 1px solid;
+}
+
+
+
+
+.compact-divider {
+    margin: 8px 0px;
+}
+
+.xm-divider {
+    margin: 4px 0px;
+}
+
+
+.test-desc-suite {
+    text-align: right;
+}
+
+.test-desc.title {
+    text-align: right;
+    font-weight: bold;
+}
+
+.test-desc.content {
+    text-align: left;
+}
+
+details {
+    display: none;
+}
+
+.vega-embed {
+    bottom: 0px;
+}
+
+.compact .ant-list-item {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.article-token {
+    color: #aaa;
+    font-style: italic;
+}
+
+.info-header.abstract-token {
+    color: grey;
+}

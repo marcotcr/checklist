@@ -35,11 +35,17 @@ class TestSummarizer(widgets.DOMWidget):
         self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
 
         self.max_return = 10
-        self.summarizer = test_summary
-        self.filtered_testcases = testcases
+        self.reset_summary(test_summary)
+        self.reset_testcases(testcases)
+        self.on_msg(self.handle_events)
+    
+    def reset_summary(self, test_summary=None):
+        self.summarizer = test_summary if test_summary else {}
+    
+    def reset_testcases(self, testcases=None):
+        self.filtered_testcases = testcases if testcases else []
         self.tokenize_testcases()
         self.search(filter_tags=[], is_fail_case=True)
-        self.on_msg(self.handle_events)
         
     def handle_events(self, _, content, buffers):
         """

@@ -8,7 +8,7 @@ import os
 import json
 import munch
 
-from .viewer import TemplateEditor
+from .viewer.template_editor import TemplateEditor
 
 class MunchWithAdd(munch.Munch):
     def __add__(self, other):
@@ -18,8 +18,6 @@ class MunchWithAdd(munch.Munch):
                 temp[k] = temp[k] + other[k]
             except KeyError:
                 raise Exception('Both Munches must have the same keys')
-
-
         return temp
 
     def __iadd__(self, other):
