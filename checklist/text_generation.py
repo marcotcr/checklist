@@ -226,14 +226,14 @@ class TextGenerator(object):
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
         return new_ret
 
-    def more_general(self, texts, word, threshold=5, pos=None):
+    def more_general(self, texts, word, threshold=5, pos=None, **kwargs):
         options = all_possible_hypernyms(word, pos=pos)
         # print(options)
         return self.filter_options(texts, word, options, threshold)
-    def more_specific(self, texts, word, threshold=5, depth=3, pos=None):
+    def more_specific(self, texts, word, threshold=5, depth=3, pos=None, **kwargs):
         options = all_possible_hyponyms(word, depth=depth, pos=pos)
         return self.filter_options(texts, word, options, threshold)
-    def related_words(self, texts, words, threshold=5, depth=3, pos=None):
+    def related_words(self, texts, words, threshold=5, depth=3, pos=None, **kwargs):
         if type(words) != list:
             words = [words]
         if len(words) == 1:
