@@ -1,7 +1,10 @@
 import numpy as np
+import collections
 import re
 import os
 import json
+import pattern
+from pattern.en import tenses
 from .editor import recursive_apply, MunchWithAdd
 
 def load_data():
@@ -165,6 +168,138 @@ class Perturb:
             string[swap] = string[swap + 1]
             string[swap + 1] = tmp
         return ''.join(string)
+
+    @staticmethod
+    def remove_negation(doc):
+        """Removes negation from doc.
+        This is experimental, may or may not work.
+
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+
+        Returns
+        -------
+        string
+            With all negations removed
+
+        """
+        # This removes all negations in the doc. I should maybe add an option to remove just some.
+        notzs = [i for i, z in enumerate(doc) if z.lemma_ == 'not' or z.dep_ == 'neg']
+        new = []
+        for notz in notzs:
+            before = doc[notz - 1] if notz != 0 else None
+            after = doc[notz + 1] if len(doc) > notz + 1 else None
+            if (after and after.pos_ == 'PUNCT') or (before and before.text in ['or']):
+                continue
+            new.append(notz)
+        notzs = new
+        if not notzs:
+            return None
+        ret = ''
+        start = 0
+        for i, notz in enumerate(notzs):
+            id_start = notz
+            to_add = ' '
+            id_end = notz + 1
+            before = doc[notz - 1] if notz != 0 else None
+            after = doc[notz + 1] if len(doc) > notz + 1 else None
+            if before and before.lemma_ in ['will', 'can', 'do']:
+                id_start = notz - 1
+                tense = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)[0][0]
+                p = pattern.en.tenses(before.text)
+                params = [tense, 3]
+                if p:
+                    params = list(p[0])
+                    params[0] = tense
+                to_add = ' '+ pattern.en.conjugate(before.lemma_, *params) + ' '
+            if before and after and before.lemma_ == 'do' and after.pos_ == 'VERB':
+                id_start = notz - 1
+                tense = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)[0][0]
+                p = pattern.en.tenses(before.text)
+                params = [tense, 3]
+                if p:
+                    params = list(p[0])
+                    params[0] = tense
+                to_add = ' '+ pattern.en.conjugate(after.text, *params) + ' '
+                id_end = notz + 2
+            ret += doc[start:id_start].text + to_add
+            start = id_end
+        ret += doc[id_end:].text
+        return ret
+
+
+
+    @staticmethod
+    def add_negation(doc):
+        """Adds negation to doc
+        This is experimental, may or may not work. It also only works for specific parses.
+
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+
+        Returns
+        -------
+        string
+            With negations added
+
+        """
+        for sentence in doc.sents:
+            if len(sentence) < 3:
+                continue
+            root_id = [x.i for x in sentence if x.dep_ == 'ROOT'][0]
+            root = doc[root_id]
+            if '?' in sentence.text and sentence[0].text.lower() == 'how':
+                continue
+            if root.lemma_.lower() in ['thank', 'use']:
+                continue
+            if root.pos_ not in ['VERB', 'AUX']:
+                continue
+            neg = [True for x in sentence if x.dep_ == 'neg' and x.head.i == root_id]
+            if neg:
+                continue
+            if root.lemma_ == 'be':
+                if '?' in sentence.text:
+                    continue
+                if root.text.lower() in ['is', 'was', 'were', 'am', 'are', '\'s', '\'re', '\'m']:
+                    return doc[:root_id + 1].text + ' not ' + doc[root_id + 1:].text
+                else:
+                    return doc[:root_id].text + ' not ' + doc[root_id:].text
+            else:
+                aux = [x for x in sentence if x.dep_ in ['aux', 'auxpass'] and x.head.i == root_id]
+                if aux:
+                    aux = aux[0]
+                    if aux.lemma_.lower() in ['can', 'do', 'could', 'would', 'will', 'have', 'should']:
+                        lemma = doc[aux.i].lemma_.lower()
+                        if lemma == 'will':
+                            fixed = 'won\'t'
+                        elif lemma == 'have' and doc[aux.i].text in ['\'ve', '\'d']:
+                            fixed = 'haven\'t' if doc[aux.i].text == '\'ve' else 'hadn\'t'
+                        elif lemma == 'would' and doc[aux.i].text in ['\'d']:
+                            fixed = 'wouldn\'t'
+                        else:
+                            fixed = doc[aux.i].text.rstrip('n') + 'n\'t' if lemma != 'will' else 'won\'t'
+                        fixed = ' %s ' % fixed
+                        return doc[:aux.i].text + fixed + doc[aux.i + 1:].text
+                    return doc[:root_id].text + ' not ' + doc[root_id:].text
+                else:
+                    # TODO: does, do, etc. Remover return None de cima
+                    subj = [x for x in sentence if x.dep_ in ['csubj', 'nsubj']]
+                    params = pattern.en.tenses(root.text)
+                    tense = collections.Counter([x[0] for x in pattern.en.tenses(root.text)]).most_common(1)[0][0]
+                    params = [tense, 3] if not params else list(params[0])
+                    params[0] = tense
+                    # params = [tense, 3]
+                    if root.tag_ not in ['VBG']:
+                        do = pattern.en.conjugate('do', *params) + 'n\'t'
+                        new_root = pattern.en.conjugate(root.text, tense='infinitive')
+                    else:
+                        do = 'not'
+                        new_root = root.text
+                    return '%s %s %s %s' % (doc[:root_id].text, do, new_root,  doc[root_id + 1:].text)
 
     @staticmethod
     def contractions(sentence, **kwargs):
