@@ -48,6 +48,8 @@ class Perturb:
             if True, include original example (from data) in output
         nsamples : int
             number of examples in data to perturb
+        meta : bool
+            if True, perturb_fn returns (examples, meta), and meta is added to ret.meta
 
         Returns
         -------
@@ -69,17 +71,12 @@ class Perturb:
             add = []
             if keep_original:
                 org = recursive_apply(d, str)
-                # tp = type(d)
-                # if tp in [list, np.array, tuple]:
-                #     org = tp([str(x) for x in d])
-                # else:
-                #     org = str(d)
                 t.append(org)
-                add.append({})
+                add.append(None)
             p = perturb_fn(d, *args, **kwargs)
             a = []
             x = []
-            if not p or all([x is None for x in p]):
+            if not p or all([not x for x in p]):
                 continue
             if use_meta:
                 p, a = p
