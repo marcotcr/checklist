@@ -32,9 +32,9 @@ type CellType = {
 }
 
 const headerMapper: {[key: string]: JSX.Element} = {
-  mft: <span><b>M</b>in <b>F</b>unction <b>T</b>est</span>,
-  inv: <span><b>INV</b>ariance</span>,
-  dir: <span><b>DIR</b>ectional</span>
+	mft: <span><b>M</b>in <b>F</b>unction <b>T</b>est</span>,
+	inv: <span><b>INV</b>ariance Expectation</span>,
+	dir: <span><b>DIR</b>ectional Expectation</span>
 }
 
 @observer
@@ -148,10 +148,12 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 		const tests = suiteStore.overviewTests;
 		// first, get the types
 		const types: TestType[] = ["mft", "inv", "dir"];
-		const capabilities: string[] = tests.map(t => t.capability).filter(utils.uniques);
+		let capabilities: string[] = tests.map(t => t.capability).filter(utils.uniques);
+		const order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic'];
 		const testsByCaps = utils.groupBy(tests, "capability");
 		const sources = [];
-
+		const capOrder = (a: string) => order.indexOf(a) === -1 ? 200 : order.indexOf(a);
+		capabilities = capabilities.sort((a, b) => capOrder(a) - capOrder(b));
 		capabilities.forEach((cap: string) => {
 			const localTests = cap in testsByCaps ? testsByCaps[cap] : [];
 			const testsByType = utils.groupBy(localTests, "type");
@@ -179,16 +181,15 @@ export class SuiteSummarizer extends React.Component<SuiteSummarizerProps, {}> {
 			render: (cell, row, _) => {
 				const tests = cell.tests;
 				const nTests = tests.length;
-				const avgRate = nTests === 0 ? 
-					0 : tests.map(t => t.testStats.rate("fail")).reduce((a, b) => a + b, 0) / nTests;
+				const avgRate = nTests === 0 ? 0 : Math.max(...tests.map(t => t.testStats.rate("fail")));
 				const rateStr = (avgRate * 100).toFixed(1) + "%";
 				return {
 						props: {
 						  style: { 
-							  background: nTests === 0 ? "white" : this.colorScale(avgRate),
+							  background: nTests === 0 ? "white" : this.colorScale(Math.cbrt(avgRate)),
 							  //boxShadow: "inset 0px 0px 0px 5px white" ,
 							  //boxSizing: "border-box",
-							  color: this.colorFontScale(avgRate) 
+							  color: this.colorFontScale(Math.cbrt(avgRate))
 							}
 						},
 						children: <div key={ttype}>{nTests > 0 ? `${rateStr} (${nTests})` : null}</div>
