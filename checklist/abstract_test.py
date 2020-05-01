@@ -17,8 +17,17 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
         f.readline()
     preds = []
     confs = []
+    if file_format is None and format_fn is None:
+        file_format = 'pred_and_softmax'
     if file_format == 'pred_only':
-        format_fn = lambda x: (int(x), 1) if x.isdigit() else (x, 1)
+        format_fn = lambda x: (x, 1)
+    elif file_format == 'binary_conf':
+        def formatz(x):
+            conf = float(x)
+            confs = np.array([1 - conf, conf])
+            pred = int(np.argmax(confs))
+            return pred, confs
+        format_fn = formatz
     elif file_format == 'softmax':
         def formatz(x):
             confs = np.array([float(y) for y in x.split()])
@@ -44,12 +53,14 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     elif file_format is None:
         pass
     else:
-        raise(Exception('file_format %s not suported. Accepted values are pred_only, softmax, pred_and_conf, pred_and_softmax' % file_format))
+        raise(Exception('file_format %s not suported. Accepted values are pred_only, softmax, binary_conf, pred_and_conf, pred_and_softmax' % file_format))
     for l in f:
         l = l.strip('\n')
         p, c = format_fn(l)
         preds.append(p)
         confs.append(c)
+    if all([x.isdigit() for x in preds]):
+        preds = [int(x) for x in preds]
     return preds, confs
 
 class AbstractTest(ABC):
@@ -197,7 +208,7 @@ class AbstractTest(ABC):
 
         Parameters
         ----------
-        file_format : string, must be one of 'jsonl', 'squad', or None
+        file_format : string, must be one of 'jsonl', 'tsv', or None
             None just calls str(x) for each example in self.data
         format_fn : function or None
             If not None, call this function to format each example in self.data
@@ -216,6 +227,8 @@ class AbstractTest(ABC):
         if file_format == 'jsonl':
             import json
             format_fn = lambda x: json.dumps(x)
+        elif file_format == 'tsv':
+            format_fn = lambda x: '\t'.join(x).replace('\n', ' ')
         else:
             if format_fn is None:
                 format_fn = lambda x: str(x).replace('\n', ' ')
@@ -232,7 +245,7 @@ class AbstractTest(ABC):
         ----------
         path : string
             File path
-        file_format : string, must be one of 'jsonl', 'squad', or None
+        file_format : string, must be one of 'jsonl', 'tsv', or None
             None just calls str(x) for each example in self.data
         format_fn : function or None
             If not None, call this function to format each example in self.data
@@ -291,9 +304,10 @@ class AbstractTest(ABC):
         path : string
             prediction file path
         file_format : string
-            None, or one of 'pred_only', 'softmax', 'pred_and_conf', 'pred_and_softmax', 'squad',
+            None, or one of 'pred_only', 'softmax', binary_conf', 'pred_and_conf', 'pred_and_softmax', 'squad',
             pred_only: each line has a prediction
             softmax: each line has prediction probabilities separated by spaces
+            binary_conf: each line has the prediction probability of class 1 (binary)
             pred_and_conf: each line has a prediction and a confidence value, separated by a space
             pred_and_softmax: each line has a prediction and all softmax probabilities, separated by a space
             squad: TODO
@@ -316,7 +330,7 @@ class AbstractTest(ABC):
 
 
     def run(self, predict_and_confidence_fn, overwrite=False, verbose=True, n=None, seed=None):
-        """Runs tests
+        """Runs test
 
         Parameters
         ----------
@@ -331,11 +345,6 @@ class AbstractTest(ABC):
             If not None, number of samples to draw
         seed : int
             Seed to use if n is not None
-
-        Returns
-        -------
-        type
-            Description of returned object.
 
         """
         # Checking just to avoid predicting in vain, will be created in run_from_preds_confs
