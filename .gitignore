@@ -4,3 +4,4 @@ __pycache__
 v8-compile-cache-0
 node_modules
 dist
+_release_data

@@ -32,8 +32,8 @@ type CellType = {
 }
 
 const headerMapper: {[key: string]: JSX.Element} = {
-	mft: <span><b>M</b>in <b>F</b>unction <b>T</b>est</span>,
-	inv: <span><b>INV</b>ariance Expectation</span>,
+	mft: <span><b>M</b>inimum <b>F</b>unctionality <b>T</b>est</span>,
+	inv: <span><b>INV</b>ariance Test</span>,
 	dir: <span><b>DIR</b>ectional Expectation</span>
 }
 
