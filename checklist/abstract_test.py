@@ -112,10 +112,6 @@ class AbstractTest(ABC):
             print()
         print('----')
 
-    def check_results(self):
-        if not hasattr(self, 'results') or not self.results:
-            raise(Exception('No results. Run run() first'))
-
     def set_expect(self, expect):
         """Sets and updates expectation function
 
@@ -495,7 +491,9 @@ class AbstractTest(ABC):
         return examples
 
     def form_test_info(self, name=None, description=None, capability=None):
-        n = len(self.data)
+        n_run = n = len(self.data)
+        if self.run_idxs is not None:
+            n_run = len(self.run_idxs)
         fails = self.fail_idxs().shape[0]
         filtered = self.filtered_idxs().shape[0]
         return {
@@ -506,7 +504,7 @@ class AbstractTest(ABC):
             "tags": [],
             "stats": {
                 "nfailed": fails,
-                "npassed": n - filtered - fails,
+                "npassed": n_run - filtered - fails,
                 "nfiltered": filtered
             }
         }
@@ -514,14 +512,15 @@ class AbstractTest(ABC):
         testcases = []
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
+            d_idx = f if self.run_idxs is None else self.run_idxs[f]
             # should be format_fn
-            label, meta = self._label_meta(f)
+            label, meta = self._label_meta(d_idx)
             # print(label, meta)
             succeed = self.results.passed[f]
             if succeed is not None:
                 examples = self._form_examples_per_testcase_for_viz(
-                    self.data[f], self.results.preds[f],
-                    self.results.confs[f], self.results.expect_results[f],
+                    self.data[d_idx], self.results.preds[d_idx],
+                    self.results.confs[d_idx], self.results.expect_results[f],
                     label, meta, nsamples=n_per_testcase)
             else:
                 examples = []
@@ -534,7 +533,7 @@ class AbstractTest(ABC):
         return testcases
 
     def visual_summary(self, name=None, description=None, capability=None, n_per_testcase=3):
-        self.check_results()
+        self._check_results()
         # get the test meta
         test_info = self.form_test_info(name, description, capability)
         testcases = self.form_testcases(n_per_testcase)
