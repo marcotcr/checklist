@@ -59,7 +59,7 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
         p, c = format_fn(l)
         preds.append(p)
         confs.append(c)
-    if all([x.isdigit() for x in preds]):
+    if file_format == 'pred_only' and all([x.isdigit() for x in preds]):
         preds = [int(x) for x in preds]
     return preds, confs
 
@@ -111,6 +111,10 @@ class AbstractTest(ABC):
         if type(preds) in [np.array, np.ndarray, list] and len(preds) > 1:
             print()
         print('----')
+
+    def check_results(self):
+        if not hasattr(self, 'results') or not self.results:
+            raise(Exception('No results. Run run() first'))
 
     def set_expect(self, expect):
         """Sets and updates expectation function
@@ -491,9 +495,7 @@ class AbstractTest(ABC):
         return examples
 
     def form_test_info(self, name=None, description=None, capability=None):
-        n_run = n = len(self.data)
-        if self.run_idxs is not None:
-            n_run = len(self.run_idxs)
+        n = len(self.data)
         fails = self.fail_idxs().shape[0]
         filtered = self.filtered_idxs().shape[0]
         return {
@@ -504,7 +506,7 @@ class AbstractTest(ABC):
             "tags": [],
             "stats": {
                 "nfailed": fails,
-                "npassed": n_run - filtered - fails,
+                "npassed": n - filtered - fails,
                 "nfiltered": filtered
             }
         }
@@ -512,15 +514,14 @@ class AbstractTest(ABC):
         testcases = []
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
-            d_idx = f if self.run_idxs is None else self.run_idxs[f]
             # should be format_fn
-            label, meta = self._label_meta(d_idx)
+            label, meta = self._label_meta(f)
             # print(label, meta)
             succeed = self.results.passed[f]
             if succeed is not None:
                 examples = self._form_examples_per_testcase_for_viz(
-                    self.data[d_idx], self.results.preds[d_idx],
-                    self.results.confs[d_idx], self.results.expect_results[f],
+                    self.data[f], self.results.preds[f],
+                    self.results.confs[f], self.results.expect_results[f],
                     label, meta, nsamples=n_per_testcase)
             else:
                 examples = []
@@ -533,7 +534,7 @@ class AbstractTest(ABC):
         return testcases
 
     def visual_summary(self, name=None, description=None, capability=None, n_per_testcase=3):
-        self._check_results()
+        self.check_results()
         # get the test meta
         test_info = self.form_test_info(name, description, capability)
         testcases = self.form_testcases(n_per_testcase)
