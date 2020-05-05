@@ -20,6 +20,11 @@ pip install -e .
 ```
 ## Tutorials
 
+1. [Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb)
+2. [Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb)
+3. [Test types, expectation functions, running tests](notebooks/tutorials/3.%20Test%20types,%20expectation%20functions,%20running%20tests.ipynb)
+4. [The CheckList process](notebooks/tutorials/4.%20The%20CheckList%20process.ipynb)
+
 ##  Code snippets
 ### Templates
 ### RoBERTa suggestions
