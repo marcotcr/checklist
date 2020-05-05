@@ -236,13 +236,63 @@ test = MFT.from_file(path)
 ```
 
 ### Custom expectation functions
+See [3. Test types, expectation functions, running tests](notebooks/tutorials/3.%20Test%20types,%20expectation%20functions,%20running%20tests.ipynb) for more details.
+
+If you are writing a custom expectation functions, it must return a float or bool for each example such that:
+- `> 0` (or True) means passed,
+- `<= 0` or False means fail, and (optionally) the magnitude of the failure, indicated by distance from 0, e.g. -10 is worse than -1
+- `None` means the test does not apply, and this should not be counted
+
+Expectation on a single example:
+```python
+def high_confidence(x, pred, conf, label=None, meta=None):
+    return conf.max() > 0.95
+expect_fn = Expect.single(high_confidence)
+```
+
+Expectation on pairs of `(orig, new)` examples (for `INV` and `DIR`):
+```python
+def changed_pred(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
+    return pred != orig_pred
+expect_fn = Expect.pairwise(changed_pred)
+```
+There's also `Expect.testcase` and `Expect.test`, amongst many others.  
+Check out [expect.py](checklist/expect.py) for more details.
+
 
 ### Test Suites
-running, saving, sharing, etc
+See [4. The CheckList process](notebooks/tutorials/4.%20The%20CheckList%20process.ipynb) for more details.
 
+Adding tests:
+```python
+from checklist.test_suite import TestSuite
+# assuming test exists:
+suite.add(test)
+```
 
+Running a suite is the same as running an individual test, either directly or through a file:
 
+```python
+from checklist.pred_wrapper import PredictorWrapper
+# wrapped_pp returns a tuple with (predictions, softmax confidences)
+wrapped_pp = PredictorWrapper.wrap_softmax(model.predict_proba)
+suite.run(wrapped_pp)
+# or suite.run_from_file, see examples above
+```
 
+To visualize results, you can call `suite.summary()` (same as `test.summary`), or `suite.visual_summary_table()`. This is what the latter looks like for BERT on sentiment analysis:
+```python
+suite.visual_summary_table()
+```
+![visual summary table](notebooks/tutorials/visual_sentiment_summary.gif )
+
+Finally, it's easy to save, load, and share a suite:
+```python
+# save
+suite.save(path)
+# load
+suite = TestSuite.from_file(path)
+```
 
 ### Code of Conduct
 [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct)
