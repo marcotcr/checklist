@@ -289,7 +289,8 @@ class TestSuite:
                 capability=info["capability"] if "capability" in info else None,
                 description=info["description"] if "description" in info else None
             )
-            testcases = test.form_testcases()
+            n = 1 if self.info[testname]['type'] == 'MFT' else 2
+            testcases = test.form_testcases(n_per_testcase=n)
         return test_info, testcases
 
     def visual_summary_table(self, types=None, capabilities=None):
