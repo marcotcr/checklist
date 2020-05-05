@@ -20,10 +20,10 @@ class PostInstallCommand(install):
     def run(self):
         install.run(self)
         enable_visual_interface()
-        # Install the 
+        # Install the
 
 setup(name='checklist',
-      version='0.1',
+      version='0.0.1',
       description='Beyond Accuracy: Behavioral Testing of NLP Models with CheckList',
       url='http://github.com/marcotcr/checklist',
       author='Marco Tulio Ribeiro',

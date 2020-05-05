@@ -1,6 +1,6 @@
 # CheckList
 This repository contains code for testing NLP Models as described in the following paper:
->[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/checklist_acl20.pdf)  
+>[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)  
 > Marco Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, Sameer Singh
 > Association for Computational Linguistics (ACL), 2020
 
