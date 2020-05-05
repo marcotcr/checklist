@@ -44,6 +44,11 @@ git clone git@github.com:marcotcr/checklist.git
 cd checklist
 pip install -e .
 ```
+Either way, you need to install `pytorch` or `tensorflow` if you want to use masked language model suggestions.
+For most tutorials, you also need to download a spacy model:
+```bash
+python -m spacy download en_core_web_sm
+```
 ## Tutorials
 
 1. [Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb)
@@ -65,6 +70,8 @@ tar xvzf release_data.tar.gz
 #### Sentiment Analysis
 Loading the suite:
 ```python
+import checklist
+from checklist.test_suite import TestSuite
 suite_path = 'release_data/sentiment/sentiment_suite.pkl'
 suite = TestSuite.from_file(suite_path)
 ```
@@ -79,22 +86,44 @@ Then, update `pred_path` with this file and run the lines above.
 
 
 #### QQP
-The same as above, except:
-- set `suite_path=release_data/qqp/qqp_suite.pkl`
-- set `pred_path=release_data/qqp/predictions/bert` (or roberta)
-- To test your own model, get predictions for pairs in `release_data/qqp/tests_n500` (format: tsv) and output them in a file where each line has a single number: the probability that the pair is a duplicate.
+```python
+import checklist
+from checklist.test_suite import TestSuite
+suite_path = 'release_data/qqp/qqp_suite.pkl'
+suite = TestSuite.from_file(suite_path)
+```
+Running tests with precomputed `bert` predictions (replace `bert` on `pred_path` with `roberta` if you want):
+```python
+pred_path = 'release_data/qqp/predictions/bert'
+suite.run_from_file(pred_path, overwrite=True, file_format='binary_conf')
+suite.visual_summary_table()
+```
+To test your own model, get predictions for pairs in `release_data/qqp/tests_n500` (format: tsv) and output them in a file where each line has a single number: the probability that the pair is a duplicate.
 
 #### SQuAD
-The same as above, except:
-- set `suite_path=release_data/squad/squad_suite.pkl`
-- set `pred_path=release_data/squad/predictions/bert` (or roberta)
-- To test your own model, get predictions for pairs in `release_data/squad/squad.jsonl` (format: jsonl) or `release_data/squad/squad.json` (format: json, like SQuAD dev) and output them in a file where each line has a single string: the prediction span.
+```python
+import checklist
+from checklist.test_suite import TestSuite
+suite_path = 'release_data/squad/squad_suite.pkl'
+suite = TestSuite.from_file(suite_path)
+```
+Running tests with precomputed `bert` predictions:
+```python
+pred_path = 'release_data/squad/predictions/bert'
+suite.run_from_file(pred_path, overwrite=True, file_format='pred_only')
+suite.visual_summary_table()
+```
+To test your own model, get predictions for pairs in `release_data/squad/squad.jsonl` (format: jsonl) or `release_data/squad/squad.json` (format: json, like SQuAD dev) and output them in a file where each line has a single string: the prediction span.
 
 ##  Code snippets
 ### Templates
 See [1. Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb) for more details.
 
 ```python
+import checklist
+from checklist.editor import Editor
+import numpy as np
+editor = Editor()
 ret = editor.template('{first_name} is {a:profession} from {country}.',
                        profession=['lawyer', 'doctor', 'accountant'])
 np.random.choice(ret.data, 3)
@@ -107,11 +136,8 @@ np.random.choice(ret.data, 3)
 See [1. Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb) for more details.  
 In template:
 ```python
-import checklist
-from checklist.editor import Editor
-editor = Editor()
 ret = editor.template('This is {a:adj} {mask}.',  
-                      adj=['good', 'bad', 'great', 'terrible')
+                      adj=['good', 'bad', 'great', 'terrible'])
 ret.data[:3]
 ```
 
@@ -122,7 +148,7 @@ ret.data[:3]
 Multiple masks:
 ```python
 ret = editor.template('This is {a:adj} {mask} {mask}.',
-                      adj=['good', 'bad', 'great', 'terrible')
+                      adj=['good', 'bad', 'great', 'terrible'])
 ret.data[:3]
 ```
 > ['This is a good history lesson.',  
@@ -132,11 +158,14 @@ ret.data[:3]
 Getting suggestions rather than filling out templates:
 ```python
 editor.suggest('This is {a:adj} {mask}.',
-               adj=['good', 'bad', 'great', 'terrible')[:5]
+               adj=['good', 'bad', 'great', 'terrible'])[:5]
 ```
 > ['idea', 'sign', 'thing', 'example', 'start']
 
 Getting suggestions through jupyter visualization:  
+```python
+editor.visual_suggest('This is {a:mask} movie.')
+```
 ![visual suggest](notebooks/tutorials/visual_suggest.gif )
 
 ### Perturbing data for INVs and DIRs
