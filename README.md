@@ -15,8 +15,11 @@ Bibtex for citations:
 
 ## Table of Contents
 * [CheckList](#checklist)
+   * [Table of Contents](#table-of-contents)
    * [Installation](#installation)
    * [Tutorials](#tutorials)
+   * [Paper tests](#paper-tests)
+      * [Notebooks: how we created the tests in the paper](#notebooks-how-we-created-the-tests-in-the-paper)
       * [Replicating paper tests, or running them with new models](#replicating-paper-tests-or-running-them-with-new-models)
          * [Sentiment Analysis](#sentiment-analysis)
          * [QQP](#qqp)
@@ -47,6 +50,12 @@ pip install -e .
 2. [Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb)
 3. [Test types, expectation functions, running tests](notebooks/tutorials/3.%20Test%20types,%20expectation%20functions,%20running%20tests.ipynb)
 4. [The CheckList process](notebooks/tutorials/4.%20The%20CheckList%20process.ipynb)
+
+## Paper tests
+### Notebooks: how we created the tests in the paper
+1. [Sentiment analysis](notebooks/Sentiment.ipynb)
+2. [QQP](notebooks/QQP.ipynb)
+3. [SQuAD](notebooks/SQuAD.ipynb)
 
 ### Replicating paper tests, or running them with new models
 For all of these, you need to unpack the release data (in the main repo folder after cloning):
