@@ -3,7 +3,6 @@ import { observer } from 'mobx-react';
 import { observable } from "mobx";
 
 import { Row, Col, Divider, Switch, Input, Spin, List, Select, Descriptions } from 'antd';
-import { TestResult } from "../../stores/tests/TestResult";
 
 import { TestStatsViz } from './TestResultBar';
 import { testStore } from '../../stores/tests/TestStore';

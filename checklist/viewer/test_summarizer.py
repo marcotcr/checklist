@@ -65,10 +65,10 @@ class TestSummarizer(widgets.DOMWidget):
                     if not e[tag]:
                         continue
                     tokens = []
-                    if type(e[tag]["text"]) == str:
-                        e[tag]["tokens"] = [e[tag]["text"]]
+                    if type(e[tag]["text"]) != list:
+                        e[tag]["tokens"] = [str(e[tag]["text"])]
                     else:
-                        e[tag]["tokens"] = e[tag]["text"]
+                        e[tag]["tokens"] = [str(s) for s in e[tag]["text"]]
                     for sentence in e[tag]["tokens"]:
                         tokens.append([t.text for t in self.tokenizer(sentence)])
                     e[tag]["tokens"] = tokens
