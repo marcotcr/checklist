@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.abspath('../checklist'))
 project = 'CheckList'
 copyright = '2020, Marco Tulio Ribeiro'
 author = 'Marco Tulio Ribeiro'
+master_doc = 'index'
 
 
 # -- General configuration ---------------------------------------------------
