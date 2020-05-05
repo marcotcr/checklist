@@ -14,7 +14,21 @@ Bibtex for citations:
 
 
 ## Table of Contents
-TODO
+* [CheckList](#checklist)
+   * [Installation](#installation)
+   * [Tutorials](#tutorials)
+      * [Replicating paper tests, or running them with new models](#replicating-paper-tests-or-running-them-with-new-models)
+         * [Sentiment Analysis](#sentiment-analysis)
+         * [QQP](#qqp)
+         * [SQuAD](#squad)
+   * [Code snippets](#code-snippets)
+      * [Templates](#templates)
+      * [RoBERTa suggestions](#roberta-suggestions)
+      * [Perturbing data for INVs and DIRs](#perturbing-data-for-invs-and-dirs)
+      * [Creating and running tests](#creating-and-running-tests)
+      * [Custom expectation functions](#custom-expectation-functions)
+      * [Test Suites](#test-suites)
+      * [Code of Conduct](#code-of-conduct)
 
 ## Installation
 From pypi:  
