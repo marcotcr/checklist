@@ -251,7 +251,7 @@ def wrapped_random_choice(x, *args, **kwargs):
 class Editor(object):
     def __init__(self):
         cur_folder = os.path.dirname(__file__)
-        folder = os.path.abspath(os.path.join(cur_folder, os.pardir, "data", 'lexicons'))
+        folder = os.path.abspath(os.path.join(cur_folder, "data", 'lexicons'))
         self.lexicons = {}
         self.data = {}
         for f in os.listdir(folder):
@@ -259,7 +259,7 @@ class Editor(object):
         make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
         for x in self.lexicons:
             self.lexicons[x] = [make_munch(x) for x in self.lexicons[x]]
-        self.data['names'] = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'names.json')))
+        self.data['names'] = json.load(open(os.path.join(cur_folder, 'data', 'names.json')))
         self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
 
         self.selected_suggestions = []
