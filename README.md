@@ -20,7 +20,7 @@ pip install -e .
 ```
 ## Tutorials
 
-##  snippets
+##  Code snippets
 ### Templates
 ### RoBERTa suggestions
 
@@ -32,6 +32,7 @@ pip install -e .
 .summary
 .visual_summary
 ### Test Suites
+running, saving, sharing, etc
 
 ### Replicating paper tests, or running them with new models
 #### Sentiment Analysis
