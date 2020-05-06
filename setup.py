@@ -9,7 +9,7 @@ from subprocess import check_call
 import sys
 import os
 def enable_visual_interface():
-    check_call([sys.executable, "-m pip install jupyter"], shell=True)
+    check_call([f"{sys.executable} -m pip install jupyter"], shell=True)
     import notebook
     notebook.nbextensions.install_nbextension_python(
         "checklist.viewer", user=True, overwrite=True, symlink=True)
@@ -31,7 +31,7 @@ class PostDevelopCommand(develop):
 class BdistEggCommand(bdist_egg):
     def run(self):
         bdist_egg.run(self)
-        #enable_visual_interface()
+        enable_visual_interface()
         #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg=f"Running post install task on {sys.executable}")
 
 class BuildPyCommand(build_py):
@@ -75,8 +75,8 @@ setup(name='checklist',
         'develop': PostDevelopCommand,
         'install': PostInstallCommand,
         #'bdist_egg': BdistEggCommand,
-        #'egg_info': EggInfoCommand,
-        #'build_py': BuildPyCommand,
+        'egg_info': EggInfoCommand,
+        'build_py': BuildPyCommand,
 
      },
       #package_data={'viewer':['static/*'],},
