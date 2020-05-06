@@ -31,7 +31,8 @@ Bibtex for citations:
       * [Creating and running tests](#creating-and-running-tests)
       * [Custom expectation functions](#custom-expectation-functions)
       * [Test Suites](#test-suites)
-      * [Code of Conduct](#code-of-conduct)
+   * [API reference](#api-reference)
+   * [Code of Conduct](#code-of-conduct)
 
 ## Installation
 From pypi:  
@@ -346,5 +347,8 @@ suite.save(path)
 suite = TestSuite.from_file(path)
 ```
 
-### Code of Conduct
+## API reference
+On [readthedocs](https://checklist-nlp.readthedocs.io/en/latest/)
+
+## Code of Conduct
 [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct)
