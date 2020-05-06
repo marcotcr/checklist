@@ -15,7 +15,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../checklist'))
+sys.path.insert(0, os.path.abspath('../../checklist'))
 
 autodoc_mock_imports = [
     'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern'
