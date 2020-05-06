@@ -1,14 +1,6 @@
 checklist package
 =================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   checklist.viewer
-
 Submodules
 ----------
 

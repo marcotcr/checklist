@@ -19,10 +19,12 @@ sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath('../../checklist'))
 
 autodoc_mock_imports = [
-    'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern'
+    'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern',
     'numpy', 'np', 'spacy.syntax.nn_parser.array', '__reduce_cython__',
-    'numpy.dtype', 'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API', 
-    'BertForMaskedLM'
+    'numpy.dtype', 'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API',
+    'BertForMaskedLM', 'dill', 'munch', 'pattern.en', 'transformers', 'ipywidgets', 'tqdm',
+    'traitlets', 'torch', 'typing', 'spacy.attrs', 'spacy.lang.en', 'IPython', 'IPython.core.display',
+    
 ]
 # -- Project information -----------------------------------------------------
 

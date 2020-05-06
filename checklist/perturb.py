@@ -9,8 +9,8 @@ from .editor import recursive_apply, MunchWithAdd
 
 def load_data():
     cur_folder = os.path.dirname(__file__)
-    basic = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'lexicons', 'basic.json')))
-    names = json.load(open(os.path.join(cur_folder, os.pardir, 'data', 'names.json')))
+    basic = json.load(open(os.path.join(cur_folder, 'data', 'lexicons', 'basic.json')))
+    names = json.load(open(os.path.join(cur_folder, 'data', 'names.json')))
     name_set = { x:set(names[x]) for x in names }
     data = {
         'name': names,
