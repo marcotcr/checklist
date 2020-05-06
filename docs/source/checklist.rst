@@ -1,6 +1,14 @@
 checklist package
 =================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   checklist.viewer
+
 Submodules
 ----------
 
@@ -43,7 +51,6 @@ checklist.pred\_wrapper module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 checklist.test\_suite module
 ----------------------------

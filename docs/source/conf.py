@@ -12,16 +12,23 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../checklist'))
 
+autodoc_mock_imports = [
+     'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern'
 
+  'numpy', 'np', 'spacy.syntax.nn_parser.array', '__reduce_cython__','numpy.dtype', 
+  'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API',
+
+]
 # -- Project information -----------------------------------------------------
 
-project = 'CheckList'
+project = 'checklist'
 copyright = '2020, Marco Tulio Ribeiro'
 author = 'Marco Tulio Ribeiro'
-master_doc = 'index'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,7 +39,12 @@ master_doc = 'index'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,9 +61,56 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+
+# make github links resolve
+def linkcode_resolve(domain, info):
+    """
+    Determine the URL corresponding to Python object
+    This code is from
+    https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L290
+    and https://github.com/Lasagne/Lasagne/pull/262
+    """
+    if domain != 'py':
+        return None
+
+    modname = info['module']
+    fullname = info['fullname']
+
+    submod = sys.modules.get(modname)
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in fullname.split('.'):
+        try:
+            obj = getattr(obj, part)
+        except:
+            return None
+
+    try:
+        fn = inspect.getsourcefile(obj)
+    except:
+        fn = None
+    if not fn:
+        return None
+
+    try:
+        source, lineno = inspect.getsourcelines(obj)
+    except:
+        lineno = None
+
+    if lineno:
+        linespec = "#L%d-L%d" % (lineno, lineno + len(source) - 1)
+    else:
+        linespec = ""
+
+    filename = info['module'].replace('.', '/')
+    return "https://github.com/marcotcr/checklist/blob/master/%s.py%s" % (filename, linespec)
