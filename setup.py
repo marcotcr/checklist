@@ -54,7 +54,7 @@ class EggInfoCommand(egg_info):
         #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
 setup(name='checklist',
-      version='0.0.1',
+      version='0.0.6',
       description='Beyond Accuracy: Behavioral Testing of NLP Models with CheckList',
       url='http://github.com/marcotcr/checklist',
       author='Marco Tulio Ribeiro',
@@ -74,12 +74,12 @@ setup(name='checklist',
       cmdclass={
         'develop': PostDevelopCommand,
         'install': PostInstallCommand,
-        #'bdist_egg': BdistEggCommand,
+        'bdist_egg': BdistEggCommand,
         'egg_info': EggInfoCommand,
         'build_py': BuildPyCommand,
 
      },
-      #package_data={'viewer':['static/*'],},
-      include_package_data=True,
+      package_data={'viewer':['static/*'], "data": ["*"]},
+      #include_package_data=True,
       zip_safe=False
 )
