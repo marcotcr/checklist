@@ -1,2 +1,8 @@
-include checklist/data/*
-include checklist/data/lexicons/*
+include LICENSE CHANGES README.md requirements.txt data
+recursive-exclude * __pycache__
+recursive-exclude * *.pyc
+recursive-exclude * *.pyo
+recursive-exclude * *.orig
+recursive-exclude * node_modules
+recursive-exclude * _release_data
+recursive-exclude * visual_interface
