@@ -1,4 +1,6 @@
-include LICENSE CHANGES README.md requirements.txt data
+include LICENSE CHANGES README.md requirements.txt
+
+recursive-include * data
 recursive-exclude * __pycache__
 recursive-exclude * *.pyc
 recursive-exclude * *.pyo

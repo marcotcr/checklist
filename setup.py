@@ -9,7 +9,7 @@ from subprocess import check_call
 import sys
 import os
 def enable_visual_interface():
-    check_call([sys.executable, "-m pip install jupyter"], shell=True)
+    check_call([f"{sys.executable} -m pip install jupyter"], shell=True)
     import notebook
     notebook.nbextensions.install_nbextension_python(
         "checklist.viewer", user=True, overwrite=True, symlink=True)
@@ -31,7 +31,7 @@ class PostDevelopCommand(develop):
 class BdistEggCommand(bdist_egg):
     def run(self):
         bdist_egg.run(self)
-        #enable_visual_interface()
+        enable_visual_interface()
         #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg=f"Running post install task on {sys.executable}")
 
 class BuildPyCommand(build_py):
@@ -54,7 +54,7 @@ class EggInfoCommand(egg_info):
         #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
 setup(name='checklist',
-      version='0.0.2',
+      version='0.0.11',
       description='Beyond Accuracy: Behavioral Testing of NLP Models with CheckList',
       url='http://github.com/marcotcr/checklist',
       author='Marco Tulio Ribeiro',
@@ -74,12 +74,12 @@ setup(name='checklist',
       cmdclass={
         'develop': PostDevelopCommand,
         'install': PostInstallCommand,
-        #'bdist_egg': BdistEggCommand,
-        #'egg_info': EggInfoCommand,
-        #'build_py': BuildPyCommand,
+        'bdist_egg': BdistEggCommand,
+        'egg_info': EggInfoCommand,
+        'build_py': BuildPyCommand,
 
      },
-      #package_data={'viewer':['static/*'],},
-      include_package_data=True,
+      package_data={'viewer':['static/*'], "data": ["*"], 'checklist': ['data/*', 'data/lexicons/*', 'viewer/static/*']},
+      #include_package_data=True,
       zip_safe=False
 )

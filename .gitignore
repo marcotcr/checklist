@@ -6,3 +6,4 @@ node_modules
 dist
 _release_data
 build
+venv/
