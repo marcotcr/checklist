@@ -44,8 +44,8 @@ class PostInstallCommand(install):
     def run(self):
         super().do_egg_install()
         install.run(self)
-        self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
-        #enable_visual_interface()
+        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
+        enable_visual_interface()
 
 class EggInfoCommand(egg_info):
     def run(self):
@@ -60,7 +60,7 @@ setup(name='checklist',
       author='Marco Tulio Ribeiro',
       author_email='marcotcr@gmail.com',
       license='MIT',
-      packages= find_packages(exclude=['js', 'node_modules', 'tests']),
+      packages= find_packages(exclude=['js', 'node_modules', 'tests', "__pycache__", "visual_interface", "_release_data"]),
       install_requires=[
         'numpy>=1.18',
         'spacy>=2.2',
