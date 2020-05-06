@@ -10,7 +10,7 @@ Welcome to checklist's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-modules
+   checklist
 
 Indices and tables
 ==================
