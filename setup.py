@@ -9,7 +9,7 @@ from subprocess import check_call
 import sys
 import os
 def enable_visual_interface():
-    check_call(["pip install jupyter"], shell=True)
+    check_call([sys.executable, "-m pip install jupyter"], shell=True)
     import notebook
     notebook.nbextensions.install_nbextension_python(
         "checklist.viewer", user=True, overwrite=True, symlink=True)
@@ -25,14 +25,14 @@ class PostDevelopCommand(develop):
     """Pre-installation for development mode."""
     def run(self):
         develop.run(self)
-        enable_visual_interface()
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
+        #enable_visual_interface()
+        self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
 class BdistEggCommand(bdist_egg):
     def run(self):
         bdist_egg.run(self)
-        enable_visual_interface()
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
+        #enable_visual_interface()
+        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg=f"Running post install task on {sys.executable}")
 
 class BuildPyCommand(build_py):
     def run(self):
@@ -42,10 +42,10 @@ class BuildPyCommand(build_py):
 
 class PostInstallCommand(install):
     def run(self):
-        super().do_egg_install()
+        #super().do_egg_install()
         install.run(self)
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
-        enable_visual_interface()
+        self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
+        #enable_visual_interface()
 
 class EggInfoCommand(egg_info):
     def run(self):
@@ -60,7 +60,7 @@ setup(name='checklist',
       author='Marco Tulio Ribeiro',
       author_email='marcotcr@gmail.com',
       license='MIT',
-      packages= find_packages(exclude=['js', 'node_modules', 'tests', "__pycache__", "visual_interface", "_release_data"]),
+      packages= find_packages(exclude=['js', 'node_modules', 'tests']),
       install_requires=[
         'numpy>=1.18',
         'spacy>=2.2',
