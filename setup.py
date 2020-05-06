@@ -23,7 +23,7 @@ class PostInstallCommand(install):
         # Install the
 
 setup(name='checklist',
-      version='0.0.1',
+      version='0.0.2',
       description='Beyond Accuracy: Behavioral Testing of NLP Models with CheckList',
       url='http://github.com/marcotcr/checklist',
       author='Marco Tulio Ribeiro',
