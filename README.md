@@ -38,6 +38,8 @@ Bibtex for citations:
 From pypi:  
 ```bash
 pip install checklist
+jupyter nbextension install --py --user checklist.viewer
+jupyter nbextension enable --py --user checklist.viewer
 ```
 From source:
 ```bash
@@ -45,7 +47,10 @@ git clone git@github.com:marcotcr/checklist.git
 cd checklist
 pip install -e .
 ```
-Either way, you need to install `pytorch` or `tensorflow` if you want to use masked language model suggestions.
+Either way, you need to install `pytorch` or `tensorflow` if you want to use masked language model suggestions:
+```bash
+pip install torch
+```
 For most tutorials, you also need to download a spacy model:
 ```bash
 python -m spacy download en_core_web_sm
