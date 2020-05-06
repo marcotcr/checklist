@@ -18,11 +18,10 @@ sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../checklist'))
 
 autodoc_mock_imports = [
-     'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern'
-
-  'numpy', 'np', 'spacy.syntax.nn_parser.array', '__reduce_cython__','numpy.dtype', 
-  'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API',
-
+    'spacy', 'spacy.cli', 'nltk', 'nltk.corpus', 'nltk.tree', 'pattern'
+    'numpy', 'np', 'spacy.syntax.nn_parser.array', '__reduce_cython__',
+    'numpy.dtype', 'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API', 
+    'BertForMaskedLM'
 ]
 # -- Project information -----------------------------------------------------
 
@@ -53,7 +52,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', "static"]
 
 
 # -- Options for HTML output -------------------------------------------------

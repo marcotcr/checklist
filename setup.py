@@ -43,6 +43,7 @@ class BuildPyCommand(build_py):
 class PostInstallCommand(install):
     def run(self):
         super().do_egg_install()
+        install.run(self)
         self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
         #enable_visual_interface()
 
@@ -59,7 +60,7 @@ setup(name='checklist',
       author='Marco Tulio Ribeiro',
       author_email='marcotcr@gmail.com',
       license='MIT',
-      packages= find_packages(exclude=['node_modules', 'tests']),
+      packages= find_packages(exclude=['js', 'node_modules', 'tests']),
       install_requires=[
         'numpy>=1.18',
         'spacy>=2.2',
@@ -73,9 +74,9 @@ setup(name='checklist',
       cmdclass={
         'develop': PostDevelopCommand,
         'install': PostInstallCommand,
-        'bdist_egg': BdistEggCommand,
-        'egg_info': EggInfoCommand,
-        'build_py': BuildPyCommand,
+        #'bdist_egg': BdistEggCommand,
+        #'egg_info': EggInfoCommand,
+        #'build_py': BuildPyCommand,
 
      },
       #package_data={'viewer':['static/*'],},
