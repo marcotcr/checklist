@@ -22,6 +22,7 @@ Bibtex for citations:
       * [Sentiment Analysis](#sentiment-analysis)
       * [QQP](#qqp)
       * [SQuAD](#squad)
+      * [Testing huggingface transformer pipelines](#testing-huggingface-transformer-pipelines)
 * [Code snippets](#code-snippets)
    * [Templates](#templates)
    * [RoBERTa suggestions](#roberta-suggestions)
@@ -118,6 +119,10 @@ suite.run_from_file(pred_path, overwrite=True, file_format='pred_only')
 suite.visual_summary_table()
 ```
 To test your own model, get predictions for pairs in `release_data/squad/squad.jsonl` (format: jsonl) or `release_data/squad/squad.json` (format: json, like SQuAD dev) and output them in a file where each line has a single string: the prediction span.
+
+
+#### Testing huggingface transformer pipelines
+See [this notebook](notebooks/tutorials/6.%20Testing%20transformer%20pipelines.ipynb).
 
 ##  Code snippets
 ### Templates
