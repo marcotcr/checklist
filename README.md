@@ -1,16 +1,17 @@
 # CheckList
-This repository contains code for testing NLP Models as described in the following paper:
->[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)  
-> Marco Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, Sameer Singh
-> Association for Computational Linguistics (ACL), 2020
+This repository contains code for testing NLP Models as described in the following paper:  
+[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)  
+Marco Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, Sameer Singh  
+Association for Computational Linguistics (ACL), 2020  
 
 Bibtex for citations:
-> @inproceedings{checklist:acl20,  
+```bibtex
+ @inproceedings{checklist:acl20},  
  author = {Marco Tulio Ribeiro and Tongshuang Wu and Carlos Guestrin and Sameer Singh},  
  title = { Beyond Accuracy: Behavioral Testing of NLP models with CheckList},  
  booktitle = {Association for Computational Linguistics (ACL)},  
  year = {2020}  
-}
+```
 
 
 ## Table of Contents
