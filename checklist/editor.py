@@ -250,7 +250,7 @@ def wrapped_random_choice(x, *args, **kwargs):
         return type(x)([x[i] for i in idxs])
 
 class Editor(object):
-    def __init__(self, language='en', model_name=None):
+    def __init__(self, language='english', model_name=None):
         cur_folder = os.path.dirname(__file__)
         folder = os.path.abspath(os.path.join(cur_folder, "data", 'lexicons'))
         self.lexicons = {}
@@ -481,6 +481,7 @@ class Editor(object):
 
         kwargs["verbose"] = False
         mask_suggests = self.suggest(templates, **kwargs)
+        print(mask_suggests)
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.selected_suggestions = []
