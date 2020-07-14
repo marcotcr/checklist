@@ -190,6 +190,7 @@ Just initialize the editor with the `language` argument (should work with langua
 import checklist
 from checklist.editor import Editor
 import numpy as np
+# in Protuguese
 editor = Editor(language='portuguese')
 ret = editor.template('O João é um {mask}.',)
 ret.data[:3]
@@ -197,6 +198,16 @@ ret.data[:3]
 > ['O João é um português.',  
 'O João é um poeta.',  
 'O João é um brasileiro.']
+
+```python
+# in Chinese
+editor = Editor(language='chinese')
+ret = editor.template('西游记的故事很{mask}。',)
+ret.data[:3]
+```
+> ['西游记的故事很精彩。',  
+'西游记的故事很真实。',  
+'西游记的故事很经典。']
 
 
 We're using [FlauBERT](https://arxiv.org/abs/1912.05372) for french, [German BERT](https://deepset.ai/german-bert) for german, and [XLM-RoBERTa](https://github.com/pytorch/fairseq/tree/master/examples/xlmr) for everything else (click the link for a list of supported languages). We can't vouch for the quality of the suggestions in other languages, but it seems to work reasonably well for the languages we speak (although not as well as English).
