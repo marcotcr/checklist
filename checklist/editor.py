@@ -478,9 +478,9 @@ class Editor(object):
         tagged_keys = find_all_keys(templates)
         template_strs = get_all_strings_ordered(templates)
         items = self._get_fillin_items(tagged_keys, max_count=5, **kwargs)
+
         kwargs["verbose"] = False
         mask_suggests = self.suggest(templates, **kwargs)
-
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.selected_suggestions = []
@@ -490,7 +490,8 @@ class Editor(object):
             tag_dict=items,
             mask_suggests=mask_suggests[:50],
             format_fn=recursive_format,
-            select_suggests_fn=self._set_selected_suggestions
+            select_suggests_fn=self._set_selected_suggestions,
+            tokenizer=self.tg.tokenizer
         )
 
     def add_lexicon(self, name, values, overwrite=False):
