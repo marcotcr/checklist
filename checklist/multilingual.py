@@ -1,10 +1,16 @@
 import collections
-import iso639
+from iso639 import languages
+def get_language_code(language):
+    to_try = [languages.name, languages.inverted, languages.part1]
+    l_to_try = [language.capitalize(), language.lower()]
+    for l in l_to_try:
+        for t in to_try:
+            if l in t:
+                return t[l].part1
+    raise Exception('Language %s not recognized. Try the iso-639 code.' % language)
+
 def multilingual_params(language, **kwargs):
-    language_code = iso639.find(language)
-    if not language_code:
-        raise Exception('Language %s not recognized. Try the iso-639 code.' % language)
-    language_code = language_code['iso639_1']
+    language_code = get_language_code(language)
     lang_model = collections.defaultdict(lambda: 'xlm-roberta-large')
     lang_model['fr'] = 'flaubert/flaubert_base_cased'
     lang_model['en'] = 'roberta-base'
