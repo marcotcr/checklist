@@ -6,6 +6,8 @@ def get_language_code(language):
     for l in l_to_try:
         for t in to_try:
             if l in t:
+                if not t[l].part1:
+                    continue
                 return t[l].part1
     raise Exception('Language %s not recognized. Try the iso-639 code.' % language)
 
@@ -104,7 +106,7 @@ def multilingual_params(language, **kwargs):
     params = {
         'model_name': lang_model[language_code],
         'prefix_sentence': prefixes.get(language_code, ''),
-        'allow_word_pieces': True if language_code == 'zh' else False
+        'allow_word_pieces': True if language_code in ['zh', 'ja', 'ko'] else False
     }
     if language_code not in prefixes and language_code not in ['fr', 'en', 'de']:
         raise Exception('Language %s not supported yet. Sorry!' % language)

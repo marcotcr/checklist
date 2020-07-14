@@ -1,16 +1,17 @@
 # CheckList
-This repository contains code for testing NLP Models as described in the following paper:
+This repository contains code for testing NLP Models as described in the following paper:  
 >[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)  
 > Marco Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, Sameer Singh
 > Association for Computational Linguistics (ACL), 2020
 
 Bibtex for citations:
-> @inproceedings{checklist:acl20,  
+```bibtex
+ @inproceedings{checklist:acl20},  
  author = {Marco Tulio Ribeiro and Tongshuang Wu and Carlos Guestrin and Sameer Singh},  
- title = { Beyond Accuracy: Behavioral Testing of NLP models with CheckList},  
+ title = {Beyond Accuracy: Behavioral Testing of NLP models with CheckList},  
  booktitle = {Association for Computational Linguistics (ACL)},  
  year = {2020}  
-}
+```
 
 
 ## Table of Contents
@@ -26,6 +27,7 @@ Bibtex for citations:
 * [Code snippets](#code-snippets)
    * [Templates](#templates)
    * [RoBERTa suggestions](#roberta-suggestions)
+      * [Multilingual suggestions](#multilingual-suggestions)
    * [Perturbing data for INVs and DIRs](#perturbing-data-for-invs-and-dirs)
    * [Creating and running tests](#creating-and-running-tests)
    * [Custom expectation functions](#custom-expectation-functions)
@@ -211,6 +213,7 @@ ret.data[:3]
 
 
 We're using [FlauBERT](https://arxiv.org/abs/1912.05372) for french, [German BERT](https://deepset.ai/german-bert) for german, and [XLM-RoBERTa](https://github.com/pytorch/fairseq/tree/master/examples/xlmr) for everything else (click the link for a list of supported languages). We can't vouch for the quality of the suggestions in other languages, but it seems to work reasonably well for the languages we speak (although not as well as English).
+
 
 ### Perturbing data for INVs and DIRs
 See [2.Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb) for more details.  
