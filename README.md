@@ -173,11 +173,35 @@ editor.suggest('This is {a:adj} {mask}.',
 ```
 > ['idea', 'sign', 'thing', 'example', 'start']
 
+Getting suggestions for replacements (only a single text allowed, no templates):
+```python
+editor.suggest_replace('This is a good movie.', 'good')[:5]
+```
+> ['great', 'horror', 'bad', 'terrible', 'cult']
+
 Getting suggestions through jupyter visualization:  
 ```python
 editor.visual_suggest('This is {a:mask} movie.')
 ```
 ![visual suggest](notebooks/tutorials/visual_suggest.gif )
+
+#### Multilingual suggestions
+Just initialize the editor with the `language` argument (should work with language names and iso 639-1 codes):
+
+```python
+import checklist
+from checklist.editor import Editor
+import numpy as np
+editor = Editor(language='portuguese')
+ret = editor.template('O João é um {mask}.',)
+ret.data[:3]
+```
+> ['O João é um português.',  
+'O João é um poeta.',  
+'O João é um brasileiro.']
+
+We're using [FlauBERT](https://arxiv.org/abs/1912.05372) for french, [German BERT](https://deepset.ai/german-bert) for german, and [XLM-RoBERTa](https://github.com/pytorch/fairseq/tree/master/examples/xlmr) for everything else (click the link for a list of supported languages). We can't vouch for the quality of the suggestions in other languages, but it seems to work reasonably well for the languages we speak (although not as well as English).
+
 
 ### Perturbing data for INVs and DIRs
 See [2.Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb) for more details.  
