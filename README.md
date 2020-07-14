@@ -192,7 +192,7 @@ Just initialize the editor with the `language` argument (should work with langua
 import checklist
 from checklist.editor import Editor
 import numpy as np
-# in Protuguese
+# in Portuguese
 editor = Editor(language='portuguese')
 ret = editor.template('O João é um {mask}.',)
 ret.data[:3]
