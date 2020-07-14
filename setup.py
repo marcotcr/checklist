@@ -69,7 +69,8 @@ setup(name='checklist',
         'jupyter>=1.0',
         'ipywidgets>=7.5',
         'transformers>=2.8',
-        'pattern>=3.6'
+        'pattern>=3.6',
+        'iso-639'
       ],
       cmdclass={
         'develop': PostDevelopCommand,

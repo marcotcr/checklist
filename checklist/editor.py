@@ -9,6 +9,7 @@ import json
 import munch
 
 from .viewer.template_editor import TemplateEditor
+from .multilingual import multilingual_params
 
 class MunchWithAdd(munch.Munch):
     def __add__(self, other):
@@ -249,11 +250,16 @@ def wrapped_random_choice(x, *args, **kwargs):
         return type(x)([x[i] for i in idxs])
 
 class Editor(object):
-    def __init__(self):
+    def __init__(self, language='english', model_name=None):
         cur_folder = os.path.dirname(__file__)
         folder = os.path.abspath(os.path.join(cur_folder, "data", 'lexicons'))
         self.lexicons = {}
         self.data = {}
+        self.tg_params = {
+            'language': language,
+        }
+        if model_name is not None:
+            self.tg_params['model_name'] = model_name
         for f in os.listdir(folder):
             self.lexicons.update(json.load(open(os.path.join(folder, f))))
         make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
@@ -267,7 +273,8 @@ class Editor(object):
     def __getattr__(self, attr):
         if attr == 'tg':
             from .text_generation import TextGenerator
-            self.tg = TextGenerator()
+            params = multilingual_params(**self.tg_params)
+            self.tg = TextGenerator(**params)
             return self.tg
         else:
             raise AttributeError
@@ -471,9 +478,10 @@ class Editor(object):
         tagged_keys = find_all_keys(templates)
         template_strs = get_all_strings_ordered(templates)
         items = self._get_fillin_items(tagged_keys, max_count=5, **kwargs)
+
         kwargs["verbose"] = False
         mask_suggests = self.suggest(templates, **kwargs)
-
+        print(mask_suggests)
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.selected_suggestions = []
@@ -483,7 +491,8 @@ class Editor(object):
             tag_dict=items,
             mask_suggests=mask_suggests[:50],
             format_fn=recursive_format,
-            select_suggests_fn=self._set_selected_suggestions
+            select_suggests_fn=self._set_selected_suggestions,
+            tokenizer=self.tg.tokenizer
         )
 
     def add_lexicon(self, name, values, overwrite=False):
@@ -611,7 +620,7 @@ class Editor(object):
                                  thisisaratherlongtokenthatwillnotexist=['an'], **kwargs).data
             # print(samp)
             # print(len([x for x in samp if ' an ' in x[0]]))
-            samp = [x.replace(tok, self.tg.bert_tokenizer.mask_token) for y in samp for x in y][:20]
+            samp = [x.replace(tok, self.tg.tokenizer.mask_token) for y in samp for x in y][:20]
             samp = list(set(samp))
             # print(samp)
             if 'beam_size' not in kwargs:

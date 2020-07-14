@@ -1,4 +1,4 @@
-from transformers import BertTokenizer, BertForMaskedLM, RobertaTokenizer, RobertaForMaskedLM
+from transformers import AutoTokenizer, AutoModelForMaskedLM
 import collections
 import itertools
 import numpy as np
@@ -73,23 +73,24 @@ def all_possible_related(words, pos=None, depth=1):
     return clean_senses(ret)
 
 class TextGenerator(object):
-    def __init__(self, url=None):
+    def __init__(self, url=None, model_name='roberta-base', prefix_sentence='', allow_word_pieces=False, **kwargs):
         self.url = url
         if url is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            # self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-            # self.bert = BertForMaskedLM.from_pretrained('bert-base-cased')
-            self.bert_tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-            self.bert = RobertaForMaskedLM.from_pretrained('roberta-base')
-            self.bert.to(self.device)
-            self.bert.eval()
-            self.with_space = torch.tensor(np.array(list(set([i for x, i in self.bert_tokenizer.get_vocab().items() if x[0] == 'Ġ']))), device=self.device)
-            self.with_space_set = set(self.with_space.cpu().numpy())
-            self.special_chars = set([i for x, i in self.bert_tokenizer.get_vocab().items() if not x.strip('Ġ').isalnum()])
-        # self.gpt_tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
-        # self.gpt = GPT2LMHeadModel.from_pretrained('gpt2-large')
-        # self.gpt.to(self.device)
-        # self.gpt.eval()
+            # self.tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+            # self.model = BertForMaskedLM.from_pretrained('bert-base-cased')
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+            self.model = AutoModelForMaskedLM.from_pretrained(model_name)
+            self.model.to(self.device)
+            self.model.eval()
+            self.prefix_sentence = prefix_sentence
+            self.prefix_len = len(self.tokenizer.encode(prefix_sentence, add_special_tokens=False))
+            self.allow_word_pieces = allow_word_pieces
+            self.space_prefix = self.tokenizer.tokenize(' John')[0].split('John')[0]
+            if not self.allow_word_pieces:
+                self.with_space = torch.tensor(np.array(list(set([i for x, i in self.tokenizer.get_vocab().items() if x.startswith(self.space_prefix)]))), device=self.device);
+                self.with_space_set = set(self.with_space.cpu().numpy())
+                self.special_chars = set([i for x, i in self.tokenizer.get_vocab().items() if not x.strip(self.space_prefix).isalnum()])
 
     def unmask_multiple(self, texts, beam_size=500, candidates=None, metric='avg', **kwargs):
         rets = []
@@ -133,18 +134,21 @@ class TextGenerator(object):
             r = requests.post(url='%s/unmask' % self.url, data={'params': json.dumps(params)})
             r = [tuple(x) for x in json.loads(r.text)]
             return r
-        tokenizer = self.bert_tokenizer
-        model = self.bert
-        encoded = np.array(tokenizer.encode(text_with_mask, add_special_tokens=True))
+        tokenizer = self.tokenizer
+        model = self.model
+        encoded = np.array(tokenizer.encode(self.prefix_sentence + text_with_mask, add_special_tokens=True))
         cands = []
         if candidates is not None:
-            candidates = candidates + ['Ġ' + x for x in candidates]
+            candidates = candidates + [self.space_prefix + x for x in candidates]
             cands = tokenizer.convert_tokens_to_ids(candidates)
-            cands_with_space = list(set(cands).intersection(self.with_space_set))
+            if self.allow_word_pieces:
+                cands_with_space = list(set(cands))
+            else:
+                cands_with_space = list(set(cands).intersection(self.with_space_set))
         input_ids = torch.tensor(encoded)
         # toks = tokenizer.tokenize('[CLS] %s [SEP]' % string)
         current_beam= [([], 0)]
-        masked = (input_ids == self.bert_tokenizer.mask_token_id).numpy().nonzero()[0]
+        masked = (input_ids == self.tokenizer.mask_token_id).numpy().nonzero()[0]
         # print(masked)
         while len(current_beam[0][0]) != masked.shape[0]:
             current_beam = current_beam[:beam_size]
@@ -166,7 +170,7 @@ class TextGenerator(object):
                 prev = int(to_pred[i][masked[size] - 1])
                 forbid = False
                 # allow tokens that don't start with space if previous is not alphanumeric
-                if prev not in self.special_chars:
+                if not self.allow_word_pieces and prev not in self.special_chars:
                     forbid = True
                     # print('Forbid Prev, current', prev,  tokenizer.decode(to_pred[i][masked[size] - 1:masked[size]+1]))
                 if candidates is not None:
@@ -189,7 +193,7 @@ class TextGenerator(object):
             # words = tokenizer.convert_ids_to_tokens(idxs)
             words = [str(tokenizer.decode([i])).strip() for i in idxs]
             cop[masked] = idxs
-            text = tokenizer.decode(cop[1:-1])
+            text = tokenizer.decode(cop[1 + self.prefix_len:-1])
             ret.append((words, text, score / masked.shape[0]))
         ret = sorted(ret, key=lambda x:x[2], reverse=True)
         return ret
@@ -197,7 +201,7 @@ class TextGenerator(object):
         text = ''
         for p in pieces[:-1]:
             text += p
-            text += ' ' + self.bert_tokenizer.mask_token
+            text += ' ' + self.tokenizer.mask_token
             if p != '':
                 text += ' '
         text += pieces[-1]
@@ -206,14 +210,14 @@ class TextGenerator(object):
         return self.unmask(text, beam_size=beam_size, candidates=candidates)
 
     def replace_word(self, text, word,  threshold=5, beam_size=100, candidates=None):
-        masked = re.sub(r'\b%s\b' % re.escape(word), self.bert_tokenizer.mask_token, text)
+        masked = re.sub(r'\b%s\b' % re.escape(word), self.tokenizer.mask_token, text)
         if masked == text:
             return []
         if candidates is not None:
             candidates = [word] + candidates
         ret =  self.unmask(masked, beam_size=beam_size, candidates=candidates)
-        non_word = [x for x in ret if np.all([y not in ['[UNK]', word] for y in x[0]])]
-        score = [x for x in ret if np.all([y in [word, '[UNK]'] for y in x[0]])]
+        non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
+        score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])]
         if not score:
             score = 0
         else:
@@ -260,12 +264,12 @@ class TextGenerator(object):
         options = options + [word]
         in_all = set(options)
         for text in texts:
-            masked = re.sub(r'\b%s\b' % re.escape(word), self.bert_tokenizer.mask_token, text)
+            masked = re.sub(r'\b%s\b' % re.escape(word), self.tokenizer.mask_token, text)
             if masked == text:
                 continue
             ret =  self.unmask(masked, beam_size=100000000, candidates=options)
-            non_word = [x for x in ret if np.all([y not in ['[UNK]', word] for y in x[0]])]
-            score = [x for x in ret if np.all([y in [word, '[UNK]'] for y in x[0]])][0][-1]
+            non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
+            score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])][0][-1]
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
             # print(text)
             # print(new_ret)
@@ -287,8 +291,8 @@ class TextGenerator(object):
         if masked == text:
             return []
         ret =  self.unmask(masked, beam_size=100000000, candidates=options)
-        non_word = [x for x in ret if np.all([y not in ['[UNK]', word] for y in x[0]])]
-        score = [x for x in ret if np.all([y in [word, '[UNK]'] for y in x[0]])][0][-1]
+        non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
+        score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])][0][-1]
         new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
         return new_ret
     def try_all_antonyms(self, text, threshold=5, synonym=False):
@@ -297,10 +301,10 @@ class TextGenerator(object):
             r = requests.post(url='%s/tokenize' % self.url, data={'params': json.dumps(params)})
             words = json.loads(r.text)
         else:
-            words = self.bert_tokenizer.tokenize(text)
+            words = self.tokenizer.tokenize(text)
         new_ret = []
         for word in words:
-            word = word.strip('Ġ')
+            word = word.strip(self.space_prefix)
             try:
                 if synonym:
                     ret = self.synonyms(text, word, threshold)
@@ -312,85 +316,3 @@ class TextGenerator(object):
                 continue
             new_ret.extend(ret)
         return sorted(new_ret, key=lambda x:x[2])
-
-    def finish_sentence(self, start):
-        context_tokens = self.gpt_tokenizer.encode(start)
-        stoppers = set(self.gpt_tokenizer.convert_tokens_to_ids(['?"', '?\'', '!"', '."', '.)', '.\'', '.', '?', '!', '\n', '\n\n', self.gpt_tokenizer.eos_token]))
-        top_k= 0
-        temperature = 1
-        out = sample_sequence(
-            model=self.gpt,
-            context=context_tokens,
-            length=50,
-            temperature=temperature,
-            top_k=top_k,
-            top_p=1,
-            device=self.device,
-            is_xlnet=False,#bool(model_type == "xlnet"),
-            stoppers=stoppers
-            )
-        # out = out[0, len(context_tokens):].tolist()
-        text = self.gpt_tokenizer.decode(out[0].tolist(), clean_up_tokenization_spaces=True)
-        return text
-
-
-
-
-
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
-    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
-        Args:
-            logits: logits distribution shape (vocabulary size)
-            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
-            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
-                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
-        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
-    """
-    assert logits.dim() == 1  # batch size 1 for now - could be updated for more but the code would be less clear
-    top_k = min(top_k, logits.size(-1))  # Safety check
-    if top_k > 0:
-        # Remove all tokens with a probability less than the last token of the top-k
-        indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
-    if top_p > 0.0:
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # Remove tokens with cumulative probability above the threshold
-        sorted_indices_to_remove = cumulative_probs > top_p
-        # Shift the indices to the right to keep also the first token above the threshold
-        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        indices_to_remove = sorted_indices[sorted_indices_to_remove]
-        logits[indices_to_remove] = filter_value
-    return logits
-
-def sample_sequence(model, length, context, num_samples=1, temperature=1, top_k=0, top_p=0.0, is_xlnet=False, device='cpu',
-                   stoppers=[]):
-    context = torch.tensor(context, dtype=torch.long, device=device)
-    context = context.unsqueeze(0).repeat(num_samples, 1)
-    generated = context
-    with torch.no_grad():
-        for _ in range(length):
-            inputs = {'input_ids': generated}
-            # if is_xlnet:
-            #     # XLNet is a direct (predict same token, not next token) and bi-directional model by default
-            #     # => need one additional dummy token in the input (will be masked), attention mask and target mapping (see model docstring)
-            #     input_ids = torch.cat((generated, torch.zeros((1, 1), dtype=torch.long, device=device)), dim=1)
-            #     perm_mask = torch.zeros((1, input_ids.shape[1], input_ids.shape[1]), dtype=torch.float, device=device)
-            #     perm_mask[:, :, -1] = 1.0  # Previous tokens don't see last token
-            #     target_mapping = torch.zeros((1, 1, input_ids.shape[1]), dtype=torch.float, device=device)
-            #     target_mapping[0, 0, -1] = 1.0  # predict last token
-            #     inputs = {'input_ids': input_ids, 'perm_mask': perm_mask, 'target_mapping': target_mapping}
-            outputs = model(**inputs)  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet (cached hidden-states)
-            next_token_logits = outputs[0][0, -1, :] / temperature
-            filtered_logits = top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p)
-            next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
-            nt = int(next_token[0])
-            generated = torch.cat((generated, next_token.unsqueeze(0)), dim=1)
-            if nt in stoppers:
-                break
-#             print(nt, nt in stoppers, int(next_token[0]))
-    return generated
