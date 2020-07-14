@@ -6,6 +6,8 @@ def get_language_code(language):
     for l in l_to_try:
         for t in to_try:
             if l in t:
+                if not t[l].part1:
+                    continue
                 return t[l].part1
     raise Exception('Language %s not recognized. Try the iso-639 code.' % language)
 
