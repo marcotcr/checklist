@@ -106,7 +106,7 @@ def multilingual_params(language, **kwargs):
     params = {
         'model_name': lang_model[language_code],
         'prefix_sentence': prefixes.get(language_code, ''),
-        'allow_word_pieces': True if language_code == 'zh' else False
+        'allow_word_pieces': True if language_code in ['zh', 'ja', 'ko'] else False
     }
     if language_code not in prefixes and language_code not in ['fr', 'en', 'de']:
         raise Exception('Language %s not supported yet. Sorry!' % language)
