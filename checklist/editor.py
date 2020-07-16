@@ -481,7 +481,6 @@ class Editor(object):
 
         kwargs["verbose"] = False
         mask_suggests = self.suggest(templates, **kwargs)
-        print(mask_suggests)
         if not mask_suggests:
             raise Exception('No valid suggestions for the given template!')
         self.selected_suggestions = []
@@ -633,7 +632,7 @@ class Editor(object):
             v = [x[0] for x in options][:top]
             items[mask] = v
             if mask_only:
-                return options
+                return options[:nsamples]
         if save:
             ret.templates = [(params, items)]
         templates = recursive_apply(templates, replace_mask)
