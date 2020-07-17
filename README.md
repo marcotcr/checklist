@@ -57,6 +57,7 @@ For most tutorials, you also need to download a spacy model:
 python -m spacy download en_core_web_sm
 ```
 ## Tutorials
+Please note that the visualizations are implemented as ipywidgets, and don't work on colab or JupyterLab (use jupyter notebook). Everything else should work on these though.
 
 1. [Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb)
 2. [Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb)
