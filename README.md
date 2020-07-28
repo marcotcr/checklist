@@ -217,7 +217,7 @@ We're using [FlauBERT](https://arxiv.org/abs/1912.05372) for french, [German BER
 
 
 ### Perturbing data for INVs and DIRs
-See [2.Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb) for more details.  
+See [2.Perturbing data](notebooks/tutorials/2.%20Perturbing%20data.ipynb) for more details.  
 Custom perturbation function:
 ```python
 import re
