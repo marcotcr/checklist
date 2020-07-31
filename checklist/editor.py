@@ -7,9 +7,10 @@ import copy
 import os
 import json
 import munch
+import pickle
 
 from .viewer.template_editor import TemplateEditor
-from .multilingual import multilingual_params
+from .multilingual import multilingual_params, get_language_code
 
 class MunchWithAdd(munch.Munch):
     def __add__(self, other):
@@ -251,8 +252,6 @@ def wrapped_random_choice(x, *args, **kwargs):
 
 class Editor(object):
     def __init__(self, language='english', model_name=None):
-        cur_folder = os.path.dirname(__file__)
-        folder = os.path.abspath(os.path.join(cur_folder, "data", 'lexicons'))
         self.lexicons = {}
         self.data = {}
         self.tg_params = {
@@ -260,15 +259,45 @@ class Editor(object):
         }
         if model_name is not None:
             self.tg_params['model_name'] = model_name
+        self._load_lexicons(language)
+        self.selected_suggestions = []
+
+    def _load_lexicons(self, language):
+        cur_folder = os.path.dirname(__file__)
+        folder = os.path.abspath(os.path.join(cur_folder, "data", 'lexicons'))
         for f in os.listdir(folder):
             self.lexicons.update(json.load(open(os.path.join(folder, f))))
+        self.data['names'] = json.load(open(os.path.join(cur_folder, 'data', 'names.json')))
+        self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
         make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
         for x in self.lexicons:
             self.lexicons[x] = [make_munch(x) for x in self.lexicons[x]]
-        self.data['names'] = json.load(open(os.path.join(cur_folder, 'data', 'names.json')))
-        self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
 
-        self.selected_suggestions = []
+        language = get_language_code(language)
+        wikidata = pickle.load(open(os.path.join(cur_folder, 'data', 'wikidata.pkl'), 'rb'))
+        get_ln = lambda d: d.get(language, d.get('en'))
+        self.lexicons['male'] = get_ln(wikidata.mnames)
+        self.lexicons['female'] = get_ln(wikidata.fnames)
+        self.lexicons['first_name'] = [y for x in zip(self.lexicons['male'], self.lexicons['female']) for y in x]
+        self.lexicons['last_name'] = get_ln(wikidata.lnames)
+        self.lexicons['country'] =  [get_ln(x.label) for x in wikidata.countries]
+        # united states by default
+        self.lexicons['city'] =  [get_ln(x.label) for x in wikidata.countries[2].cities]
+        # Most populous country that has language as official language
+        for country in wikidata.countries:
+            if country.primary_lang == language:
+                self.lexicons['city'] = [get_ln(x.label) for x in country.cities]
+                break
+        self.lexicons['country_city'] = munch.Munch()
+        for country in wikidata.countries:
+            l = country.label.en.replace(' ', '_')
+            self.lexicons['country_city'][l] = [get_ln(x.label) for x in country.cities]
+        self.lexicons['male_from'] = wikidata.male_by_country
+        self.lexicons['female_from'] = wikidata.female_by_country
+        self.lexicons['last_from'] = wikidata.last_by_country
+        self.lexicons = munch.Munch(self.lexicons)
+
+
 
     def __getattr__(self, attr):
         if attr == 'tg':
