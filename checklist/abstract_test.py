@@ -75,6 +75,7 @@ class AbstractTest(ABC):
         self.templates = templates
         self.print_first = print_first
         self.run_idxs = None
+        self.result_indexes = None
         self.name = name
         self.capability = capability
         self.description = description
@@ -199,7 +200,19 @@ class AbstractTest(ABC):
                 self.results.preds[i] = p
                 self.results.confs[i] = c
 
-    def to_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None):
+    def recover_example_list_and_indices(self):
+        """Recovers a previously computed example_list_and_indices"""
+        idxs = list(range(len(self.data)))
+        if self.run_idxs is not None:
+            idxs = self.run_idxs
+        if type(self.data[0]) in [list, np.array]:
+            examples = [y for i in idxs for y in self.data[i]]
+        else:
+            examples = [self.data[i] for i in idxs]
+        result_indexes = self.result_indexes
+        return examples, result_indexes
+
+    def to_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None, new_sample=True):
         """Flattens all test examples into a single list
 
         Parameters
@@ -212,6 +225,8 @@ class AbstractTest(ABC):
             If not None, number of samples to draw
         seed : int
             Seed to use if n is not None
+        new_sample: bool
+            If False, will rely on a previous sample and ignore the 'n' and 'seed' parameters
 
         Returns
         -------
@@ -228,7 +243,10 @@ class AbstractTest(ABC):
         else:
             if format_fn is None:
                 format_fn = lambda x: str(x).replace('\n', ' ')
-        examples, indices = self.example_list_and_indices(n, seed=seed)
+        if new_sample:
+            examples, indices = self.example_list_and_indices(n, seed=seed)
+        else:
+            examples, indices = self.recover_example_list_and_indices()
         examples = [format_fn(x) for x in examples]
         return examples
 
