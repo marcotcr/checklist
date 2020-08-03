@@ -127,12 +127,10 @@ class TestSuite:
         return hf_dict
 
     def get_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None, new_sample=True):
-        if new_sample:
+        if new_sample or len(self.test_ranges) == 0:
             self.test_ranges = {}
             all_examples = self.create_raw_example_list(file_format=file_format, format_fn=format_fn, n=n, seed=seed)
         else:
-            if len(self.test_ranges) == 0:
-                raise(Exception('new_sample set to False, but no previous sample saved in this suite.'))
             all_examples = self.get_raw_example_list(file_format=file_format, format_fn=format_fn)
         return all_examples
 
