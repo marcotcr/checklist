@@ -115,7 +115,7 @@ class Perturb:
 
         """
         # doc is a spacy doc
-        while doc[-1].pos_ == 'PUNCT':
+        while len(doc) and doc[-1].pos_ == 'PUNCT':
             doc = doc[:-1]
         return doc.text
 
