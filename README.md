@@ -44,9 +44,11 @@ Table of Contents
 From pypi:  
 ```bash
 pip install checklist
-jupyter nbextension install --py --user checklist.viewer
-jupyter nbextension enable --py --user checklist.viewer
+jupyter nbextension install --py --sys-prefix checklist.viewer
+jupyter nbextension enable --py --sys-prefix checklist.viewer
 ```
+Note:  `--sys-prefix` to install into python’s sys.prefix, which is useful for instance in virtual environments, such as with conda or virtualenv. If you are not in such environments, please switch to `--user` to install into the user’s home jupyter directories.
+
 From source:
 ```bash
 git clone git@github.com:marcotcr/checklist.git
