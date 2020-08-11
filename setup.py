@@ -12,7 +12,7 @@ def enable_visual_interface():
     check_call(f"{sys.executable} -m pip install jupyter", shell=True)
     import notebook
     notebook.nbextensions.install_nbextension_python(
-        "checklist.viewer", user=True, overwrite=True, symlink=True)
+        "checklist.viewer", user=True, overwrite=True)
     notebook.nbextensions.enable_nbextension_python(
         "checklist.viewer")
 
