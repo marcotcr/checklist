@@ -14,34 +14,41 @@ Bibtex for citations:
 ```
 
 
-## Table of Contents
-* [Installation](#installation)
-* [Tutorials](#tutorials)
-* [Paper tests](#paper-tests)
-   * [Notebooks: how we created the tests in the paper](#notebooks-how-we-created-the-tests-in-the-paper)
-   * [Replicating paper tests, or running them with new models](#replicating-paper-tests-or-running-them-with-new-models)
-      * [Sentiment Analysis](#sentiment-analysis)
-      * [QQP](#qqp)
-      * [SQuAD](#squad)
-      * [Testing huggingface transformer pipelines](#testing-huggingface-transformer-pipelines)
-* [Code snippets](#code-snippets)
-   * [Templates](#templates)
-   * [RoBERTa suggestions](#roberta-suggestions)
-      * [Multilingual suggestions](#multilingual-suggestions)
-   * [Perturbing data for INVs and DIRs](#perturbing-data-for-invs-and-dirs)
-   * [Creating and running tests](#creating-and-running-tests)
-   * [Custom expectation functions](#custom-expectation-functions)
-   * [Test Suites](#test-suites)
-* [API reference](#api-reference)
-* [Code of Conduct](#code-of-conduct)
+Table of Contents
+=================
+
+   * [CheckList](#checklist)
+      * [Table of Contents](#table-of-contents)
+      * [Installation](#installation)
+      * [Tutorials](#tutorials)
+      * [Paper tests](#paper-tests)
+         * [Notebooks: how we created the tests in the paper](#notebooks-how-we-created-the-tests-in-the-paper)
+         * [Replicating paper tests, or running them with new models](#replicating-paper-tests-or-running-them-with-new-models)
+            * [Sentiment Analysis](#sentiment-analysis)
+            * [QQP](#qqp)
+            * [SQuAD](#squad)
+            * [Testing huggingface transformer pipelines](#testing-huggingface-transformer-pipelines)
+      * [Code snippets](#code-snippets)
+         * [Templates](#templates)
+         * [RoBERTa suggestions](#roberta-suggestions)
+            * [Multilingual suggestions](#multilingual-suggestions)
+         * [Lexicons (somewhat multilingual)](#lexicons-somewhat-multilingual)
+         * [Perturbing data for INVs and DIRs](#perturbing-data-for-invs-and-dirs)
+         * [Creating and running tests](#creating-and-running-tests)
+         * [Custom expectation functions](#custom-expectation-functions)
+         * [Test Suites](#test-suites)
+      * [API reference](#api-reference)
+      * [Code of Conduct](#code-of-conduct)
 
 ## Installation
 From pypi:  
 ```bash
 pip install checklist
-jupyter nbextension install --py --user checklist.viewer
-jupyter nbextension enable --py --user checklist.viewer
+jupyter nbextension install --py --sys-prefix checklist.viewer
+jupyter nbextension enable --py --sys-prefix checklist.viewer
 ```
+Note:  `--sys-prefix` to install into python’s sys.prefix, which is useful for instance in virtual environments, such as with conda or virtualenv. If you are not in such environments, please switch to `--user` to install into the user’s home jupyter directories.
+
 From source:
 ```bash
 git clone git@github.com:marcotcr/checklist.git
@@ -57,9 +64,10 @@ For most tutorials, you also need to download a spacy model:
 python -m spacy download en_core_web_sm
 ```
 ## Tutorials
+Please note that the visualizations are implemented as ipywidgets, and don't work on colab or JupyterLab (use jupyter notebook). Everything else should work on these though.
 
 1. [Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb)
-2. [Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb)
+2. [Perturbing data](notebooks/tutorials/2.%20Perturbing%20data.ipynb)
 3. [Test types, expectation functions, running tests](notebooks/tutorials/3.%20Test%20types,%20expectation%20functions,%20running%20tests.ipynb)
 4. [The CheckList process](notebooks/tutorials/4.%20The%20CheckList%20process.ipynb)
 
@@ -214,9 +222,71 @@ ret.data[:3]
 
 We're using [FlauBERT](https://arxiv.org/abs/1912.05372) for french, [German BERT](https://deepset.ai/german-bert) for german, and [XLM-RoBERTa](https://github.com/pytorch/fairseq/tree/master/examples/xlmr) for everything else (click the link for a list of supported languages). We can't vouch for the quality of the suggestions in other languages, but it seems to work reasonably well for the languages we speak (although not as well as English).
 
+### Lexicons (somewhat multilingual)
+`editor.lexicons` is a dictionary, which can be used in templates. For example:
+```python
+import checklist
+from checklist.editor import Editor
+import numpy as np
+# Default: English
+editor = Editor()
+ret = editor.template('{male1} went to see {male2} in {city}.', remove_duplicates=True)
+list(np.random.choice(ret.data, 3))
+```
+> ['Dan went to see Hugh in Riverside.',  
+ 'Stephen went to see Eric in Omaha.',  
+ 'Patrick went to see Nick in Kansas City.']
+
+Person names and location (country, city) names are multilingual, depending on the `editor` language. We [got the data](notebooks/other/Acquiring%20multilingual%20lexicons%20from%20wikidata.ipynb) from [wikidata](https://www.wikidata.org), so there is a bias towards names on wikipedia.
+```python
+editor = Editor(language='german')
+ret = editor.template('{male1} went to see {male2} in {city}.', remove_duplicates=True)
+list(np.random.choice(ret.data, 3))
+```
+> ['Rolf went to see Klaus in Leipzig.',  
+  'Richard went to see Jörg in Marl.',  
+  'Gerd went to see Fritz in Schwerin.']
+
+List of available lexicons:
+
+```python
+editor.lexicons.keys()
+```
+> dict_keys(['male', 'female', 'first_name', 'first_pronoun', 'last_name', 'country', 'nationality', 'city', 'religion', 'religion_adj', 'sexual_adj', 'country_city', 'male_from', 'female_from', 'last_from'])
+
+Some of these cannot be used directly in templates because they are themselves dictionaries. For example, `male_from`, `female_from`, `last_from` and `country_city` are dictionaries from country to male names, female names, last names and most populous cities.  
+You can call `editor.lexicons.male_from.keys()` for a list of country names. Example usage:
+```python
+import numpy as np
+countries = ['France', 'Germany', 'Brazil']
+for country in countries:
+    ts = editor.template('{male} {last} is from {city}',
+                male=editor.lexicons.male_from[country],
+                last=editor.lexicons.last_from[country],
+                city=editor.lexicons.country_city[country],
+               )
+    print('Country: %s' % country)
+    print('\n'.join(np.random.choice(ts.data, 3)))
+    print()
+```
+> Country: France  
+Jean-Jacques Brun is from Avignon  
+Bruno Deschamps is from Vitry-sur-Seine  
+Ernest Picard is from Chambéry
+>
+> Country: Germany  
+Rainer Braun is from Schwerin  
+Markus Brandt is from Gera  
+Reinhard Busch is from Erlangen  
+>
+> Country: Brazil  
+Gilberto Martins is from Anápolis  
+Alfredo Guimarães is from Indaiatuba  
+Jorge Barreto is from Fortaleza  
+
 
 ### Perturbing data for INVs and DIRs
-See [2.Perturbing data](notebooks/tutorials/2.$20Perturbing%20data.ipynb) for more details.  
+See [2.Perturbing data](notebooks/tutorials/2.%20Perturbing%20data.ipynb) for more details.  
 Custom perturbation function:
 ```python
 import re

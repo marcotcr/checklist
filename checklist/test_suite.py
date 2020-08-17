@@ -13,6 +13,7 @@ class TestSuite:
         self.info = defaultdict(lambda: defaultdict(lambda: ''))
         self.format_example_fn = format_example_fn
         self.print_fn = print_fn
+        self.test_ranges = {}
 
     @staticmethod
     def from_file(path):
@@ -98,7 +99,65 @@ class TestSuite:
         del self.tests[name]
         del self.info[name]
 
-    def to_raw_file(self, path, file_format=None, format_fn=None, header=None, n=None, seed=None):
+    def to_dict(self, example_to_dict_fn=None, n=None, seed=None, new_sample=False):
+        if example_to_dict_fn is None:
+            try:
+                example_to_dict_fn = self.example_to_dict_fn
+            except AttributeError:
+                raise(Exception('suite does not have example_to_dict_fn, must pass function as argument.'))
+        examples = self.get_raw_examples(format_fn=lambda x:x, n=n, seed=seed, new_sample=new_sample)
+        data_keys = list(example_to_dict_fn(examples[0]).keys())
+        keys = data_keys + ['test_name', 'test_case', 'example_idx']
+        hf_dict = { k:[] for k in keys }
+        for e in examples:
+            m = example_to_dict_fn(e)
+            for k,v  in m.items():
+                hf_dict[k].append(v)
+        for test_name, r in sorted(self.test_ranges.items(), key=lambda x:x[1][0]):
+            test = self.tests[test_name]
+            size = r[1] - r[0]
+            hf_dict['test_name'].extend([test_name for _ in range(size)])
+            hf_dict['test_case'].extend(test.result_indexes)
+            cnt = collections.defaultdict(lambda: 0)
+            example_idx = []
+            for i in test.result_indexes:
+                example_idx.append(cnt[i])
+                cnt[i] += 1
+            hf_dict['example_idx'].extend(example_idx)
+        return hf_dict
+
+    def get_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None, new_sample=True):
+        if new_sample or len(self.test_ranges) == 0:
+            self.test_ranges = {}
+            all_examples = self.create_raw_example_list(file_format=file_format, format_fn=format_fn, n=n, seed=seed)
+        else:
+            all_examples = self.get_raw_example_list(file_format=file_format, format_fn=format_fn)
+        return all_examples
+
+    def get_raw_example_list(self, file_format=None, format_fn=None):
+        if not self.test_ranges:
+            raise(Exception('example list not created. please call create_raw_example_list, or to_raw_file first'))
+        examples = []
+        for test_name, r in sorted(self.test_ranges.items(), key=lambda x:x[1][0]):
+            test = self.tests[test_name]
+            test_examples = test.to_raw_examples(file_format=file_format, format_fn=format_fn,
+                                         n=None, seed=None, new_sample=False)
+            assert len(test_examples) == r[1] - r[0]
+            examples.extend(test_examples)
+        return examples
+
+    def create_raw_example_list(self, file_format, format_fn, n, seed):
+        self.test_ranges = {}
+        current_idx = 0
+        all_examples = []
+        for name, t in self.tests.items():
+            examples = t.to_raw_examples(file_format=file_format, format_fn=format_fn, n=n, seed=seed, new_sample=True)
+            self.test_ranges[name] = (current_idx, current_idx + len(examples))
+            current_idx += len(examples)
+            all_examples.extend(examples)
+        return all_examples
+
+    def to_raw_file(self, path, file_format=None, format_fn=None, header=None, n=None, seed=None, new_sample=True):
         """Flatten all tests into individual examples and print them to file.
         Indices of example to test case will be stored in each test.
         If n is not None, test.run_idxs will store the test case indexes.
@@ -119,10 +178,11 @@ class TestSuite:
             If not None, number of samples to draw
         seed : int
             Seed to use if n is not None
+        new_sample: bool
+            If False, will rely on a previous sample and ignore the 'n' and 'seed' parameters
 
         """
         ret = ''
-        self.test_ranges = {}
         all_examples = []
         add_id = False
         if file_format == 'qqp_test':
@@ -131,14 +191,10 @@ class TestSuite:
             header = 'id\tquestion1\tquestion2'
         if header is not None:
             ret += header.strip('\n') + '\n'
-        current_idx = 0
-        for name, t in self.tests.items():
-            examples = t.to_raw_examples(file_format=file_format, format_fn=format_fn, n=n, seed=seed)
-            self.test_ranges[name] = (current_idx, current_idx + len(examples))
-            if add_id and file_format == 'tsv':
-                examples = ['%d\t%s' % (i, x) for i, x in zip(range(current_idx, current_idx + len(examples)), examples)]
-            current_idx += len(examples)
-            all_examples.extend(examples)
+        all_examples = self.get_raw_examples(file_format=file_format, format_fn=format_fn, n=n, seed=seed, new_sample=new_sample)
+
+        if add_id and file_format == 'tsv':
+            all_examples = ['%d\t%s' % (i, x) for i, x in enumerate(all_examples)]
         if file_format == 'squad':
             ret_map = {'version': 'fake',
                        'data': []}
@@ -158,6 +214,12 @@ class TestSuite:
         f = open(path, 'w')
         f.write(ret)
         f.close()
+
+    def run_from_preds_confs(self, preds, confs, overwrite):
+        for n, t in self.tests.items():
+            p = preds[slice(*self.test_ranges[n])]
+            c = confs[slice(*self.test_ranges[n])]
+            t.run_from_preds_confs(p, c, overwrite=overwrite)
 
     def run_from_file(self, path, file_format=None, format_fn=None, ignore_header=False, overwrite=False):
         """Update test.results (run tests) for every test, from a prediction file
@@ -185,10 +247,7 @@ class TestSuite:
         preds, confs = read_pred_file(path, file_format=file_format,
                                  format_fn=format_fn,
                                  ignore_header=ignore_header)
-        for n, t in self.tests.items():
-            p = preds[slice(*self.test_ranges[n])]
-            c = confs[slice(*self.test_ranges[n])]
-            t.run_from_preds_confs(p, c, overwrite=overwrite)
+        self.run_from_preds_confs(preds, confs, overwrite=overwrite)
 
     def run(self, predict_and_confidence_fn, verbose=True, **kwargs):
         """Runs all tests in the suite
