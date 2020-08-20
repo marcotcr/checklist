@@ -132,7 +132,7 @@ To test your own model, get predictions for pairs in `release_data/squad/squad.j
 
 
 #### Testing huggingface transformer pipelines
-See [this notebook](notebooks/tutorials/6.%20Testing%20transformer%20pipelines.ipynb).
+See [this notebook](notebooks/tutorials/5.%20Testing%20transformer%20pipelines.ipynb).
 
 ##  Code snippets
 ### Templates
