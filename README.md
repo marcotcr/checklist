@@ -1,16 +1,16 @@
 # CheckList
-This repository contains code for testing NLP Models as described in the following paper:  
->[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)  
+This repository contains code for testing NLP Models as described in the following paper:
+>[Beyond Accuracy: Behavioral Testing of NLP models with CheckList](http://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)
 > Marco Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, Sameer Singh
 > Association for Computational Linguistics (ACL), 2020
 
 Bibtex for citations:
 ```bibtex
- @inproceedings{checklist:acl20},  
- author = {Marco Tulio Ribeiro and Tongshuang Wu and Carlos Guestrin and Sameer Singh},  
- title = {Beyond Accuracy: Behavioral Testing of NLP models with CheckList},  
- booktitle = {Association for Computational Linguistics (ACL)},  
- year = {2020}  
+ @inproceedings{checklist:acl20},
+ author = {Marco Tulio Ribeiro and Tongshuang Wu and Carlos Guestrin and Sameer Singh},
+ title = {Beyond Accuracy: Behavioral Testing of NLP models with CheckList},
+ booktitle = {Association for Computational Linguistics (ACL)},
+ year = {2020}
 ```
 
 
@@ -41,7 +41,7 @@ Table of Contents
       * [Code of Conduct](#code-of-conduct)
 
 ## Installation
-From pypi:  
+From pypi:
 ```bash
 pip install checklist
 jupyter nbextension install --py --sys-prefix checklist.viewer
@@ -96,7 +96,7 @@ pred_path = 'release_data/sentiment/predictions/bert'
 suite.run_from_file(pred_path, overwrite=True)
 suite.summary() # or suite.visual_summary_table()
 ```
-To test your own model, get predictions for the texts in `release_data/sentiment/tests_n500` and save them in a file where each line has 4 numbers: the prediction (0 for negative, 1 for neutral, 2 for positive) and the prediction probabilities for (negative, neutral, positive).  
+To test your own model, get predictions for the texts in `release_data/sentiment/tests_n500` and save them in a file where each line has 4 numbers: the prediction (0 for negative, 1 for neutral, 2 for positive) and the prediction probabilities for (negative, neutral, positive).
 Then, update `pred_path` with this file and run the lines above.
 
 
@@ -132,7 +132,7 @@ To test your own model, get predictions for pairs in `release_data/squad/squad.j
 
 
 #### Testing huggingface transformer pipelines
-See [this notebook](notebooks/tutorials/6.%20Testing%20transformer%20pipelines.ipynb).
+See [this notebook](notebooks/tutorials/5.%20Testing%20transformer%20pipelines.ipynb).
 
 ##  Code snippets
 ### Templates
@@ -147,21 +147,21 @@ ret = editor.template('{first_name} is {a:profession} from {country}.',
                        profession=['lawyer', 'doctor', 'accountant'])
 np.random.choice(ret.data, 3)
 ```
-> ['Mary is a doctor from Afghanistan.',  
-       'Jordan is an accountant from Indonesia.',  
+> ['Mary is a doctor from Afghanistan.',
+       'Jordan is an accountant from Indonesia.',
        'Kayla is a lawyer from Sierra Leone.']
 
 ### RoBERTa suggestions
-See [1. Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb) for more details.  
+See [1. Generating data](notebooks/tutorials/1.%20Generating%20data.ipynb) for more details.
 In template:
 ```python
-ret = editor.template('This is {a:adj} {mask}.',  
+ret = editor.template('This is {a:adj} {mask}.',
                       adj=['good', 'bad', 'great', 'terrible'])
 ret.data[:3]
 ```
 
-> ['This is a good idea.',  
- 'This is a good sign.',  
+> ['This is a good idea.',
+ 'This is a good sign.',
  'This is a good thing.']
 
 Multiple masks:
@@ -170,8 +170,8 @@ ret = editor.template('This is {a:adj} {mask} {mask}.',
                       adj=['good', 'bad', 'great', 'terrible'])
 ret.data[:3]
 ```
-> ['This is a good history lesson.',  
- 'This is a good chess move.',  
+> ['This is a good history lesson.',
+ 'This is a good chess move.',
  'This is a good news story.']
 
 Getting suggestions rather than filling out templates:
@@ -187,7 +187,7 @@ editor.suggest_replace('This is a good movie.', 'good')[:5]
 ```
 > ['great', 'horror', 'bad', 'terrible', 'cult']
 
-Getting suggestions through jupyter visualization:  
+Getting suggestions through jupyter visualization:
 ```python
 editor.visual_suggest('This is {a:mask} movie.')
 ```
@@ -205,8 +205,8 @@ editor = Editor(language='portuguese')
 ret = editor.template('O João é um {mask}.',)
 ret.data[:3]
 ```
-> ['O João é um português.',  
-'O João é um poeta.',  
+> ['O João é um português.',
+'O João é um poeta.',
 'O João é um brasileiro.']
 
 ```python
@@ -215,8 +215,8 @@ editor = Editor(language='chinese')
 ret = editor.template('西游记的故事很{mask}。',)
 ret.data[:3]
 ```
-> ['西游记的故事很精彩。',  
-'西游记的故事很真实。',  
+> ['西游记的故事很精彩。',
+'西游记的故事很真实。',
 '西游记的故事很经典。']
 
 
@@ -233,8 +233,8 @@ editor = Editor()
 ret = editor.template('{male1} went to see {male2} in {city}.', remove_duplicates=True)
 list(np.random.choice(ret.data, 3))
 ```
-> ['Dan went to see Hugh in Riverside.',  
- 'Stephen went to see Eric in Omaha.',  
+> ['Dan went to see Hugh in Riverside.',
+ 'Stephen went to see Eric in Omaha.',
  'Patrick went to see Nick in Kansas City.']
 
 Person names and location (country, city) names are multilingual, depending on the `editor` language. We [got the data](notebooks/other/Acquiring%20multilingual%20lexicons%20from%20wikidata.ipynb) from [wikidata](https://www.wikidata.org), so there is a bias towards names on wikipedia.
@@ -243,8 +243,8 @@ editor = Editor(language='german')
 ret = editor.template('{male1} went to see {male2} in {city}.', remove_duplicates=True)
 list(np.random.choice(ret.data, 3))
 ```
-> ['Rolf went to see Klaus in Leipzig.',  
-  'Richard went to see Jörg in Marl.',  
+> ['Rolf went to see Klaus in Leipzig.',
+  'Richard went to see Jörg in Marl.',
   'Gerd went to see Fritz in Schwerin.']
 
 List of available lexicons:
@@ -254,7 +254,7 @@ editor.lexicons.keys()
 ```
 > dict_keys(['male', 'female', 'first_name', 'first_pronoun', 'last_name', 'country', 'nationality', 'city', 'religion', 'religion_adj', 'sexual_adj', 'country_city', 'male_from', 'female_from', 'last_from'])
 
-Some of these cannot be used directly in templates because they are themselves dictionaries. For example, `male_from`, `female_from`, `last_from` and `country_city` are dictionaries from country to male names, female names, last names and most populous cities.  
+Some of these cannot be used directly in templates because they are themselves dictionaries. For example, `male_from`, `female_from`, `last_from` and `country_city` are dictionaries from country to male names, female names, last names and most populous cities.
 You can call `editor.lexicons.male_from.keys()` for a list of country names. Example usage:
 ```python
 import numpy as np
@@ -269,24 +269,24 @@ for country in countries:
     print('\n'.join(np.random.choice(ts.data, 3)))
     print()
 ```
-> Country: France  
-Jean-Jacques Brun is from Avignon  
-Bruno Deschamps is from Vitry-sur-Seine  
+> Country: France
+Jean-Jacques Brun is from Avignon
+Bruno Deschamps is from Vitry-sur-Seine
 Ernest Picard is from Chambéry
 >
-> Country: Germany  
-Rainer Braun is from Schwerin  
-Markus Brandt is from Gera  
-Reinhard Busch is from Erlangen  
+> Country: Germany
+Rainer Braun is from Schwerin
+Markus Brandt is from Gera
+Reinhard Busch is from Erlangen
 >
-> Country: Brazil  
-Gilberto Martins is from Anápolis  
-Alfredo Guimarães is from Indaiatuba  
-Jorge Barreto is from Fortaleza  
+> Country: Brazil
+Gilberto Martins is from Anápolis
+Alfredo Guimarães is from Indaiatuba
+Jorge Barreto is from Fortaleza
 
 
 ### Perturbing data for INVs and DIRs
-See [2.Perturbing data](notebooks/tutorials/2.%20Perturbing%20data.ipynb) for more details.  
+See [2.Perturbing data](notebooks/tutorials/2.%20Perturbing%20data.ipynb) for more details.
 Custom perturbation function:
 ```python
 import re
@@ -302,7 +302,7 @@ dataset = ['John is a man', 'Mary is a woman', 'John is an apostle']
 ret = Perturb.perturb(dataset, replace_john_with_others)
 ret.data
 ```
-> [['John is a man', 'Luke is a man', 'Mark is a man'],  
+> [['John is a man', 'Luke is a man', 'Mark is a man'],
  ['John is an apostle', 'Luke is an apostle', 'Mark is an apostle']]
 
 General purpose perturbations (see tutorial for more):
@@ -313,16 +313,16 @@ pdataset = list(nlp.pipe(dataset))
 ret = Perturb.perturb(pdataset, Perturb.change_names, n=2)
 ret.data
 ```
-> [['John is a man', 'Ian is a man', 'Robert is a man'],  
- ['Mary is a woman', 'Katherine is a woman', 'Alexandra is a woman'],  
+> [['John is a man', 'Ian is a man', 'Robert is a man'],
+ ['Mary is a woman', 'Katherine is a woman', 'Alexandra is a woman'],
  ['John is an apostle', 'Paul is an apostle', 'Gabriel is an apostle']]
 
 ```python
 ret = Perturb.perturb(pdataset, Perturb.add_negation)
 ret.data
 ```
-> [['John is a man', 'John is not a man'],  
- ['Mary is a woman', 'Mary is not a woman'],  
+> [['John is a man', 'John is not a man'],
+ ['Mary is a woman', 'Mary is not a woman'],
  ['John is an apostle', 'John is not an apostle']]
 
 ### Creating and running tests
@@ -336,7 +336,7 @@ from checklist.perturb import Perturb
 from checklist.test_types import MFT, INV, DIR
 editor = Editor()
 
-t = editor.template('This is {a:adj} {mask}.',  
+t = editor.template('This is {a:adj} {mask}.',
                       adj=['good', 'great', 'excellent', 'awesome'])
 test1 = MFT(t.data, labels=1, name='Simple positives',
            capability='Vocabulary', description='')
@@ -383,10 +383,10 @@ Summary of results:
 ```python
 test.summary(n=1)
 ```
-> Test cases:      400  
-> Fails (rate):    200 (50.0%)  
+> Test cases:      400
+> Fails (rate):    200 (50.0%)
 >
-> Example fails:  
+> Example fails:
 > 0.2 This is a good idea
 
 Visual summary:
@@ -425,7 +425,7 @@ def changed_pred(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
     return pred != orig_pred
 expect_fn = Expect.pairwise(changed_pred)
 ```
-There's also `Expect.testcase` and `Expect.test`, amongst many others.  
+There's also `Expect.testcase` and `Expect.test`, amongst many others.
 Check out [expect.py](checklist/expect.py) for more details.
 
 
