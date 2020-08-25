@@ -54,7 +54,7 @@ class EggInfoCommand(egg_info):
         #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
 setup(name='checklist',
-      version='0.0.7',
+      version='0.0.8',
       description='Beyond Accuracy: Behavioral Testing of NLP Models with CheckList',
       url='http://github.com/marcotcr/checklist',
       author='Marco Tulio Ribeiro',
@@ -69,7 +69,7 @@ setup(name='checklist',
         'jupyter>=1.0',
         'ipywidgets>=7.5',
         'transformers>=2.8',
-        'pattern @ https://github.com/marcotcr/pattern/archive/master.zip',
+        'patternfork-nosql',
         'iso-639'
       ],
       cmdclass={
