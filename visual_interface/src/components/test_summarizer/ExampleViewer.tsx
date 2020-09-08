@@ -73,9 +73,9 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
             const replaceArrow = this.replaceArrow(oldobj !== null);
             const confStrOld = oldobj.conf ? ` (${oldobj.conf.toFixed(2)})` : "";
             predTag = <Tag style={{verticalAlign: "middle"}}>
-                Pred: <span className="example-token rewrite-remove">{newobj.pred}{confStr}</span>
+                Pred: <span className="example-token rewrite-add">{oldobj.pred}{confStrOld}</span>
                 {replaceArrow}
-                <span className="example-token rewrite-add">{oldobj.pred}{confStrOld}</span>
+                <span className="example-token rewrite-remove">{newobj.pred}{confStr}</span>
             </Tag>
         }
 
