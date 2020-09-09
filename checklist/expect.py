@@ -433,8 +433,12 @@ class Expect:
         """
         def expect(orig_pred, pred, orig_conf, conf, labels=None, meta=None):
             softmax = type(orig_conf) in [np.array, np.ndarray]
-            if pred == orig_pred:
-                return True
+            try:
+                if pred == orig_pred:
+                    return True
+            except ValueError: # np.array output
+                if (pred == orig_pred).all():
+                    return True
             if softmax:
                 orig_conf = orig_conf[orig_pred]
                 conf = conf[orig_pred]
