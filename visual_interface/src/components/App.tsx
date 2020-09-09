@@ -16,16 +16,28 @@ export class App extends React.Component<{}, {}> {
         templateStore.setTagDict(tagDict);
         templateStore.setBertSuggests(suggests);
         templateStore.setTemplate(rawTemplates);
-        testStore.setTest(rawTestResult);
         testStore.setTestcases(rawTestcases);
         testStore.randomTestStats();
         suiteStore.setTestOverview(rawTestResults)
+        suiteStore.onSelectTest(suiteStore.overviewTests[0])
+
     }
     
     public render(): JSX.Element {
         return (
             <Layout>
                 <Layout.Content style={{ padding: '50px 50px' }}>
+                <Card>
+                <TestSummarizer 
+					onFetch={ () => {testStore.fetchMoreExample ()}}
+                    onSearch={() => { testStore.search() }} />
+                </Card>
+                
+                <Card>
+                <TemplateEditor onChangeSelected={(idx: number[]) => {console.log(idx)}} />
+                </Card>
+
+
                 <Card>
                 <SuiteSummarizer 
                     onFetch={ () => {testStore.fetchMoreExample ()}}

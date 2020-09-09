@@ -107,7 +107,7 @@ export const rawTestcases: RawTestCase[] = [
                     ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
                     ["Who", "is", "taller", ",", "Heather", "or", "Mary", "?"]
                 ],
-                pred: "1",
+                pred: "The taller person is Mary",
                 conf: 0.7
             },
             old: null,
@@ -119,7 +119,7 @@ export const rawTestcases: RawTestCase[] = [
                     ["Who", "is", "cooler", ",", "Mary", "or", "Heather", "?"],
                     ["Who", "is", "cooler", ",", "Heather", "or", "Mary", "?"]
                 ],
-                pred: "1",
+                pred: "The cooler person is Mary",
                 conf: 0.7
             },
             old: null,
@@ -135,15 +135,15 @@ export const rawTestcases: RawTestCase[] = [
                     ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
                     ["Who", "is", "taller", ",", "Heather", "or", "Mary", "?"]
                 ],
-                pred: "0",
+                pred: "The cooler taller is Mary",
                 conf: 0.9
             },
             old: {
                 tokens: [
-                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
+                    ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?","Who", "is", "taller", ",", "Mary", "or", "Heather", "?"],
                     ["Who", "is", "taller", ",", "Mary", "or", "Heather", "?"]
                 ],
-                pred: "1",
+                pred: "The cooler taller is HeatherThe cooler taller is Heathe",
                 conf: 0.7
             },
             succeed: false,

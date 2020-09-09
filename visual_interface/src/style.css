@@ -85,6 +85,7 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
 }
 
 
+
 .example-token.rewrite-arrow {
     font-size: 10px!important;
     font-weight: bold!important;
@@ -105,6 +106,12 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
     text-decoration: line-through;
 }
 
+.example-token.wrap {
+    display: inline-block;
+    max-width: 100px;
+    vertical-align: middle;
+}
+
 /* FOR TEMPLATES */
 
 .template-token-box {    
@@ -123,7 +130,7 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
     text-overflow: ellipsis;
     display: inline-block;
 }
-
+.ellipsis.example-token { max-width: 50px; }
 .ellipsis.abstract-token { max-width: 80px; color: #aaa; }
 .ellipsis.mask-token { max-width: 120px; }
 
@@ -134,7 +141,23 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
     opacity: 0.8;
 }
 
-
+.pred-tag {
+    color: rgba(0, 0, 0, 0.65);
+    font-variant: tabular-nums;
+    display: inline-block;
+    font-feature-settings: 'tnum';
+    padding: 0 7px;
+    font-size: 12px;
+    margin-right: 10px;
+    line-height: 20px;
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    cursor: default;
+    opacity: 1;
+    vertical-align: middle;
+    text-align: left;
+}
 
 
 .template-token {
@@ -162,6 +185,8 @@ tr.ant-table-expanded-row, tr.ant-table-expanded-row:hover {
 
 .example-token {
     color: #696969;
+    white-space: normal;
+    max-width: 30px;
 }
 .example-token.mask-token:not(.article-token) {
     color: #1890ff!important;

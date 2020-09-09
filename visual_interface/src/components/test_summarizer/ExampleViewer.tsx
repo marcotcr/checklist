@@ -17,7 +17,7 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
     }
 
     public replaceArrow(showDisplay: boolean): JSX.Element {
-        return showDisplay ? <span className="token rewrite-arrow">→</span> : null;
+        return showDisplay ? <div className="example-token wrap rewrite-arrow">→</div> : null;
     }
 
     public renderToken(token: TemplateToken): JSX.Element {
@@ -58,25 +58,39 @@ export class TestcaseView extends React.Component<TestcaseViewProps, {}> {
     }
 
     public renderTags(): JSX.Element {
+        const tagWrapper = (text: string) => <span 
+            style={{
+                margin: "2px 4px",
+                padding: "2px 4px",
+                fontWeight: "bold",
+                backgroundColor: "#f3f3f3", color: "grey"}}>
+                {text}</span>
+        const wrapper = (text: string) => <div className="wrap example-token">{text}</div>
         const newobj = this.props.example.new;
         const oldobj = this.props.example.old;
         const isSuccess = this.props.example.succeed;
         const expectIcon = this.props.example.label === "" || this.props.example.label === null || this.props.example.label === undefined ? 
             null: <span>
-                Expect: {this.props.example.label}
+                {tagWrapper("Expect")}
+                {wrapper(this.props.example.label)}
                 <span style={{color: "lightgray", fontWeight: "bold"}}>{` | `}</span>
                 </span>;
         const confStr = newobj.conf ? ` (${newobj.conf.toFixed(2)})` : "";
     
-        let predTag = <Tag style={{marginRight: 10}}>{expectIcon}Pred: {newobj.pred}{confStr}</Tag>;
+        let predTag = <div className="pred-tag">
+            {expectIcon}
+            {tagWrapper("Pred")}
+            {wrapper(newobj.pred + confStr)}
+            </div>;
         if (oldobj !== null) {
             const replaceArrow = this.replaceArrow(oldobj !== null);
             const confStrOld = oldobj.conf ? ` (${oldobj.conf.toFixed(2)})` : "";
-            predTag = <Tag style={{verticalAlign: "middle"}}>
-                Pred: <span className="example-token rewrite-add">{oldobj.pred}{confStrOld}</span>
+            predTag = <div className="pred-tag">
+                {tagWrapper("Pred")}
+                <div className="wrap example-token rewrite-remove">{oldobj.pred}{confStrOld}</div>
                 {replaceArrow}
-                <span className="example-token rewrite-remove">{newobj.pred}{confStr}</span>
-            </Tag>
+                <div className="wrap example-token rewrite-add">{newobj.pred}{confStr}</div>
+            </div>
         }
 
         return <span>
