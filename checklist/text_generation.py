@@ -86,7 +86,10 @@ class TextGenerator(object):
             self.prefix_sentence = prefix_sentence
             self.prefix_len = len(self.tokenizer.encode(prefix_sentence, add_special_tokens=False))
             self.allow_word_pieces = allow_word_pieces
-            self.space_prefix = self.tokenizer.tokenize(' john')[0].split('john')[0]
+            tmp = self.tokenizer.tokenize(' a')[0].split('a')
+            assert len(tmp) == 2
+            assert tmp[1] == ''
+            self.space_prefix = tmp[0]
             if not self.allow_word_pieces:
                 self.with_space = torch.tensor(np.array(list(set([i for x, i in self.tokenizer.get_vocab().items() if x.startswith(self.space_prefix)]))), device=self.device);
                 self.with_space_set = set(self.with_space.cpu().numpy())
