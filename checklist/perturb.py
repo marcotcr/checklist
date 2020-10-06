@@ -288,11 +288,9 @@ class Perturb:
                 else:
                     # TODO: does, do, etc. Remover return None de cima
                     subj = [x for x in sentence if x.dep_ in ['csubj', 'nsubj']]
-                    params = pattern.en.tenses(root.text)
-                    tense = collections.Counter([x[0] for x in pattern.en.tenses(root.text)]).most_common(1)[0][0]
-                    params = [tense, 3] if not params else list(params[0])
-                    params[0] = tense
-                    # params = [tense, 3]
+                    tenses = pattern.en.tenses(root.text)
+                    tense = collections.Counter([x[0] for x in tenses]).most_common(1)[0][0]
+                    params = list(t for t in tenses if t[0] == tense)[0]
                     if root.tag_ not in ['VBG']:
                         do = pattern.en.conjugate('do', *params) + 'n\'t'
                         new_root = pattern.en.conjugate(root.text, tense='infinitive')
