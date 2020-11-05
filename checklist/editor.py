@@ -693,9 +693,9 @@ class Editor(object):
             # print(mapping)
             data.append(recursive_format(templates, mapping))
             meta.append(mapping)
-        if unroll and data and type(data[0]) in [list, np.array, tuple]:
+        if unroll and data and type(data[0]) in [list, np.array, np.ndarray, tuple]:
+            meta = [z for y, z in zip(data, meta) for x in y]
             data = [x for y in data for x in y]
-            meta = [x for y in meta for x in y]
         if use_meta:
             ret.meta = meta
         if added_labels:

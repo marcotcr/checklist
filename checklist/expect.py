@@ -3,14 +3,14 @@ import itertools
 
 def iter_with_optional(data, preds, confs, labels, meta, idxs=None):
     # If this is a single example
-    if type(data) not in [list, np.array]:
+    if type(data) not in [list, np.array, np.ndarray]:
         return [(data, preds, confs, labels, meta)]
-    if type(meta) not in [list, np.array]:
+    if type(meta) not in [list, np.array, np.ndarray]:
         meta = itertools.repeat(meta)
     else:
         if len(meta) != len(data):
             raise(Exception('If meta is list, length must match data'))
-    if type(labels) not in [list, np.array]:
+    if type(labels) not in [list, np.array, np.ndarray]:
         labels = itertools.repeat(labels)
     else:
         if len(labels) != len(data):
@@ -207,7 +207,7 @@ class Expect:
             ret = expect_fn(*args, **kwargs)
             sliced = Expect.aggregate(slice_fn(*args, **kwargs), agg_fn)
             for i in np.where(sliced != True)[0]:
-                if type(ret[i]) in [list, np.array]:
+                if type(ret[i]) in [list, np.array, np.ndarray]:
                     ret[i] = [None for _ in ret[i]]
                 else:
                     ret[i] = None

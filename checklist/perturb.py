@@ -211,8 +211,11 @@ class Perturb:
                 p = pattern.en.tenses(before.text)
                 params = [tense, 3]
                 if p:
-                    params = list(p[0])
-                    params[0] = tense
+                    tmp = [x for x in p if x[0] == tense]
+                    if tmp:
+                        params = list(tmp[0])
+                    else:
+                        params = list(p[0])
                 to_add = ' '+ pattern.en.conjugate(before.lemma_, *params) + ' '
             if before and after and before.lemma_ == 'do' and after.pos_ == 'VERB':
                 id_start = notz - 1
@@ -220,8 +223,11 @@ class Perturb:
                 p = pattern.en.tenses(before.text)
                 params = [tense, 3]
                 if p:
-                    params = list(p[0])
-                    params[0] = tense
+                    tmp = [x for x in p if x[0] == tense]
+                    if tmp:
+                        params = list(tmp[0])
+                    else:
+                        params = list(p[0])
                 to_add = ' '+ pattern.en.conjugate(after.text, *params) + ' '
                 id_end = notz + 2
             ret += doc[start:id_start].text + to_add
@@ -288,11 +294,15 @@ class Perturb:
                 else:
                     # TODO: does, do, etc. Remover return None de cima
                     subj = [x for x in sentence if x.dep_ in ['csubj', 'nsubj']]
-                    params = pattern.en.tenses(root.text)
+                    p = pattern.en.tenses(root.text)
                     tense = collections.Counter([x[0] for x in pattern.en.tenses(root.text)]).most_common(1)[0][0]
-                    params = [tense, 3] if not params else list(params[0])
-                    params[0] = tense
-                    # params = [tense, 3]
+                    params = [tense, 3]
+                    if p:
+                        tmp = [x for x in p if x[0] == tense]
+                        if tmp:
+                            params = list(tmp[0])
+                        else:
+                            params = list(p[0])
                     if root.tag_ not in ['VBG']:
                         do = pattern.en.conjugate('do', *params) + 'n\'t'
                         new_root = pattern.en.conjugate(root.text, tense='infinitive')

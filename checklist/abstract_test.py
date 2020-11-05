@@ -161,7 +161,7 @@ class AbstractTest(ABC):
         if n is not None:
             idxs = np.random.choice(idxs, min(n, len(idxs)), replace=False)
             self.run_idxs = idxs
-        if type(self.data[0]) in [list, np.array]:
+        if type(self.data[0]) in [list, np.array, np.ndarray]:
             all = [(i, y) for i in idxs for y in self.data[i]]
             result_indexes, examples = map(list, list(zip(*all)))
         else:
@@ -205,7 +205,7 @@ class AbstractTest(ABC):
         idxs = list(range(len(self.data)))
         if self.run_idxs is not None:
             idxs = self.run_idxs
-        if type(self.data[0]) in [list, np.array]:
+        if type(self.data[0]) in [list, np.array, np.ndarray]:
             examples = [y for i in idxs for y in self.data[i]]
         else:
             examples = [self.data[i] for i in idxs]
@@ -413,11 +413,11 @@ class AbstractTest(ABC):
         if self.labels is None:
             label = None
         else:
-            label = self.labels if type(self.labels) not in [list, np.array] else self.labels[i]
+            label = self.labels if type(self.labels) not in [list, np.array, np.ndarray] else self.labels[i]
         if self.meta is None:
             meta = None
         else:
-            meta = self.meta if type(self.meta) not in [list, np.array] else self.meta[i]
+            meta = self.meta if type(self.meta) not in [list, np.array, np.ndarray] else self.meta[i]
         return label, meta
 
     def summary(self, n=3, print_fn=None, format_example_fn=None, n_per_testcase=3):
@@ -451,10 +451,11 @@ class AbstractTest(ABC):
                 elif conf.shape[0] <= 4:
                     confs = ' '.join(['%.1f' % c for c in conf])
                     return '%s %s' % (confs, str(x))
-
                 else:
                     conf = conf[pred]
                     return '%s (%.1f) %s' % (pred, conf, str(x))
+            else:
+                return '%s %s' % (pred, str(x))
 
         if format_example_fn is None:
             format_example_fn = default_format_example
