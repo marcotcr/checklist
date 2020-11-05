@@ -207,7 +207,8 @@ class Perturb:
             after = doc[notz + 1] if len(doc) > notz + 1 else None
             if before and before.lemma_ in ['will', 'can', 'do']:
                 id_start = notz - 1
-                tense = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)[0][0]
+                tenses = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)
+                tense = tenses[0][0] if len(tenses) else 'present'
                 p = pattern.en.tenses(before.text)
                 params = [tense, 3]
                 if p:
@@ -219,7 +220,8 @@ class Perturb:
                 to_add = ' '+ pattern.en.conjugate(before.lemma_, *params) + ' '
             if before and after and before.lemma_ == 'do' and after.pos_ == 'VERB':
                 id_start = notz - 1
-                tense = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)[0][0]
+                tenses = collections.Counter([x[0] for x in pattern.en.tenses(before.text)]).most_common(1)
+                tense = tenses[0][0] if len(tenses) else 'present'
                 p = pattern.en.tenses(before.text)
                 params = [tense, 3]
                 if p:
@@ -295,7 +297,8 @@ class Perturb:
                     # TODO: does, do, etc. Remover return None de cima
                     subj = [x for x in sentence if x.dep_ in ['csubj', 'nsubj']]
                     p = pattern.en.tenses(root.text)
-                    tense = collections.Counter([x[0] for x in pattern.en.tenses(root.text)]).most_common(1)[0][0]
+                    tenses = collections.Counter([x[0] for x in pattern.en.tenses(root.text)]).most_common(1)
+                    tense = tenses[0][0] if len(tenses) else 'present'
                     params = [tense, 3]
                     if p:
                         tmp = [x for x in p if x[0] == tense]
