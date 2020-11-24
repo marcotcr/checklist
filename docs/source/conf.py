@@ -24,7 +24,8 @@ autodoc_mock_imports = [
     'numpy.dtype', 'spacy.syntax.nn_parser.array.__reduce_cython__', '_ARRAY_API',
     'BertForMaskedLM', 'dill', 'munch', 'pattern.en', 'transformers', 'ipywidgets', 'tqdm',
     'traitlets', 'torch', 'typing', 'spacy.attrs', 'spacy.lang.en', 'IPython', 'IPython.core.display',
-    
+    'iso639'
+
 ]
 # -- Project information -----------------------------------------------------
 
