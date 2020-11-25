@@ -12,7 +12,7 @@ def load_test(file):
     return dill.load(open(file, 'rb'))
 
 def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
-    f = open(path, 'r')
+    f = open(path, 'r', encoding='utf-8')
     if ignore_header:
         f.readline()
     preds = []

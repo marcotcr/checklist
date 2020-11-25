@@ -166,7 +166,7 @@ class TextGenerator(object):
             # print('ae')
             # print('\n'.join([tokenizer.decode(x) for x in to_pred]))
             # print()
-            to_pred = torch.tensor(to_pred, device=self.device)
+            to_pred = torch.tensor(to_pred, device=self.device).to(torch.int64)
             with torch.no_grad():
                 outputs = model(to_pred)[0]
             for i, current in enumerate(current_beam):
@@ -182,7 +182,7 @@ class TextGenerator(object):
                     new = [(current[0] + [int(x[0])], float(x[1]) + current[1]) for x in zip(cands_to_use, scores)]
                 else:
                     if forbid:
-                        v, top_preds = torch.topk(outputs[i, masked[size], self.with_space], beam_size + 10)
+                        v, top_preds = torch.topk(outputs[i, masked[size], self.with_space.to(torch.int64)], beam_size + 10)
                         top_preds = self.with_space[top_preds]
                     else:
                         v, top_preds = torch.topk(outputs[i, masked[size]], beam_size + 10)
