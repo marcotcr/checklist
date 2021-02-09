@@ -63,7 +63,7 @@ setup(name='checklist',
       packages= find_packages(exclude=['js', 'node_modules', 'tests']),
       install_requires=[
         'numpy>=1.18',
-        'spacy>=2.2',
+        'spacy>=2.1.0',
         'munch>=2.5',
         'dill>=0.3.1',
         'jupyter>=1.0',
