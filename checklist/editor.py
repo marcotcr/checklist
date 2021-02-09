@@ -454,7 +454,7 @@ class Editor(object):
         """
         return self._wordnet_stuff(templates, word, 'hyponyms', threshold=threshold, **kwargs)
 
-    def suggest(self, templates, **kwargs):
+    def suggest(self, templates, return_score=False, **kwargs):
         """Suggests fill-ins based on a masked language model
 
         Parameters
@@ -462,6 +462,8 @@ class Editor(object):
         templates : str, list, tuple, or dict
             On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
             Must have at least one {mask}. Cannot have {mask} and {mask1}, but can have multiple {mask}s
+        return_score : bool
+            If True, returns tuples of (word, score)
         **kwargs : type
             See documentation for function 'template'
 
@@ -469,6 +471,7 @@ class Editor(object):
         -------
         list(str or tuple)
             list of fill-in suggestions, sorted by likelihood
+            (with likelihood if return_score=True)
 
         """
         mask_index, ops = get_mask_index(templates)
@@ -478,6 +481,9 @@ class Editor(object):
             raise Exception('Only one mask index is allowed')
         ret = self.template(templates, **kwargs, mask_only=True)
         xs = [tuple(x[0]) if len(x[0]) > 1 else x[0][0] for x in ret]
+        if return_score:
+            scores = [x[2] for x in ret]
+            xs = list(zip(xs, scores))
         if kwargs.get('verbose', False):
             print('\n'.join(['%6s %s' % ('%.2f' % x[2], x[1]) for x in ret[:5]]))
         return xs
