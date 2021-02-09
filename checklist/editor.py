@@ -523,7 +523,7 @@ class Editor(object):
             tokenizer=self.tg.tokenizer
         )
 
-    def add_lexicon(self, name, values, overwrite=False):
+    def add_lexicon(self, name, values, overwrite=False, append=False, remove_duplicates=False):
         """Add tag to lexicon
 
         Parameters
@@ -534,8 +534,23 @@ class Editor(object):
             Tag values.
         overwrite : bool
             If True, replaces tag with the same name if it already exists
+        append : bool
+            If True, adds values to current lexicon with name
+        remove_duplicates: bool
+            If append=True and remove_duplicates=True, remove duplicate values
+            from lexicon after appending
         """
         # words can be strings, dictionarys, and other objects
+        if overwrite == True and append == True:
+            raise Exception('Either overwrite or append must be False')
+        if append == True:
+            if name not in self.lexicons:
+                self.lexicons[name] = values
+            else:
+                self.lexicons[name].extend(values)
+            if remove_duplicates == True:
+                self.lexicons[name] = list(set(self.lexicons[name]))
+            return
         if name in self.lexicons and not overwrite:
             raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
         self.lexicons[name] = values
