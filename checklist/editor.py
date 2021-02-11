@@ -340,7 +340,7 @@ class Editor(object):
             return [tuple(x[0]) if len(x[0]) > 1 else x[0][0] for x in ret]
 
     def _wordnet_stuff(self, templates, word, type, threshold=5, depth=3, pos=None, **kwargs):
-        texts = self.template(templates, **kwargs).data
+        texts = self.template(templates, unroll=True, **kwargs).data
         idxs = np.random.choice(len(texts), min(10, len(texts)), replace=False)
         texts = [texts[i] for i in idxs]
         if type != 'related' and any([word not in x for x in texts]):
