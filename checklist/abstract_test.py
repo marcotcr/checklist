@@ -9,7 +9,8 @@ from .viewer.test_summarizer import TestSummarizer
 
 def load_test(file):
     dill._dill._reverse_typemap['ClassType'] = type
-    return dill.load(open(file, 'rb'))
+    with open(file, 'rb') as infile:
+        return dill.load(infile)
 
 def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
     f = open(path, 'r', encoding='utf-8')
