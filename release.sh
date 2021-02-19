@@ -15,5 +15,5 @@ rm -rf checklist.egg-info
 python setup.py sdist bdist_wheel
 
 # ---- updload file from DIST folder to PYPI ----
-python -m twine upload --repository-url https://pkgs.dev.azure.com/aether-prototyping-incubation/_packaging/aether-prototyping-incubation/pypi/simple/ dist/*
+python -m twine upload --repository-url https://pkgs.dev.azure.com/aether-prototyping-incubation/_packaging/aether-prototyping-incubation/pypi/upload dist/*
 
