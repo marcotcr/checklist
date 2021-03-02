@@ -529,6 +529,7 @@ class AbstractTest(ABC):
             }
         }
     def form_testcases(self, n_per_testcase=3):
+        self._check_results()
         testcases = []
         nonfiltered_idxs = np.where(self.results.passed != None)[0]
         for f in nonfiltered_idxs:
