@@ -1,5 +1,6 @@
-from .abstract_test import AbstractTest
+from .abstract_test import AbstractTest, default_format_example
 from .expect import Expect
+import numpy as np
 
 class MFT(AbstractTest):
     def __init__(self, data, expect=None, labels=None, meta=None, agg_fn='all',
@@ -107,3 +108,55 @@ class DIR(AbstractTest):
         super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=True, name=name,
                          capability=capability, description=description)
+
+class GroupEquality(MFT):
+    def __init__(self, data, measure_fn, group_fn, labels=None, meta=None, agg_fn='all',
+                 templates=None, name=None, capability=None, description=None):
+        """
+        TODO
+        both group_fn and measure_fn are expect fns? seems cleaner
+        """
+        self.group_fn = group_fn
+        super().__init__(data, measure_fn, labels=labels, meta=meta, agg_fn=agg_fn,
+                         templates=templates, name=name,
+                         capability=capability, description=description)
+    def summary(self, n=3, print_fn=None, format_example_fn=None, n_per_testcase=3, group_measure_fn=None, group_print_fn=None):
+        if group_measure_fn is None:
+            group_measure_fn = lambda x: x.mean(), x.std()
+        if group_print_fn is None:
+            group_print_fn = lambda v, g: print('%.3f +- %.2f %s' % (v[0], v[1], g))
+        self._check_results()
+        all_groups = set([x for y in self.results.groups for x in y])
+        group_results = {}
+        groups = np.array(self.results.groups)
+        results = np.array(self.results.expect_results)
+        for g in all_groups:
+            r = results[groups==g]
+            group_results[g] = group_measure_fn(r)
+        print('Average measurement per group:')
+        for g, v in sorted(group_results.items(), key=lambda x:x[1]):
+            group_print_fn(v, g)
+
+        if not n:
+            return
+        if print_fn is None:
+            print_fn = self.print
+        if format_example_fn is None:
+            format_example_fn = default_format_example
+        d_idx = 3
+        fails = np.random.choice(range(len(results)), min(results.shape[0], n), replace=False)
+        print()
+        print('Examples:')
+        for f in fails:
+            d_idx = f if self.run_idxs is None else self.run_idxs[f]
+            # should be format_fn
+            label, meta = self._label_meta(d_idx)
+            # print(label, meta)
+            print_fn(self.data[d_idx], self.results.preds[d_idx],
+                     self.results.confs[d_idx], self.results.expect_results[f],
+                     label, meta, format_example_fn, nsamples=n_per_testcase, only_include_fail=False)
+
+    def update_expect(self):
+        self._check_results()
+        self.results.expect_results = self.expect(self)
+        self.results.groups = self.group_fn(self)

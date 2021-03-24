@@ -64,6 +64,22 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
         preds = [int(x) for x in preds]
     return preds, confs
 
+def default_format_example(x, pred, conf, *args, **kwargs):
+    softmax = type(conf) in [np.array, np.ndarray]
+    binary = False
+    if softmax:
+        if conf.shape[0] == 2:
+            conf = conf[1]
+            return '%.1f %s' % (conf, str(x))
+        elif conf.shape[0] <= 4:
+            confs = ' '.join(['%.1f' % c for c in conf])
+            return '%s %s' % (confs, str(x))
+        else:
+            conf = conf[pred]
+            return '%s (%.1f) %s' % (pred, conf, str(x))
+    else:
+        return '%s %s' % (pred, str(x))
+
 class AbstractTest(ABC):
     def __init__(self, data, expect, labels=None, meta=None, agg_fn='all',
                  templates=None, print_first=None, name=None, capability=None,
@@ -102,9 +118,9 @@ class AbstractTest(ABC):
         iters = [iters[i] for i in idxs]
         return idxs, iters, [expect_results[i] for i in idxs]
 
-    def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3):
+    def print(self, xs, preds, confs, expect_results, labels=None, meta=None, format_example_fn=None, nsamples=3, only_include_fail=True):
         result = self._extract_examples_per_testcase(
-            xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=True)
+            xs, preds, confs, expect_results, labels, meta, nsamples, only_include_fail=only_include_fail)
         if not result:
             return
         idxs, iters, _ = result
@@ -442,21 +458,6 @@ class AbstractTest(ABC):
             return
         if print_fn is None:
             print_fn = self.print
-        def default_format_example(x, pred, conf, *args, **kwargs):
-            softmax = type(conf) in [np.array, np.ndarray]
-            binary = False
-            if softmax:
-                if conf.shape[0] == 2:
-                    conf = conf[1]
-                    return '%.1f %s' % (conf, str(x))
-                elif conf.shape[0] <= 4:
-                    confs = ' '.join(['%.1f' % c for c in conf])
-                    return '%s %s' % (confs, str(x))
-                else:
-                    conf = conf[pred]
-                    return '%s (%.1f) %s' % (pred, conf, str(x))
-            else:
-                return '%s %s' % (pred, str(x))
 
         if format_example_fn is None:
             format_example_fn = default_format_example

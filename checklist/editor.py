@@ -561,7 +561,7 @@ class Editor(object):
             raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
         self.lexicons[name] = values
 
-    def _get_fillin_items(self, all_keys, max_count=None, **kwargs):
+    def _get_fillin_items(self, all_keys, max_count=None, ignore_keys=None, **kwargs):
         items = {}
         mask_match = re.compile(r'mask\d*')
         for k in kwargs:
@@ -576,6 +576,8 @@ class Editor(object):
             newk = re.sub(r'\d+$', '', k)
             if mask_match.match(k):
                 continue
+            if ignore_keys is not None and (k in ignore_keys or newk in ignore_keys):
+                continue
             if newk in kwargs:
                 items[k] = kwargs[newk]
             elif newk in self.lexicons:
@@ -586,9 +588,61 @@ class Editor(object):
                 items[k] = items[k][:max_count]
         return items
 
+    def expand_template_into_list(self, templates, meta=False, **kwargs):
+        """Expands certain elements in the template into a list
+
+        E.g. let's say templates is '{first_name} is {a:adj} {religion}', and we
+        want each testcase to be a list with all of the religions.
+        Calling expand_template_into_list(templates, religion=['Christian', 'Muslim', 'Jew'])
+        yields the following template:
+        ['{first_name} is {a:adj} Christian',
+         '{first_name} is {a:adj} Muslim',
+         '{first_name} is {a:adj} Jew'
+        ]
+
+        Parameters
+        ----------
+        templates : str, list, tuple, or dict
+            On leaves: templates with {tags}, which will be substituted for mapping in **kwargs
+            Can have {mask} tags, which will be replaced by a masked language model.
+            Other tags can be numbered for distinction, e.g. {person} and {person1} will be considered
+            separate tags, but both will use fill-ins for 'person'
+        meta : bool
+            If True, ret will be a MuchWithAdd and ret.meta will contain a dict
+            of fill in values for each item in ret.data
+        **kwargs : type
+            Must include fill-in lists for every tag we want to expand
+
+        Returns
+        -------
+        list or MunchWithAdd
+            Returns either a list of templates or a MuchWithAdd ret,
+            where ret.data is the list of templates and ret.meta contains the
+            meta information for each element in the list
+        """
+        tok = 'VERYLONGTOKENTHATWILLNOTEXISTEVER'
+        sub_mask = lambda x: re.sub(r'{(.*?:)?mask(\d*)}', r'{\1%s\2}' % tok, x)
+        mask_back= lambda x: re.sub(r'{(.*?:)?%s(\d*)}' % tok, r'{\1mask\2}', x)
+        templates = recursive_apply(templates, sub_mask)
+        all_keys = find_all_keys(templates)
+        expand_keys = list(kwargs.keys())
+        ignore_keys = set()
+        if expand_keys:
+            fake_params = copy.deepcopy(kwargs)
+            for p in list(fake_params.keys()) + list(all_keys):
+                p = re.sub(r'\d+$', '', p)
+                if ':' in p:
+                    p = p.split(':')[1]
+                if p not in expand_keys:
+                    ignore_keys.add(p)
+            new = self.template(templates, meta=meta, ignore_keys=ignore_keys, **fake_params)
+            new.data = recursive_apply(new.data, mask_back)
+            return new.data if not meta else new
+
     def template(self, templates, nsamples=None,
                  product=True, remove_duplicates=False, mask_only=False,
-                 unroll=False, labels=None, meta=False,  save=False, **kwargs):
+                 unroll=False, labels=None, meta=False,  save=False,
+                 ignore_keys=None, **kwargs):
         """Fills in templates
 
         Parameters
@@ -615,6 +669,8 @@ class Editor(object):
             If True, ret.meta will contain a dict of fill in values for each item in ret.data
         save : bool
             If True, ret.templates will contain all parameters and fill-in lists
+        ignore_keys : list
+            Will not expand keys in this list
         **kwargs : type
             Must include fill-in lists for every tag not in editor.lexicons
 
@@ -640,8 +696,10 @@ class Editor(object):
         if labels is not None and type(labels) != int:
             added_labels = True
             templates = (templates, labels)
+
         all_keys = find_all_keys(templates)
-        items = self._get_fillin_items(all_keys, **kwargs)
+        ignore_missing = ignore_keys is not None
+        items = self._get_fillin_items(all_keys, ignore_keys=ignore_keys, **kwargs)
         mask_index, mask_options = get_mask_index(templates)
 
         for mask, strings in mask_index.items():
@@ -712,7 +770,7 @@ class Editor(object):
             mapping = dict(zip(keys, v))
             # print(templates)
             # print(mapping)
-            data.append(recursive_format(templates, mapping))
+            data.append(recursive_format(templates, mapping, ignore_missing=ignore_missing))
             meta.append(mapping)
         if unroll and data and type(data[0]) in [list, np.array, np.ndarray, tuple]:
             meta = [z for y, z in zip(data, meta) for x in y]
