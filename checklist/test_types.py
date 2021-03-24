@@ -122,7 +122,7 @@ class GroupEquality(MFT):
                          capability=capability, description=description)
     def summary(self, n=3, print_fn=None, format_example_fn=None, n_per_testcase=3, group_measure_fn=None, group_print_fn=None):
         if group_measure_fn is None:
-            group_measure_fn = lambda x: x.mean(), x.std()
+            group_measure_fn = lambda x: (x.mean(), x.std())
         if group_print_fn is None:
             group_print_fn = lambda v, g: print('%.3f +- %.2f %s' % (v[0], v[1], g))
         self._check_results()
