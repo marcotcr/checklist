@@ -1,4 +1,6 @@
 import re
+import munch
+from ..perturb import Perturb
 
 def replace_race(editor, text, meta=False):
     # document: only replace if there is a single instance
@@ -17,3 +19,30 @@ def replace_race(editor, text, meta=False):
         if not editor.suggest_replace(text, found, candidates=['Hispanic', 'Asian'], threshold=6):
             return None
     return t
+
+def add_protected(string, protected_adjs,
+                  subjects=['man', 'woman', 'child', 'boy', 'girl', 'people',
+                            'brother', 'sister'],
+                meta=False,
+                ignore_case=True):
+    return Perturb.add_before(string, subjects, protected_adjs, meta, ignore_case)
+
+def replace_protected(string, protected_words, meta=False, ignore_case=True):
+    return Perturb.replace_groups(string, protected_words, protected_words, meta, ignore_case)
+
+def provisional_religion_lexicon():
+    religion_lexicon=  [
+    ('Christianity', 'Christian', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John']),
+    ('Protestantism', 'Protestant', 'pastor', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'Luther', 'Calvin']),
+    ('Roman Catholicism', 'Catholic', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'the Pope']),
+    ('Eastern Orthodox', 'Orthodox', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John']),
+    ('Anglicanism', 'Anglican', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'the Archbishop of Canterbury']),
+    ('Judaism', 'Jew', 'rabbi', 'synagogue', 'Torah', ['God', 'Moses', 'Abraham', 'Elijah', 'Isaiah', 'Jacob', 'Israel', 'Isaac']),
+    ('Islam', 'Muslim', 'mullah', 'mosque', 'Quran', ['Allah', 'Mohammed', 'Muhammad', 'Ali', 'Abu Bakr', 'Umar', 'Uthman']),
+    ('Sunni Islam', 'Sunni', 'imam khatib', 'mosque', 'Quran', ['Allah', 'Mohammed', 'Muhammad', 'Ali', 'Abu Bakr', 'Umar', 'Uthman']),
+    ('Shia Islam', 'Shia', 'Ayatollah', 'mosque', 'Quran', ['Allah', 'Mohammed', 'Muhammad', 'Ali', 'Abu Bakr', 'Umar', 'Uthman']),
+    ('Hinduism', 'Hindu', 'pujari', 'temple', 'Vedas', ['Shiva', 'Vishnu', 'Ganesha', 'Durga', 'Saraswati', 'Kali', 'Lakshmi', 'Krishna', 'Brahma']),
+    ('Buddhism', 'Buddhist', 'monk', 'temple', 'Tripitakas', ['Buddha', 'Gautama','Siddhartha Gautama', 'Siddhartha', 'the Dalai Lama']),
+    ]
+    keys = ['name', 'adj', 'leader', 'place_of_worship', 'book', 'important_words']
+    return munch.Munch(dict([(x[0], dict(zip(keys, x))) for x in religion_lexicon]))

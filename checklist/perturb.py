@@ -143,6 +143,53 @@ class Perturb:
             ret.append(s + '.')
         return ret
 
+    @staticmethod
+    def add_before(string, source_expressions=None, to_add=None, meta=False, ignore_case=True):
+        # Only subs first instance
+        if source_expressions is None or to_add is None:
+            raise(Exception('Must specify source_expressions and to_add'))
+        kw = {'flags': re.I} if ignore_case else {}
+        f = re.compile(r'((a|an)\s)?((%s)\s)?\b(%s)\b' % ('|'.join(to_add), '|'.join(source_expressions)), **kw)
+        def mysubfn(t):
+            def mysub(match):
+                a_before = ''
+                if match.group(1):
+                    a_before += 'an ' if t[0].lower() in 'aeiou' else 'a '
+                return '%s%s %s' % (a_before, t, match.group(5))
+            return mysub
+        ret = [(f.sub(mysubfn(t), string, count=1), t) for t in to_add]
+        ret = [(x[0], (f.search(string).group(5), x[1])) for x in ret if x[0] != string]
+        if not ret:
+            return None
+        ret, m= map(list, list(zip(*ret)))
+        m = [(x[0], x[1] + ' ' + x[0]) for x in m]
+        if meta:
+            return ret, m
+        else:
+            return ret
+
+    def replace_groups(string, source_expressions=None, to_replace=None, meta=False, ignore_case=True):
+        # Only subs first instance
+        if source_expressions is None or to_replace is None:
+            raise(Exception('Must specify source_expressions and to_replace'))
+        kw = {'flags': re.I} if ignore_case else {}
+        f = re.compile(r'((a|an)\s)?\b(%s)\b' % ('|'.join(source_expressions)), **kw)
+        def mysubfn(t):
+            def mysub(match):
+                a_before = ''
+                if match.group(1):
+                    a_before += 'an ' if t[0].lower() in 'aeiou' else 'a '
+                return '%s%s' % (a_before, t)
+            return mysub
+        ret = [(f.sub(mysubfn(t), string, count=1), t) for t in to_replace]
+        ret = [(x[0], (f.search(string).group(3), x[1])) for x in ret if x[0] != string]
+        if not ret:
+            return None
+        ret, m= map(list, list(zip(*ret)))
+        if meta:
+            return ret, m
+        else:
+            return ret
 
     @staticmethod
     def add_typos(string, typos=1):
