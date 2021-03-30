@@ -31,8 +31,8 @@ class TestSummarizer(widgets.DOMWidget):
         widgets.DOMWidget.__init__(self, **kwargs)
 
         nlp = English()
-        # ONLY do tokenization here
-        self.tokenizer = nlp.Defaults.create_tokenizer(nlp)
+        # ONLY do tokenization here (compatible with spaCy 2.3.x and 3.x.x)
+        self.tokenizer = nlp.tokenizer
 
         self.max_return = 10
         self.reset_summary(test_summary)
