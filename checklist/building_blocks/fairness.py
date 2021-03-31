@@ -20,6 +20,7 @@ def replace_race(editor, text, meta=False):
             return None
     return t
 
+
 def add_protected(string, protected_adjs,
                   subjects=['man', 'woman', 'child', 'boy', 'girl', 'people',
                             'brother', 'sister'],
@@ -46,3 +47,39 @@ def provisional_religion_lexicon():
     ]
     keys = ['name', 'adj', 'leader', 'place_of_worship', 'book', 'important_words']
     return munch.Munch(dict([(x[0], dict(zip(keys, x))) for x in religion_lexicon]))
+
+def provisional_stereotype_lexicon():
+    task_lexicons = {
+        'prison': {
+            'nouns':  ['murderer', 'prisoner', 'felon', 'fugitive', 'criminal', 'offender', 'convicted felon', 'delinquent'],
+            'locs': ['jail', 'prison', 'penitantiary', 'juvie', 'juvenile detention'],
+            'verbs': ['commited a crime', 'went to jail', 'went to prison', 'was convicted', 'has a record', 'was jailed', 'was arrested']
+            },
+        'terrorism': {
+            'nouns_person': ['terrorist', 'part of a terrorist organization', 'extremist', 'violent', 'radical', 'radical terrorist'],
+            'nouns_related': ['terrorism', 'terrorism organizations', 'ISIS', 'ISIL', 'Hezbollah', 'Hamas', 'Isis', 'extremism', 'violence', 'bombings']
+        },
+        'pedophile': {
+            'nouns': ['pedophile', 'abuser', 'child abuser', 'predator', 'child predator', 'child molester', 'rapist']
+        },
+        'greedy': {
+            'adjs': ['greedy', 'selfish',  'cheap', 'exploitative', 'dishonest', 'avaricious', 'miserly', ]
+        },
+        'lazy': {
+            'adjs': ['lazy', 'idle', 'indolent', 'slothful', 'sluggish', 'lethargic', 'slow'],
+            'nouns': ['loafer', 'bum', 'idler', 'do-nothing', 'lounger', 'sluggard', 'slacker', 'slob']
+        },
+        'nazi': {
+            'adjs': ['Nazi', 'authoritarian',  'xenophobe', 'racist', 'anti-Semite', 'chauvinist',  'neofascist', 'neo-Nazi', 'fascist'],
+            'people': ['Hitler', 'Adolf Hitler', 'Goebbels', 'Heinrich Himmler', 'Himmler', 'Göring', 'Rudolf Hess', 'Führer']
+        },
+        'drink': {
+        'adjs' : ['drunk', 'intoxicated', 'inebriated', 'drunken',  'tipsy',  'under the influence'],
+        'nouns': ['drunk', 'drunkard',  'drinker',  'tippler',  'heavy drinker', 'hard drinker', 'serious drinker', 'alcoholic',  'alcohol abuser', 'alcohol addict', 'person with a drink problem', 'boozer'],
+        'drinks': ['vodka', 'beer', 'wine', 'whiskey', 'rum', 'Scotch', 'alcohol', 'bourbon', 'whisky', 'gin', 'champagne', 'liquor', 'booze', 'spirits', 'cocktails']
+        },
+        'work': {
+            'professions': ['firefighter', 'doctor', 'nurse', 'hairdresser', 'cook', 'plumber', 'contractor', 'boss', 'CEO', 'lawyer', 'engineer']
+        }
+    }
+    return task_lexicons

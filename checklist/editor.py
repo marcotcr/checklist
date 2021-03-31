@@ -95,6 +95,14 @@ def recursive_format(obj, mapping, ignore_missing=False):
         return formatz(x, mapping)
     return recursive_apply(obj, formatfn, mapping)
 
+def recursive_make_munch(obj):
+    if type(obj) == dict:
+        return munch.Munch({k: recursive_make_munch(v) for k, v in obj.items()})
+    elif type(obj) == list:
+        return [recursive_make_munch(o) for o in obj]
+    else:
+        return obj
+
 def recursive_apply(obj, fn, *args, **kwargs):
     """Recursively applies a function to an obj
 
@@ -269,9 +277,10 @@ class Editor(object):
             self.lexicons.update(json.load(open(os.path.join(folder, f))))
         self.data['names'] = json.load(open(os.path.join(cur_folder, 'data', 'names.json')))
         self.data['names'] = {x:set(self.data['names'][x]) for x in self.data['names']}
-        make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
-        for x in self.lexicons:
-            self.lexicons[x] = [make_munch(x) for x in self.lexicons[x]]
+        self.lexicons = recursive_make_munch(self.lexicons)
+        # make_munch = lambda x: munch.Munch(x) if type(x) == dict else x
+        # for x in self.lexicons:
+        #     self.lexicons[x] = [make_munch(x) for x in self.lexicons[x]]
 
         language = get_language_code(language)
         wikidata = pickle.load(open(os.path.join(cur_folder, 'data', 'wikidata.pkl'), 'rb'))
