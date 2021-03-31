@@ -290,6 +290,7 @@ class Editor(object):
         self.lexicons['first_name'] = [y for x in zip(self.lexicons['male'], self.lexicons['female']) for y in x]
         self.lexicons['last_name'] = get_ln(wikidata.lnames)
         self.lexicons['country'] =  [get_ln(x.label) for x in wikidata.countries]
+        self.lexicons['country_nationality'] =  [(get_ln(x.label), x.nationality) for x in wikidata.countries]
         # united states by default
         self.lexicons['city'] =  [get_ln(x.label) for x in wikidata.countries[2].cities]
         # Most populous country that has language as official language
@@ -304,6 +305,9 @@ class Editor(object):
         self.lexicons['male_from'] = wikidata.male_by_country
         self.lexicons['female_from'] = wikidata.female_by_country
         self.lexicons['last_from'] = wikidata.last_by_country
+        self.lexicons['male_from_english'] = wikidata.male_by_country_english
+        self.lexicons['female_from_english'] = wikidata.female_by_country_english
+        self.lexicons['last_from_english'] = wikidata.last_by_country_english
         self.lexicons = munch.Munch(self.lexicons)
 
 
