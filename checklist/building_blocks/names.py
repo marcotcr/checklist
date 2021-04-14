@@ -105,12 +105,12 @@ class Names:
         return name in self.names['first'] and self.names['first'][name]['count'] > min_freq and self.is_sex(name, sex) and self.is_race(name, race, race_prop)
 
     def change_names(self, doc, meta=False, n=10, first_only=False, last_only=False,
-                    sex=None, race_from=None, race_to=None, seed=None):
+                    sex=None, race_from=None, race_to=None, seed=None, change_in_all=True):
         """Replace names with other names
 
         Parameters
         ----------
-        doc : spacy.token.Doc
+        doc : spacy.token.Doc or list / tuple of spacy.token.docs
             input
         meta : bool
             if True, will return list of (orig_name, new_name) as meta
@@ -122,7 +122,8 @@ class Names:
             if True, will only replace last names
         seed : int
             random seed
-
+        change_in_all: bool
+            if True and doc is list / tuple, only change name that are present in all
         Returns
         -------
         list(str)
@@ -132,7 +133,12 @@ class Names:
         """
         if seed is not None:
             np.random.seed(seed)
-        ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'PERSON' for a in x])]
+        doc_type = type(doc)
+        docs = [doc] if type(doc) not in [list, tuple] else doc
+
+        ents = [[x.text for x in doc.ents if np.all([a.ent_type_ == 'PERSON' for a in x])] for doc in docs]
+        all_ents = list(set([y for x in ents for y in x]))
+        ents = all_ents if not change_in_all else [x for x in all_ents if all([x in y for y in ents])]
         ret = []
         ret_m = []
         for x in ents:
@@ -164,8 +170,13 @@ class Names:
                         to_use = last
                         f = x.split()[1]
             for y in to_use:
-                ret.append(re.sub(r'\b%s\b' % re.escape(f), y, doc.text))
+                ret.append([re.sub(r'\b%s\b' % re.escape(f), y, doc.text) for doc in docs])
                 ret_m.append((f, y))
+        if doc_type in [tuple, list]:
+            if doc_type == tuple:
+                ret = [doc_type(x) for x in ret]
+        else:
+            ret = [x[0] for x in ret]
         return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
 
     def replace_pronouns(self, doc, to_male=True):

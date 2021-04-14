@@ -3,37 +3,39 @@ import munch
 from ..perturb import Perturb
 from ..editor import recursive_make_munch
 
-def replace_race(editor, text, meta=False):
+def replace_race_fn(editor):
+    def replace_race(text, meta=False):
     # document: only replace if there is a single instance
-    races = ['white', 'Asian', 'black', 'Hispanic']
-    found = re.findall(r'\b(%s)\b' % '|'.join(races), text,  flags=re.I)
-    if len(found) != 1:
-        return None
-    found = found[0].lower()
-    b = re.sub(r'\b(%s)\b' % '|'.join(races), '{race}', text,  flags=re.I)
-    b = re.sub(r'\ban? {race}', '{a:race}', b)
-    nraces = [x for x in races if x.lower() != found.lower()]
-    t = [(x, race) for x, race in zip(editor.template(b, race=nraces).data, nraces) if x != text]
-    if not t:
-        return None
-    if found.lower() not in ['asian', 'hispanic']:
-        if not editor.suggest_replace(text, found, candidates=['Hispanic', 'Asian'], threshold=6):
-            return None
-    t, meta = map(list, zip(*t))
-    if meta:
-        return t, meta
-    return t
+        races = ['white', 'Asian', 'black', 'Hispanic']
+        found = re.findall(r'\b(%s)\b' % '|'.join(races), text,  flags=re.I)
+        if len(found) != 1:
+            return None if not meta else None, None
+        found = found[0].lower()
+        b = re.sub(r'\b(%s)\b' % '|'.join(races), '{race}', text,  flags=re.I)
+        b = re.sub(r'\ban? {race}', '{a:race}', b)
+        nraces = [x for x in races if x.lower() != found.lower()]
+        t = [(x, race) for x, race in zip(editor.template(b, race=nraces).data, nraces) if x != text]
+        if not t:
+            return None if not meta else None, None
+        if found.lower() not in ['asian', 'hispanic']:
+            if not editor.suggest_replace(text, found, candidates=['Hispanic', 'Asian'], threshold=6):
+                return None
+        t, met = map(list, zip(*t))
+        if meta:
+            return t, met
+        return t
+    return replace_race
 
 
-def add_protected(string, protected_adjs,
+def add_protected(string, protected,
                   subjects=['man', 'woman', 'child', 'boy', 'girl', 'people',
                             'brother', 'sister'],
                 meta=False,
                 ignore_case=True):
-    return Perturb.add_before(string, subjects, protected_adjs, meta, ignore_case)
+    return Perturb.add_before(string, subjects, protected, meta, ignore_case)
 
-def replace_protected(string, protected_words, meta=False, ignore_case=True):
-    return Perturb.replace_groups(string, protected_words, protected_words, meta, ignore_case)
+def replace_protected(string, protected, meta=False, ignore_case=True):
+    return Perturb.replace_groups(string, protected, protected, meta, ignore_case)
 
 def provisional_religion_lexicon():
     religion_lexicon=  [

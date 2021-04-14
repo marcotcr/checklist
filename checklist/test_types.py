@@ -169,7 +169,7 @@ class GroupEquality(MFT):
             label, meta = self._label_meta(d_idx)
             # print(label, meta)
             print_fn(self.data[d_idx], self.results.preds[d_idx],
-                     self.results.confs[d_idx], self.results.expect_results[f],
+                     self.results.confs[d_idx], -self.results.expect_results[f],
                      label, meta, format_example_fn, nsamples=n_per_testcase, only_include_fail=False)
 
     def update_expect(self):
