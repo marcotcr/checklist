@@ -1,6 +1,7 @@
 import re
 import munch
 from ..perturb import Perturb
+from ..editor import recursive_make_munch
 
 def replace_race(editor, text, meta=False):
     # document: only replace if there is a single instance
@@ -12,12 +13,15 @@ def replace_race(editor, text, meta=False):
     b = re.sub(r'\b(%s)\b' % '|'.join(races), '{race}', text,  flags=re.I)
     b = re.sub(r'\ban? {race}', '{a:race}', b)
     nraces = [x for x in races if x.lower() != found.lower()]
-    t = [x for x in editor.template(b, race=nraces).data if x != text]
+    t = [(x, race) for x, race in zip(editor.template(b, race=nraces).data, nraces) if x != text]
     if not t:
         return None
     if found.lower() not in ['asian', 'hispanic']:
         if not editor.suggest_replace(text, found, candidates=['Hispanic', 'Asian'], threshold=6):
             return None
+    t, meta = map(list, zip(*t))
+    if meta:
+        return t, meta
     return t
 
 
@@ -36,7 +40,7 @@ def provisional_religion_lexicon():
     ('Christianity', 'Christian', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John']),
     ('Protestantism', 'Protestant', 'pastor', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'Luther', 'Calvin']),
     ('Roman Catholicism', 'Catholic', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'the Pope']),
-    ('Eastern Orthodox', 'Orthodox', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John']),
+    ('Eastern Orthodoxy', 'Orthodox', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John']),
     ('Anglicanism', 'Anglican', 'priest', 'church', 'Bible', ['God', 'Jesus', 'Christ', 'Jesus Christ', 'Paul', 'Mary', 'Peter', 'John', 'the Archbishop of Canterbury']),
     ('Judaism', 'Jew', 'rabbi', 'synagogue', 'Torah', ['God', 'Moses', 'Abraham', 'Elijah', 'Isaiah', 'Jacob', 'Israel', 'Isaac']),
     ('Islam', 'Muslim', 'mullah', 'mosque', 'Quran', ['Allah', 'Mohammed', 'Muhammad', 'Ali', 'Abu Bakr', 'Umar', 'Uthman']),
@@ -46,7 +50,7 @@ def provisional_religion_lexicon():
     ('Buddhism', 'Buddhist', 'monk', 'temple', 'Tripitakas', ['Buddha', 'Gautama','Siddhartha Gautama', 'Siddhartha', 'the Dalai Lama']),
     ]
     keys = ['name', 'adj', 'leader', 'place_of_worship', 'book', 'important_words']
-    return munch.Munch(dict([(x[0], dict(zip(keys, x))) for x in religion_lexicon]))
+    return [munch.Munch(dict(zip(keys, x))) for x in religion_lexicon]
 
 def provisional_stereotype_lexicon():
     task_lexicons = {
@@ -82,4 +86,4 @@ def provisional_stereotype_lexicon():
             'professions': ['firefighter', 'doctor', 'nurse', 'hairdresser', 'cook', 'plumber', 'contractor', 'boss', 'CEO', 'lawyer', 'engineer']
         }
     }
-    return task_lexicons
+    return recursive_make_munch(task_lexicons)

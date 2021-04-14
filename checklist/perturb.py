@@ -158,7 +158,9 @@ class Perturb:
                 return '%s%s %s' % (a_before, t, match.group(5))
             return mysub
         ret = [(f.sub(mysubfn(t), string, count=1), t) for t in to_add]
-        ret = [(x[0], (f.search(string).group(5), x[1])) for x in ret if x[0] != string]
+        if all([x[0] == string for x in ret]):
+            return None
+        ret = [(x[0], (f.search(string).group(5), x[1])) for x in ret]# if x[0] != string]
         if not ret:
             return None
         ret, m= map(list, list(zip(*ret)))

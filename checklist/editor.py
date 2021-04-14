@@ -84,7 +84,7 @@ def recursive_format(obj, mapping, ignore_missing=False):
             options, thing = match.group(1, 2)
             ret = ''
             if 'a' in options:
-                if ignore_missing and thing not in mapping:
+                if ignore_missing and thing not in mapping and thing.split('.')[0] not in mapping:
                     return match.group()
                 else:
                     word = formatz('{%s}' % thing, mapping)
@@ -646,6 +646,8 @@ class Editor(object):
                 p = re.sub(r'\d+$', '', p)
                 if ':' in p:
                     p = p.split(':')[1]
+                if '.' in p:
+                    p = p.split('.')[0]
                 if p not in expand_keys:
                     ignore_keys.add(p)
             new = self.template(templates, meta=meta, ignore_keys=ignore_keys, **fake_params)

@@ -128,8 +128,12 @@ class GroupEquality(MFT):
         self._check_results()
         all_groups = set([x for y in self.results.groups for x in y])
         group_results = {}
-        groups = np.array(self.results.groups)
-        results = np.array(self.results.expect_results)
+        max_len = max([len(x) for x in self.results.groups])
+        groups = np.array([np.pad(x, (0, max_len - len(x)), 'constant', constant_values=None) for x in self.results.groups])
+        # return groups
+        results = np.array([np.pad(x, (0, max_len - len(x)), 'constant') for x in self.results.expect_results])
+        # results = np.array(self.results.expect_results)
+        # return groups, results
         for g in all_groups:
             r = results[groups==g]
             group_results[g] = group_measure_fn(r)
@@ -144,7 +148,19 @@ class GroupEquality(MFT):
         if format_example_fn is None:
             format_example_fn = default_format_example
         d_idx = 3
-        fails = np.random.choice(range(len(results)), min(results.shape[0], n), replace=False)
+        diffs = []
+        # compute max difference per testcase
+        for group, r in zip(groups, results):
+            max_r = -1000000000
+            min_r = 10000000000
+            for g in set(group):
+                tr = group_measure_fn(r[group == g])[0]
+                max_r = max(tr, max_r)
+                min_r = min(tr, min_r)
+            diffs.append(max_r - min_r)
+        top_percentile = np.argsort(diffs)[int(len(diffs) * .9)-1:]
+        fails = np.random.choice(top_percentile, min(len(top_percentile), n), replace=False)
+        # fails = np.random.choice(range(len(results)), min(results.shape[0], n), replace=False)
         print()
         print('Examples:')
         for f in fails:
