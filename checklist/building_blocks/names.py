@@ -142,7 +142,7 @@ class Names:
         ret = []
         ret_m = []
         for x in ents:
-            f = x.split()[0]
+            f = x.split()[0].capitalize()
             if not self.is_name(f, sex=sex, race=race_from):
                 continue
             source_sex = 'M' if self.is_sex(f, 'M') else 'F'
