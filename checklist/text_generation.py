@@ -148,6 +148,8 @@ class TextGenerator(object):
                 cands_with_space = list(set(cands))
             else:
                 cands_with_space = list(set(cands).intersection(self.with_space_set))
+            if not len(cands_with_space):
+                return []
         input_ids = torch.tensor(encoded)
         # toks = tokenizer.tokenize('[CLS] %s [SEP]' % string)
         current_beam= [([], 0)]
@@ -253,7 +255,6 @@ class TextGenerator(object):
         return self.filter_options(texts, words[0], options, threshold)
     def antonyms(self, texts, word, threshold=5, pos=None, **kwargs):
         options = all_possible_antonyms(word, pos=pos)
-        # print(options)
         return self.filter_options(texts, word, options, threshold)
     def synonyms(self, texts, word, threshold=5, pos=None, **kwargs):
         options = all_possible_synonyms(word, pos=pos)
@@ -272,6 +273,9 @@ class TextGenerator(object):
             if masked == text:
                 continue
             ret =  self.unmask(masked, beam_size=100, candidates=options)
+            if not ret:
+                in_all = in_all.intersection(set())
+                continue
             non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
             score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])][0][-1]
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
