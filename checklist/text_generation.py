@@ -262,7 +262,6 @@ class TextGenerator(object):
         return self.filter_options(texts, word, options, threshold)
 
     def filter_options(self, texts, word, options, threshold=5):
-        # print(options)
         if type(texts) != list:
             texts = [texts]
         options = options + [word]
@@ -277,7 +276,12 @@ class TextGenerator(object):
                 in_all = in_all.intersection(set())
                 continue
             non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
-            score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])][0][-1]
+            score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])]
+            if score:
+                score = [0][-1]
+            # this will happen when the word is not in the vocabulary, in which case we don't look at the score
+            else:
+                score = 0
             new_ret = [(x[0], x[1], score - x[2]) for x in non_word if score - x[2] < threshold]
             # print(text)
             # print(new_ret)
@@ -289,7 +293,6 @@ class TextGenerator(object):
 
     def antonym(self, text, word, threshold=5, synonym=False):
         options = all_possible_antonyms(word)
-        print(options)
         if synonym:
             options = all_possible_synonyms(word)
         if not options:
