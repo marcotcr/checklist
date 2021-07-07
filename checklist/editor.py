@@ -662,7 +662,6 @@ class Editor(object):
             ks[a_tok] = '{%s}' % a_tok
             # print(strings)
             ts = recursive_format(strings, ks, ignore_missing=True)
-            np.random.seed(1)
             samp = self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
                                  thisisaratherlongtokenthatwillnotexist=['a'], **kwargs).data
             samp += self.template(ts, nsamples=5, remove_duplicates=remove_duplicates,
