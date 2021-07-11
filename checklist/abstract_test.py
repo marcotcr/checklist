@@ -67,7 +67,7 @@ def read_pred_file(path, file_format=None, format_fn=None, ignore_header=False):
 class AbstractTest(ABC):
     def __init__(self, data, expect, labels=None, meta=None, agg_fn='all',
                  templates=None, print_first=None, name=None, capability=None,
-                 description=None):
+                 description=None, test_id=None):
         self.data = data
         self.expect = expect
         self.labels = labels
@@ -80,6 +80,7 @@ class AbstractTest(ABC):
         self.name = name
         self.capability = capability
         self.description = description
+        self.test_id = test_id
     def save(self, file):
         dill.dump(self, open(file, 'wb'), recurse=True)
 

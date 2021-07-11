@@ -3,7 +3,7 @@ from .expect import Expect
 
 class MFT(AbstractTest):
     def __init__(self, data, expect=None, labels=None, meta=None, agg_fn='all',
-                 templates=None, name=None, capability=None, description=None):
+                 templates=None, name=None, capability=None, description=None, test_id=None):
         """Minimum Functionality Test
 
         Parameters
@@ -28,6 +28,8 @@ class MFT(AbstractTest):
             test capability
         description : str
             test description
+        test_id: str
+            test case identifier
         """
         if labels is None and expect is None:
             raise(Exception('Must specify either \'expect\' or \'labels\''))
@@ -35,12 +37,12 @@ class MFT(AbstractTest):
             expect = Expect.eq()
         super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=False, name=name,
-                         capability=capability, description=description)
+                         capability=capability, description=description, test_id=test_id)
 
 class INV(AbstractTest):
     def __init__(self, data, expect=None, threshold=0.1, meta=None,
                  agg_fn='all_except_first', templates=None, name=None,
-                 capability=None, description=None, labels=None):
+                 capability=None, description=None, labels=None, test_id=None):
         """Invariance Test
 
         Parameters
@@ -69,16 +71,18 @@ class INV(AbstractTest):
             test description
         labels : single value (int, str, etc) or list
             If list, must be the same length as data
+        test_id: str
+            test case identifier
         """
         if expect is None:
             expect = Expect.inv(threshold)
         super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=True, name=name,
-                         capability=capability, description=description)
+                         capability=capability, description=description, test_id=test_id)
 
 class DIR(AbstractTest):
     def __init__(self, data, expect, meta=None, agg_fn='all_except_first',
-                 templates=None, name=None, labels=None, capability=None, description=None):
+                 templates=None, name=None, labels=None, capability=None, description=None, test_id=None):
         """Directional Expectation Test
 
         Parameters
@@ -103,7 +107,9 @@ class DIR(AbstractTest):
             test capability
         description : str
             test description
+        test_id: str
+            test case identifier
         """
         super().__init__(data, expect, labels=labels, meta=meta, agg_fn=agg_fn,
                          templates=templates, print_first=True, name=name,
-                         capability=capability, description=description)
+                         capability=capability, description=description, test_id=test_id)
