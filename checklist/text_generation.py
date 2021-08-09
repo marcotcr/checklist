@@ -278,7 +278,7 @@ class TextGenerator(object):
             non_word = [x for x in ret if np.all([y not in [self.tokenizer.unk_token, word] for y in x[0]])]
             score = [x for x in ret if np.all([y in [word, self.tokenizer.unk_token] for y in x[0]])]
             if score:
-                score = [0][-1]
+                score = score[0][-1]
             # this will happen when the word is not in the vocabulary, in which case we don't look at the score
             else:
                 score = 0
