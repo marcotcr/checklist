@@ -8,6 +8,7 @@ import os
 import json
 import munch
 import pickle
+import csv
 
 from .viewer.template_editor import TemplateEditor
 from .multilingual import multilingual_params, get_language_code
@@ -26,6 +27,9 @@ class MunchWithAdd(munch.Munch):
         for k in self:
             self[k] = self[k] + other[k]
         return self
+
+    def __hash__(self):
+        return hash(self.toJSON())
 
 class SafeFormatter(string.Formatter):
     def vformat(self, format_string, args, kwargs):
@@ -560,6 +564,40 @@ class Editor(object):
         if name in self.lexicons and not overwrite:
             raise Exception('%s already in lexicons. Call with overwrite=True to overwrite' % name)
         self.lexicons[name] = values
+
+    def add_lexicon_from_csv(self, name, path, overwrite=False, append=False, remove_duplicates=False):
+        """Add tag to lexicon from csv file
+
+        Parameters
+        ----------
+        name : str
+            Tag name.
+        path : str
+            Path to csv file
+        overwrite : bool
+            If True, replaces tag with the same name if it already exists
+        append : bool
+            If True, adds values to current lexicon with name
+        remove_duplicates: bool
+            If append=True and remove_duplicates=True, remove duplicate values
+            from lexicon after appending
+        """
+        values = []
+        col_names = []
+        with open(path, newline='') as f:
+            reader = csv.reader(f)
+            for (i, row) in enumerate(reader):
+                if i == 0:
+                    for col_name in row:
+                        col_names.append(col_name)
+                else:
+                    d = {}
+                    if len(row) != len(col_names):
+                        raise Exception(f'Length of row {i} does not match header length ({len(row)} != {len(col_names)})')
+                    for (j, val) in enumerate(row):
+                        d[col_names[j]] = val
+                    values.append(MunchWithAdd(d))
+        self.add_lexicon(name, values, overwrite=overwrite, append=append, remove_duplicates=remove_duplicates)
 
     def _get_fillin_items(self, all_keys, max_count=None, **kwargs):
         items = {}
