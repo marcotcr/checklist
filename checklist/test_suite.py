@@ -126,6 +126,81 @@ class TestSuite:
             hf_dict['example_idx'].extend(example_idx)
         return hf_dict
 
+    def report(self, title, description, test_names=None, capability_order=None, format_pred=None, n=5, capability_descriptions={}, color_thresholds=(5, 10)):
+        json = self.report_json(test_names, capability_order, format_pred, n, capability_descriptions, color_thresholds)
+
+    def report_json(self, test_names=None, capability_order=None, format_pred=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), highlight_changes=True):
+        if test_names is None:
+            test_names = list(self.tests.keys())
+            capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
+        if capability_order is None:
+            capability_order = {}
+        if format_pred is None:
+            format_pred = lambda x: x, 'black'
+        import difflib
+        def add_diff_codes(str1, str2):
+            seqm = difflib.SequenceMatcher(None, str1.split(), str2.split())
+            output = []
+            output2 = []
+            for opcode, a0, a1, b0, b1 in seqm.get_opcodes():
+                if opcode == 'equal':
+                    output.append(' '.join(seqm.a[a0:a1]))
+                    output2.append(' '.join(seqm.a[a0:a1]))
+                elif opcode == 'insert':
+                    output2.append('<span class="insert-highlight">%s</span>' % ' '.join(seqm.b[b0:b1]))
+                elif opcode == 'delete':
+                    output.append('<span class="delete-highlight">%s</span>' % ' '.join(seqm.a[a0:a1]))
+                elif opcode == 'replace':
+                    output.append('<span class="delete-highlight">%s</span>' % ' '.join(seqm.a[a0:a1]))
+                    output2.append('<span class="insert-highlight">%s</span>' % ' '.join(seqm.b[b0:b1]))
+                    # print('range {}..{} of a with {}..{} of b'.format(a0, a1, b0, b1))
+                else:
+                    raise RuntimeError("unexpected opcode")
+            return ' '.join(output), ' '.join(output2)
+
+        ntests = n
+        cap_order = lambda x:capability_order.index(x) if x in capability_order else 100
+        caps = sorted(set([self.info[x]['capability'] for x in test_names]), key=cap_order)
+        ret_json = []
+        for capability in caps:
+            tests = [x for x in test_names if self.info[x]['capability'] == capability]
+            capability_dict = {'name': capability, 'tests': []}
+            if capability in capability_descriptions:
+                capability_dict['description'] = capability_descriptions[capability]
+            for n in tests:
+                print(n)
+                fail_rate = self.tests[n].get_stats().get('fail_rate', 0)
+                test_dict = {'name': n,
+                             'description': self.info[n]['description'],
+                             'fail_rate': fail_rate,
+                             'pos_label': 'Correct',
+                             'neg_label': 'Wrong',
+                             'type': 'MFT'}
+                if fail_rate < color_thresholds[0]:
+                    test_dict['color'] = 'green'
+                elif fail_rate < color_thresholds[1]:
+                    test_dict['color'] = 'yellow'
+                else:
+                    test_dict['color'] = 'red'
+                examples = []
+                for tc in sorted(self.tests[n].form_testcases(), key=lambda x:x['succeed'])[:ntests]:
+                    example = sorted(tc['examples'], key=lambda x:x['succeed'])[0]
+                    example['new']['pred'], example['new']['color'] = format_pred(example['new']['pred'])
+                    if example['old']:
+                        test_dict['pos_label'] = 'Unchanged'
+                        test_dict['neg_label'] = 'Changed'
+                        test_dict['type'] = 'perturbation'
+                        example['old']['pred'], example['old']['color'] = format_pred(example['old']['pred'])
+                        if highlight_changes:
+                            example['old']['text'], example['new']['text'] = add_diff_codes(example['old']['text'], example['new']['text'])
+                    example['fail'] = bool(1 - example['succeed'])
+                    del example['succeed']
+                    examples.append(example)
+                test_dict['examples'] = examples
+                capability_dict['tests'].append(test_dict)
+            ret_json.append(capability_dict)
+        return ret_json
+
     def get_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None, new_sample=True):
         if new_sample or len(self.test_ranges) == 0:
             self.test_ranges = {}
