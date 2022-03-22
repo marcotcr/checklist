@@ -126,8 +126,8 @@ class TestSuite:
             hf_dict['example_idx'].extend(example_idx)
         return hf_dict
 
-    def report(self, title, description, output, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10)):
-        json = self.report_json(test_names, capability_order, format_pred_fn, format_example_fn, n, capability_descriptions, color_thresholds)
+    def report(self, title, description, output, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), min_failure_rate=0):
+        json = self.report_json(test_names, capability_order, format_pred_fn, format_example_fn, n, capability_descriptions, color_thresholds, min_failure_rate=min_failure_rate)
         import jinja2
         import os.path
         cur_folder = os.path.dirname(__file__)
@@ -138,16 +138,16 @@ class TestSuite:
         with open(output, 'w') as f:
             f.write(subs)
 
-    def report_json(self, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), highlight_changes=True):
+    def report_json(self, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), highlight_changes=True, min_failure_rate=0):
         if test_names is None:
             test_names = list(self.tests.keys())
             capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
         if capability_order is None:
-            capability_order = {}
+            capability_order = [self.info[x]['capability'] for x in test_names]
         if format_pred_fn is None:
             format_pred_fn = lambda x: x, 'black'
         if format_example_fn is None:
-            format_example_fn: lambda x: str(x)
+            format_example_fn = lambda x: str(x)
         import difflib
         def add_diff_codes(str1, str2):
             seqm = difflib.SequenceMatcher(None, str1.split(), str2.split())
@@ -181,6 +181,9 @@ class TestSuite:
             for n in tests:
                 print(n)
                 fail_rate = self.tests[n].get_stats().get('fail_rate', 0)
+                if min_failure_rate and fail_rate < min_failure_rate:
+                    # print('Skipping ', n)
+                    continue
                 test_dict = {'name': n,
                              'description': self.info[n]['description'],
                              'fail_rate': fail_rate,
@@ -198,7 +201,11 @@ class TestSuite:
                     example = sorted(tc['examples'], key=lambda x:x['succeed'])[0]
                     example['new']['pred'], example['new']['color'] = format_pred_fn(example['new']['pred'])
                     example['new']['text'] = format_example_fn(example['new']['text'])
+                    if example['new']['conf'] is None:
+                        example['new']['conf'] = 1
                     if example['old']:
+                        if example['old']['conf'] is None:
+                            example['old']['conf'] = 1
                         test_dict['pos_label'] = 'Unchanged'
                         test_dict['neg_label'] = 'Changed'
                         test_dict['type'] = 'perturbation'
@@ -211,7 +218,8 @@ class TestSuite:
                     examples.append(example)
                 test_dict['examples'] = examples
                 capability_dict['tests'].append(test_dict)
-            ret_json.append(capability_dict)
+            if capability_dict['tests']:
+                ret_json.append(capability_dict)
         return ret_json
 
     def get_raw_examples(self, file_format=None, format_fn=None, n=None, seed=None, new_sample=True):
