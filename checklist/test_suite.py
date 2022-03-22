@@ -126,17 +126,28 @@ class TestSuite:
             hf_dict['example_idx'].extend(example_idx)
         return hf_dict
 
-    def report(self, title, description, test_names=None, capability_order=None, format_pred=None, n=5, capability_descriptions={}, color_thresholds=(5, 10)):
-        json = self.report_json(test_names, capability_order, format_pred, n, capability_descriptions, color_thresholds)
+    def report(self, title, description, output, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10)):
+        json = self.report_json(test_names, capability_order, format_pred_fn, format_example_fn, n, capability_descriptions, color_thresholds)
+        import jinja2
+        import os.path
+        cur_folder = os.path.dirname(__file__)
+        dir = os.path.join(cur_folder, 'report')
+        subs = jinja2.Environment(
+              loader=jinja2.FileSystemLoader(dir)
+              ).get_template('template.html').render(title=title, description=description, capabilities=json)
+        with open(output, 'w') as f:
+            f.write(subs)
 
-    def report_json(self, test_names=None, capability_order=None, format_pred=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), highlight_changes=True):
+    def report_json(self, test_names=None, capability_order=None, format_pred_fn=None, format_example_fn=None, n=5, capability_descriptions={}, color_thresholds=(5, 10), highlight_changes=True):
         if test_names is None:
             test_names = list(self.tests.keys())
             capability_order = ['Vocabulary', 'Taxonomy', 'Robustness', 'NER',  'Fairness', 'Temporal', 'Negation', 'Coref', 'SRL', 'Logic']
         if capability_order is None:
             capability_order = {}
-        if format_pred is None:
-            format_pred = lambda x: x, 'black'
+        if format_pred_fn is None:
+            format_pred_fn = lambda x: x, 'black'
+        if format_example_fn is None:
+            format_example_fn: lambda x: str(x)
         import difflib
         def add_diff_codes(str1, str2):
             seqm = difflib.SequenceMatcher(None, str1.split(), str2.split())
@@ -185,12 +196,14 @@ class TestSuite:
                 examples = []
                 for tc in sorted(self.tests[n].form_testcases(), key=lambda x:x['succeed'])[:ntests]:
                     example = sorted(tc['examples'], key=lambda x:x['succeed'])[0]
-                    example['new']['pred'], example['new']['color'] = format_pred(example['new']['pred'])
+                    example['new']['pred'], example['new']['color'] = format_pred_fn(example['new']['pred'])
+                    example['new']['text'] = format_example_fn(example['new']['text'])
                     if example['old']:
                         test_dict['pos_label'] = 'Unchanged'
                         test_dict['neg_label'] = 'Changed'
                         test_dict['type'] = 'perturbation'
-                        example['old']['pred'], example['old']['color'] = format_pred(example['old']['pred'])
+                        example['old']['text'] = format_example_fn(example['old']['text'])
+                        example['old']['pred'], example['old']['color'] = format_pred_fn(example['old']['pred'])
                         if highlight_changes:
                             example['old']['text'], example['new']['text'] = add_diff_codes(example['old']['text'], example['new']['text'])
                     example['fail'] = bool(1 - example['succeed'])
