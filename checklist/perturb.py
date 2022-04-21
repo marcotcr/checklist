@@ -5,7 +5,7 @@ import os
 import json
 import pattern
 from pattern.en import tenses
-from .editor import recursive_apply, MunchWithAdd
+from .editor import recursive_apply, MunchWithAdd, Editor
 
 def load_data():
     cur_folder = os.path.dirname(__file__)
@@ -18,6 +18,29 @@ def load_data():
         'city': basic['city'],
         'country': basic['country'],
     }
+
+    # enhance data['name'] that contains {'male' : [], 'female' : []} with new keys on the country of origin 
+    editor = Editor()
+    # create a set of countries that have male/female and last names 
+    list_target_countries = []
+    for target_country in editor.lexicons.male_from.keys():
+        if target_country in editor.lexicons.female_from.keys():
+            if target_country in editor.lexicons.last_from.keys():
+                list_target_countries.append(target_country)
+                data['name'][target_country] = {}
+
+    for target_country, v in editor.lexicons.male_from.items():
+        if target_country in list_target_countries:
+            data['name'][target_country]['male'] = v
+
+    for target_country, v in editor.lexicons.female_from.items():
+        if target_country in list_target_countries:
+            data['name'][target_country]['female'] = v
+
+    for target_country, v in editor.lexicons.last_from.items():
+        if target_country in list_target_countries:
+            data['name'][target_country]['last'] = {'male': v, 'female' : v}
+
     return data
 
 def process_ret(ret, ret_m=None, meta=False, n=10):
@@ -38,7 +61,6 @@ class Perturb:
     @staticmethod
     def perturb(data, perturb_fn, keep_original=True, nsamples=None, *args, **kwargs):
         """Perturbs data according to some function
-
         Parameters
         ----------
         data : list
@@ -53,12 +75,10 @@ class Perturb:
             number of examples in data to perturb
         meta : bool
             if True, perturb_fn returns (examples, meta), and meta is added to ret.meta
-
         Returns
         -------
         MunchWithAdd
             will have .data and .meta (if meta=True in **kwargs)
-
         """
         ret = MunchWithAdd()
         use_meta = kwargs.get('meta', False)
@@ -80,6 +100,8 @@ class Perturb:
             a = []
             x = []
             if not p or all([not x for x in p]):
+                ret_data.append(t)
+                meta.append(add)
                 continue
             if use_meta:
                 p, a = p
@@ -102,17 +124,14 @@ class Perturb:
     @staticmethod
     def strip_punctuation(doc):
         """Removes punctuation
-
         Parameters
         ----------
         doc : spacy.tokens.Doc
             spacy doc
-
         Returns
         -------
         string
             With punctuation stripped
-
         """
         # doc is a spacy doc
         while len(doc) and doc[-1].pos_ == 'PUNCT':
@@ -122,17 +141,14 @@ class Perturb:
     @staticmethod
     def punctuation(doc):
         """Perturbation function which adds / removes punctuations
-
         Parameters
         ----------
         doc : spacy.tokens.Doc
             spacy doc
-
         Returns
         -------
         list(string)
             With punctuation removed and / or final stop added.
-
         """
         # doc is a spacy doc
         s = Perturb.strip_punctuation(doc)
@@ -147,19 +163,16 @@ class Perturb:
     @staticmethod
     def add_typos(string, typos=1):
         """Perturbation functions, swaps random characters with their neighbors
-
         Parameters
         ----------
         string : str
             input string
         typos : int
             number of typos to add
-
         Returns
         -------
         list(string)
             perturbed strings
-
         """
         string = list(string)
         swaps = np.random.choice(len(string) - 1, typos)
@@ -173,17 +186,14 @@ class Perturb:
     def remove_negation(doc):
         """Removes negation from doc.
         This is experimental, may or may not work.
-
         Parameters
         ----------
         doc : spacy.token.Doc
             input
-
         Returns
         -------
         string
             With all negations removed
-
         """
         # This removes all negations in the doc. I should maybe add an option to remove just some.
         notzs = [i for i, z in enumerate(doc) if z.lemma_ == 'not' or z.dep_ == 'neg']
@@ -243,17 +253,14 @@ class Perturb:
     def add_negation(doc):
         """Adds negation to doc
         This is experimental, may or may not work. It also only works for specific parses.
-
         Parameters
         ----------
         doc : spacy.token.Doc
             input
-
         Returns
         -------
         string
             With negations added
-
         """
         for sentence in doc.sents:
             if len(sentence) < 3:
@@ -317,17 +324,14 @@ class Perturb:
     @staticmethod
     def contractions(sentence, **kwargs):
         """Perturbation functions, contracts and expands contractions if present
-
         Parameters
         ----------
         sentence : str
             input
-
         Returns
         -------
         list
             List of strings with contractions expanded or contracted, or []
-
         """
         expanded = [Perturb.expand_contractions(sentence), Perturb.contract(sentence)]
         return [t for t in expanded if t != sentence]
@@ -335,17 +339,14 @@ class Perturb:
     @staticmethod
     def expand_contractions(sentence, **kwargs):
         """Expands contractions in a sentence (if any)
-
         Parameters
         ----------
         sentence : str
             input string
-
         Returns
         -------
         string
             String with contractions expanded (if any)
-
         """
         contraction_map = {
             "ain't": "is not", "aren't": "are not", "can't": "cannot",
@@ -392,17 +393,14 @@ class Perturb:
     @staticmethod
     def contract(sentence, **kwargs):
         """Contract expanded contractions in a sentence (if any)
-
         Parameters
         ----------
         sentence : str
             input string
-
         Returns
         -------
         string
             String with contractions contracted (if any)
-
         """
         reverse_contraction_map = {
             'is not': "isn't", 'are not': "aren't", 'cannot': "can't",
@@ -439,7 +437,6 @@ class Perturb:
     @staticmethod
     def change_names(doc, meta=False, n=10, first_only=False, last_only=False, seed=None):
         """Replace names with other names
-
         Parameters
         ----------
         doc : spacy.token.Doc
@@ -454,13 +451,11 @@ class Perturb:
             if True, will only replace last names
         seed : int
             random seed
-
         Returns
         -------
         list(str)
             if meta=True, returns (list(str), list(tuple))
             Strings with names replaced.
-
         """
         if seed is not None:
             np.random.seed(seed)
@@ -500,9 +495,102 @@ class Perturb:
         return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
 
     @staticmethod
+    def change_names_country_specific(target_country, target_gender):
+        """
+        Change the entities regarding a target country or a target gender 
+        Parameters
+        ----------
+        target_country : str
+            input
+        target_gender : str
+            if True, will return list of (orig_name, new_name) as meta
+        Returns
+        -------
+        Function
+        """
+        def __change_names_country_specific(doc, meta=False, n=10, first_only=False, last_only=False, seed=None):
+            return Perturb._change_names_country_specific(doc, target_country=target_country, target_gender=target_gender, meta=meta, n=n, first_only=first_only, last_only=last_only, seed=seed)
+
+        return __change_names_country_specific
+
+    @staticmethod
+    def _change_names_country_specific(doc, target_country='France', target_gender='male', meta=False, n=10, first_only=False, last_only=False, seed=None):
+        """Replace names with other names specific from a target country and a target gender
+        Parameters
+        ----------
+        doc : spacy.token.Doc
+            input
+        target_country : str
+            Target country to use when changing the name
+        target_gender : str
+            Target gender to use when changing the name
+        meta : bool
+            if True, will return list of (orig_name, new_name) as meta
+        n : int
+            number of names to replace original names with
+        first_only : bool
+            if True, will only replace first names
+        last_only : bool
+            if True, will only replace last names
+        seed : int
+            random seed
+        Returns
+        -------
+        list(str)
+            if meta=True, returns (list(str), list(tuple))
+            Strings with names replaced.
+        """
+        if seed is not None:
+            np.random.seed(seed)
+        ents = [x.text for x in doc.ents if np.all([a.ent_type_ == 'PERSON' for a in x])]
+        ret = []
+        ret_m = []
+        for x in ents:
+            f = x.split()[0]
+
+            # Finding the sex of the entity ; if no sex found then do nothing
+            sex = None
+            if f.capitalize() in Perturb.data['name_set']['women']:
+                sex = 'women'
+            if f.capitalize() in Perturb.data['name_set']['men']:
+                sex = 'men'
+            if not sex:
+                continue
+
+            # If firstname and lastname 
+            if len(x.split()) > 1:
+                l = x.split()[1]
+                # If the last name is not in the list, then discard it 
+                if len(l) > 2 and l.capitalize() not in Perturb.data['name_set']['last']:
+                    continue
+
+            # if a single name only (can be first of last)
+            else:
+                # impossible to know if it's a firstname or a lastname ; Macron or Emmanuel
+                if last_only:
+                    return None
+            names = Perturb.data['name'][target_country][target_gender] 
+            to_use = np.random.choice(names, n)
+            if not first_only:
+                f = x
+                # if the entity is multi-words 
+                if len(x.split()) > 1:
+                    last = Perturb.data['name'][target_country]['last'][target_gender]
+                    last = np.random.choice(last, n)
+                    to_use = ['%s %s' % (x, y) for x, y in zip(to_use, last)]
+                    if last_only:
+                        to_use = last
+                        f = x.split()[1]
+
+            for y in to_use:
+                ret.append(re.sub(r'\b%s\b' % re.escape(f), y, doc.text))
+                ret_m.append((f, y))
+
+        return process_ret(ret, ret_m=ret_m, n=n, meta=meta)
+
+    @staticmethod
     def change_location(doc, meta=False, seed=None, n=10):
         """Change city and country names
-
         Parameters
         ----------
         doc : spacy.token.Doc
@@ -513,13 +601,11 @@ class Perturb:
             random seed
         n : int
             number of locations to replace original locations with
-
         Returns
         -------
         list(str)
             if meta=True, returns (list(str), list(tuple))
             Strings with locations replaced.
-
         """
         if seed is not None:
             np.random.seed(seed)
@@ -543,7 +629,6 @@ class Perturb:
     def change_number(doc, meta=False, seed=None, n=10):
         """Change integers to other integers within 20% of the original integer
         Does not change '2' or '4' to avoid abbreviations (this is 4 you, etc)
-
         Parameters
         ----------
         doc : spacy.token.Doc
@@ -554,13 +639,11 @@ class Perturb:
             random seed
         n : int
             number of numbers to replace original locations with
-
         Returns
         -------
         list(str)
             if meta=True, returns (list(str), list(tuple))
             Strings with numbers replaced.
-
         """
         if seed is not None:
             np.random.seed(seed)
