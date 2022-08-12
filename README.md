@@ -6,11 +6,12 @@ This repository contains code for testing NLP Models as described in the followi
 
 Bibtex for citations:
 ```bibtex
- @inproceedings{checklist:acl20},  
+ @inproceedings{checklist:acl20,  
  author = {Marco Tulio Ribeiro and Tongshuang Wu and Carlos Guestrin and Sameer Singh},  
  title = {Beyond Accuracy: Behavioral Testing of NLP models with CheckList},  
  booktitle = {Association for Computational Linguistics (ACL)},  
- year = {2020}  
+ year = {2020}
+ }
 ```
 
 
