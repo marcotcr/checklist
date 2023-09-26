@@ -28,30 +28,12 @@ class PostDevelopCommand(develop):
         #enable_visual_interface()
         self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
-class BdistEggCommand(bdist_egg):
-    def run(self):
-        bdist_egg.run(self)
-        enable_visual_interface()
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg=f"Running post install task on {sys.executable}")
-
-class BuildPyCommand(build_py):
-    def run(self):
-        build_py.run(self)
-        enable_visual_interface()
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
-
 class PostInstallCommand(install):
     def run(self):
         #super().do_egg_install()
         install.run(self)
         self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
         #enable_visual_interface()
-
-class EggInfoCommand(egg_info):
-    def run(self):
-        egg_info.run(self)
-        enable_visual_interface()
-        #self.execute(enable_visual_interface_shell_cmd, (self.install_lib,), msg="Running post install task")
 
 setup(name='checklist',
       version='0.0.11',
@@ -75,9 +57,6 @@ setup(name='checklist',
       cmdclass={
         'develop': PostDevelopCommand,
         'install': PostInstallCommand,
-        'bdist_egg': BdistEggCommand,
-        'egg_info': EggInfoCommand,
-        'build_py': BuildPyCommand,
 
      },
       package_data={'viewer':['static/*'], "data": ["*"], 'checklist': ['data/*', 'data/lexicons/*', 'viewer/static/*']},
