@@ -52,7 +52,7 @@ setup(name='checklist',
         'ipywidgets>=7.5',
         'transformers>=2.8',
         'patternfork-nosql',
-        'iso-639'
+        'pycountry'
       ],
       cmdclass={
         'develop': PostDevelopCommand,
